@@ -1,0 +1,56 @@
+import Link from "next/link";
+
+export default function Footer() {
+  return (
+    <footer className="bg-slate-900 text-slate-400 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-white">
+                CH
+              </div>
+              <span className="font-bold text-lg text-white">CricketHub USA</span>
+            </div>
+            <p className="text-sm">
+              Bridging the developmental gap in US cricket. Building the pathway from youth cricket to MiLC.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-3 text-sm">Platform</h4>
+            <div className="space-y-2">
+              <Link href="/players" className="block text-sm hover:text-white transition-colors">Player Registry</Link>
+              <Link href="/agents" className="block text-sm hover:text-white transition-colors">Agent Marketplace</Link>
+              <Link href="/scouting" className="block text-sm hover:text-white transition-colors">Pro Scouting</Link>
+              <Link href="/sponsors" className="block text-sm hover:text-white transition-colors">Sponsorships</Link>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-3 text-sm">Resources</h4>
+            <div className="space-y-2">
+              <span className="block text-sm">Showcase Calendar</span>
+              <span className="block text-sm">Verified Stats Guide</span>
+              <span className="block text-sm">MiLC Draft Info</span>
+              <span className="block text-sm">Academy Directory</span>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-3 text-sm">Contact</h4>
+            <div className="space-y-2">
+              <span className="block text-sm">info@crickethubusa.com</span>
+              <span className="block text-sm">+1 (555) 123-4567</span>
+              <div className="flex gap-3 mt-3">
+                <span className="text-xs bg-slate-800 px-2 py-1 rounded">Twitter</span>
+                <span className="text-xs bg-slate-800 px-2 py-1 rounded">Instagram</span>
+                <span className="text-xs bg-slate-800 px-2 py-1 rounded">YouTube</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
+          <p>&copy; 2026 CricketHub USA. All rights reserved. Building the future of American cricket.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
