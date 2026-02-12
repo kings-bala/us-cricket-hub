@@ -66,12 +66,6 @@ export default function Navbar() {
                 ))}
               </select>
             </div>
-            <Link
-              href="/auth"
-              className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors"
-            >
-              Sign In
-            </Link>
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden p-2 text-slate-300 hover:text-white"
