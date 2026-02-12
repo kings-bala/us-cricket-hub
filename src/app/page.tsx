@@ -152,8 +152,8 @@ export default function Home() {
             Whether you&apos;re a player, agent, franchise owner, or sponsor, join the platform that&apos;s building the future of American cricket.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/dashboard" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
-              Go to Dashboard
+            <Link href="/auth" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
+              Create Free Account
             </Link>
             <Link href="/scouting" className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full font-semibold border border-white/20 transition-colors">
               Try Pro Dashboard
