@@ -3,7 +3,7 @@ export type BowlingStyle = "Right-arm Fast" | "Right-arm Medium" | "Left-arm Fas
 export type BattingStyle = "Right-hand Bat" | "Left-hand Bat";
 export type AgeGroup = "U13" | "U15" | "U17" | "U19" | "U21" | "U23" | "Men";
 export type ProfileTier = "Free" | "Premium" | "Elite";
-export type UserRole = "player" | "agent" | "owner" | "sponsor";
+export type UserRole = "player" | "agent" | "owner" | "sponsor" | "coach";
 export type Region = "South Asia" | "Oceania" | "Europe" | "Caribbean" | "Africa" | "Americas" | "Middle East" | "East Asia";
 export type T20LeagueId = "IPL" | "BBL" | "CPL" | "PSL" | "SA20" | "BPL" | "LPL" | "ILT20" | "MLC" | "THE100" | "SSA" | "GT20";
 

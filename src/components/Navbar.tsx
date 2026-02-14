@@ -10,6 +10,7 @@ const roleLabels: Record<UserRole, string> = {
   agent: "Agent",
   owner: "T20 Owner",
   sponsor: "Sponsor",
+  coach: "Coach",
 };
 
 const roleColors: Record<UserRole, string> = {
@@ -17,6 +18,7 @@ const roleColors: Record<UserRole, string> = {
   agent: "bg-blue-500",
   owner: "bg-purple-500",
   sponsor: "bg-amber-500",
+  coach: "bg-teal-500",
 };
 
 type NavLink = { href: string; label: string; desc: string };
@@ -131,6 +133,19 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/sponsors", label: "Training Sponsor", desc: "Academy & coaching" },
     ]},
   ],
+  coach: [
+    { title: "Stats", id: "stats", links: [
+      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
+      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
+      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
+      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
+    ]},
+    { title: "Tools", id: "tools", links: [
+      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
+      { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
+      { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
+    ]},
+  ],
 };
 
 export default function Navbar() {
@@ -142,7 +157,7 @@ export default function Navbar() {
   // load + persist persona
   useEffect(() => {
     const saved = typeof window !== "undefined" ? localStorage.getItem("persona") : null;
-    if (saved && ["player","agent","owner","sponsor"].includes(saved)) setRole(saved as UserRole);
+    if (saved && ["player","agent","owner","sponsor","coach"].includes(saved)) setRole(saved as UserRole);
   }, []);
   useEffect(() => {
     try { localStorage.setItem("persona", role); } catch {}
