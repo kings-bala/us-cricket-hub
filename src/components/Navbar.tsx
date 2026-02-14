@@ -18,6 +18,9 @@ const roleColors: Record<UserRole, string> = {
   sponsor: "bg-amber-500",
 };
 
+type NavLink = { href: string; label: string; desc: string };
+type NavGroup = { title: string; id: string; links: NavLink[] };
+
 interface NavDropdownProps {
   label: string;
   links: { href: string; label: string; desc: string }[];
@@ -69,37 +72,81 @@ function NavDropdown({ label, links, open, setOpen, id }: NavDropdownProps) {
   );
 }
 
-const discoverLinks = [
-  { href: "/players", label: "Players", desc: "Browse player profiles" },
-  { href: "/agents", label: "Agents", desc: "Find player agents" },
-  { href: "/coaches", label: "Coaches", desc: "Coach directory" },
-  { href: "/sponsors", label: "Sponsors", desc: "Sponsorship opportunities" },
-];
-
-const intelligenceLinks = [
-  { href: "/rankings", label: "CPI Rankings", desc: "Cricket Performance Index" },
-  { href: "/form-meter", label: "AI Form Meter", desc: "Rolling match form analysis" },
-  { href: "/combine", label: "Combine Assessment", desc: "Athletic metrics & testing" },
-  { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights & alerts" },
-];
-
-const toolsLinks = [
-  { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze your XI" },
-  { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting tools" },
-  { href: "/analyze", label: "AI Video Analysis", desc: "AI-powered video breakdown" },
-  { href: "/dashboard", label: "Dashboard", desc: "Your personalized hub" },
-];
-
-const mobileNavGroups = [
-  { title: "Discover", links: discoverLinks },
-  { title: "AI Intelligence", links: intelligenceLinks },
-  { title: "Tools", links: toolsLinks },
-];
+const personaGroups: Record<UserRole, NavGroup[]> = {
+  player: [
+    { title: "Essentials", id: "essentials", links: [
+      { href: "/dashboard", label: "My Profile", desc: "Your profile & settings" },
+      { href: "/performance-feed", label: "Performance Feed", desc: "Live insights" },
+      { href: "/analyze", label: "Full Track AI", desc: "Video + AI insights" },
+    ]},
+    { title: "Stats", id: "stats", links: [
+      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
+      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
+      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
+      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
+    ]},
+    { title: "Training", id: "training", links: [
+      { href: "/dashboard", label: "Idol Capture", desc: "Mirror routines & goals" },
+      { href: "/dashboard", label: "Track Exercises", desc: "Planned workouts" },
+      { href: "/coaches", label: "Connect with Coach", desc: "Find a coach" },
+    ]},
+    { title: "Store", id: "store", links: [
+      { href: "/sponsors", label: "Merchandise Store", desc: "Gear & sponsors" },
+    ]},
+  ],
+  agent: [
+    { title: "Stats", id: "stats", links: [
+      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
+      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
+      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
+      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
+    ]},
+    { title: "Tools", id: "tools", links: [
+      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
+      { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
+      { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
+    ]},
+  ],
+  owner: [
+    { title: "Stats", id: "stats", links: [
+      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
+      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
+      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
+      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
+    ]},
+    { title: "Tools", id: "tools", links: [
+      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
+      { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
+      { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
+    ]},
+  ],
+  sponsor: [
+    { title: "Discover", id: "discover", links: [
+      { href: "/players", label: "Player Registry", desc: "Browse player profiles" },
+    ]},
+    { title: "Sponsorships", id: "sponsorships", links: [
+      { href: "/sponsors", label: "Bat Sponsor", desc: "Partner with talent" },
+      { href: "/sponsors", label: "Kit Sponsor", desc: "Team apparel" },
+      { href: "/sponsors", label: "Training Sponsor", desc: "Academy & coaching" },
+    ]},
+  ],
+};
 
 export default function Navbar() {
   const [role, setRole] = useState<UserRole>("player");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+
+  // load + persist persona
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("persona") : null;
+    if (saved && ["player","agent","owner","sponsor"].includes(saved)) setRole(saved as UserRole);
+  }, []);
+  useEffect(() => {
+    try { localStorage.setItem("persona", role); } catch {}
+  }, [role]);
+
+  const groups = personaGroups[role];
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -112,11 +159,11 @@ export default function Navbar() {
             <span className="font-bold text-lg hidden sm:block">CricketHub Global</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-6">
-            <NavDropdown id="discover" label="Discover" links={discoverLinks} open={openDropdown} setOpen={setOpenDropdown} />
-            <NavDropdown id="intelligence" label="AI Intelligence" links={intelligenceLinks} open={openDropdown} setOpen={setOpenDropdown} />
-            <NavDropdown id="tools" label="Tools" links={toolsLinks} open={openDropdown} setOpen={setOpenDropdown} />
-          </div>
+                    <div className="hidden md:flex items-center gap-6">
+                      {groups.map((g) => (
+                        <NavDropdown key={g.id} id={g.id} label={g.title} links={g.links} open={openDropdown} setOpen={setOpenDropdown} />
+                      ))}
+                    </div>
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2">
@@ -158,7 +205,7 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-4">
-            {mobileNavGroups.map((group) => (
+            {groups.map((group) => (
               <div key={group.title}>
                 <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{group.title}</p>
                 <div className="space-y-1">
