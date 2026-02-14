@@ -77,9 +77,13 @@ export default function ScoutingPage() {
           return (
             <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
               <div className="flex items-center gap-3 mb-2">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-white font-bold text-sm`}>
-                  {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                </div>
+                {team.logo ? (
+                  <Image src={team.logo} alt={team.name} width={40} height={40} className="w-10 h-10 object-contain" />
+                ) : (
+                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-white font-bold text-sm`}>
+                    {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-semibold text-white">{team.name}</p>
                   <p className="text-xs text-slate-400">{team.city} <span className={`${colors.text} font-medium`}>{team.league}</span></p>

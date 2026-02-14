@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { players, tournaments, t20Leagues, coaches, availableSponsorships } from "@/data/mock";
+import { players, tournaments, t20Leagues, t20Teams, coaches, availableSponsorships } from "@/data/mock";
 import { useRole } from "@/context/RoleContext";
 import { UserRole } from "@/types";
 
@@ -373,6 +373,31 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white">IPL Teams</h2>
+            <p className="text-slate-400 text-sm mt-1">The biggest T20 league in the world</p>
+          </div>
+          <Link href="/scouting" className="text-sm text-emerald-400 hover:text-emerald-300">View All Teams &rarr;</Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {t20Teams.filter((t) => t.league === "IPL").map((team) => (
+            <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-blue-500/50 transition-all group text-center">
+              {team.logo ? (
+                <Image src={team.logo} alt={team.name} width={56} height={56} className="w-14 h-14 object-contain mx-auto mb-3" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-900 flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
+                  {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                </div>
+              )}
+              <p className="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">{team.name}</p>
+              <p className="text-xs text-slate-400 mt-1">{team.city}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {(role === "owner" || role === "sponsor") && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
