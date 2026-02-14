@@ -1,4 +1,4 @@
-import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach, MatchPerformance, ACPIScore, CombineData, FormStatus, PerformanceFeedItem } from "@/types";
+import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach, MatchPerformance, CPIScore, CombineData, FormStatus, PerformanceFeedItem } from "@/types";
 
 export const t20Leagues: T20League[] = [
   { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
@@ -531,7 +531,7 @@ export const playerMatchHistory: Record<string, MatchPerformance[]> = {
   ],
 };
 
-export function calculateACPI(player: Player, matches: MatchPerformance[]): ACPIScore {
+export function calculateCPI(player: Player, matches: MatchPerformance[]): CPIScore {
   const last5 = matches.slice(0, 5);
 
   let matchPerfScore = 0;
@@ -628,19 +628,19 @@ export const playerCombineData: Record<string, CombineData> = {
   p16: { yoYoScore: 15.5, sprint20m: 3.4, bowlingSpeed: 122, verticalJump: 44, fieldingEfficiency: 62, throwAccuracy: 66, reactionTime: 0.32, assessmentDate: "2025-10-05", nextAssessmentDate: "2026-04-05", verifiedAthlete: false, history: [{ date: "2025-10-05", yoYoScore: 15.5, sprint20m: 3.4, verticalJump: 44, fieldingEfficiency: 62 }] },
 };
 
-export function generateACPIRankings(): (Player & { acpiScore: ACPIScore; formStatus: FormStatus })[] {
+export function generateCPIRankings(): (Player & { cpiScore: CPIScore; formStatus: FormStatus })[] {
   const ranked = players.map((player) => {
     const matches = playerMatchHistory[player.id] || [];
-    const acpiScore = calculateACPI(player, matches);
+    const cpiScore = calculateCPI(player, matches);
     const formStatus = getFormStatus(matches, player.role);
-    return { ...player, acpiScore, formStatus };
+    return { ...player, cpiScore, formStatus };
   });
 
-  ranked.sort((a, b) => b.acpiScore.overall - a.acpiScore.overall);
+  ranked.sort((a, b) => b.cpiScore.overall - a.cpiScore.overall);
 
   ranked.forEach((p, i) => {
-    p.acpiScore.nationalRank = i + 1;
-    p.acpiScore.rankChange = Math.floor(Math.random() * 7) - 3;
+    p.cpiScore.nationalRank = i + 1;
+    p.cpiScore.rankChange = Math.floor(Math.random() * 7) - 3;
   });
 
   const stateGroups: Record<string, typeof ranked> = {};
@@ -649,7 +649,7 @@ export function generateACPIRankings(): (Player & { acpiScore: ACPIScore; formSt
     stateGroups[p.state].push(p);
   });
   Object.values(stateGroups).forEach((group) => {
-    group.forEach((p, i) => { p.acpiScore.stateRank = i + 1; });
+    group.forEach((p, i) => { p.cpiScore.stateRank = i + 1; });
   });
 
   return ranked;
@@ -663,10 +663,10 @@ export const performanceFeedItems: PerformanceFeedItem[] = [
   { id: "pf5", playerId: "p1", playerName: "Arjun Patel", type: "form-spike", title: "Form Spike Alert", description: "Arjun Patel has scored 87, 45, and 112 in his last 3 matches - now rated Red Hot", value: "Red Hot", date: "2026-02-10", state: "Gujarat", league: "State U17" },
   { id: "pf6", playerId: "p11", playerName: "Tamim Hossain", type: "best-bowling", title: "Chinaman Magic", description: "Tamim Hossain bamboozled Chittagong Division with unplayable 5/14", value: "5/14", date: "2026-02-09", state: "Dhaka Division", league: "BCB Youth" },
   { id: "pf7", playerId: "p7", playerName: "Sunil Perera", type: "best-bowling", title: "Spin Masterclass", description: "Sunil Perera spun a web with 5/18 against Southern Province U17 in Galle", value: "5/18", date: "2026-02-10", state: "Western Province", league: "SLC U17" },
-  { id: "pf8", playerId: "p8", playerName: "Rahul Desai", type: "hot-prospect", title: "Hot Prospect Alert", description: "Rahul Desai averaging 80.4 in last 5 matches with 2 centuries. MLC franchise scouts taking notice", value: "ACPI 88", date: "2026-02-12", state: "Illinois", league: "MLC Dev" },
+  { id: "pf8", playerId: "p8", playerName: "Rahul Desai", type: "hot-prospect", title: "Hot Prospect Alert", description: "Rahul Desai averaging 80.4 in last 5 matches with 2 centuries. MLC franchise scouts taking notice", value: "CPI 88", date: "2026-02-12", state: "Illinois", league: "MLC Dev" },
   { id: "pf9", playerId: "p2", playerName: "Jake Thompson", type: "rank-movement", title: "Rank Up!", description: "Jake Thompson moved up 3 spots in the national bowling rankings after 17 wickets in 5 matches", value: "+3", date: "2026-02-12", state: "New South Wales", league: "Shield Colts" },
   { id: "pf10", playerId: "p10", playerName: "Ryan van der Berg", type: "form-spike", title: "All-Round Brilliance", description: "Ryan van der Berg scored 282 runs and took 12 wickets in his last 5 matches", value: "In Form", date: "2026-02-11", state: "Western Cape", league: "CSA Provincial" },
-  { id: "pf11", playerId: "p3", playerName: "Rashid Mohammed", type: "hot-prospect", title: "Hot Prospect", description: "Rashid Mohammed's all-round ability (221 runs + 12 wickets in 5 matches) catching PSL attention", value: "ACPI 75", date: "2026-02-08", state: "Punjab", league: "PCB Youth" },
+  { id: "pf11", playerId: "p3", playerName: "Rashid Mohammed", type: "hot-prospect", title: "Hot Prospect", description: "Rashid Mohammed's all-round ability (221 runs + 12 wickets in 5 matches) catching PSL attention", value: "CPI 75", date: "2026-02-08", state: "Punjab", league: "PCB Youth" },
   { id: "pf12", playerId: "p13", playerName: "Navjot Gill", type: "top-score", title: "Canadian Record!", description: "Navjot Gill hit 82 off 60 balls against Quebec XI in Cricket Canada League", value: "82", date: "2026-01-30", state: "Ontario", league: "Cricket Canada" },
   { id: "pf13", playerId: "p14", playerName: "Mohammed Al-Rashid", type: "top-score", title: "UAE Star Shines", description: "Mohammed Al-Rashid scored a brilliant 92 off 65 balls against Abu Dhabi U17", value: "92", date: "2026-02-08", state: "Dubai", league: "Emirates Youth" },
   { id: "pf14", playerId: "p16", playerName: "Ravi Kumar", type: "form-spike", title: "Chennai Express", description: "Left-arm quick Ravi Kumar took 4/12 in latest match, now with 16 wickets in last 5 games", value: "Steady", date: "2026-02-09", state: "Tamil Nadu", league: "TNCA U15" },

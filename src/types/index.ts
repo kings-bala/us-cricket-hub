@@ -200,7 +200,7 @@ export interface MatchPerformance {
   manOfMatch: boolean;
 }
 
-export interface ACPIScore {
+export interface CPIScore {
   overall: number;
   matchPerformance: number;
   athleticMetrics: number;

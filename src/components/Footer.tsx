@@ -28,7 +28,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm">AI Intelligence</h4>
             <div className="space-y-2">
-              <Link href="/rankings" className="block text-sm hover:text-white transition-colors">ACPI Rankings</Link>
+              <Link href="/rankings" className="block text-sm hover:text-white transition-colors">CPI Rankings</Link>
               <Link href="/form-meter" className="block text-sm hover:text-white transition-colors">AI Form Meter</Link>
               <Link href="/combine" className="block text-sm hover:text-white transition-colors">Combine Assessment</Link>
               <Link href="/performance-feed" className="block text-sm hover:text-white transition-colors">Performance Feed</Link>

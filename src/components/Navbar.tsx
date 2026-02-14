@@ -77,7 +77,7 @@ const discoverLinks = [
 ];
 
 const intelligenceLinks = [
-  { href: "/rankings", label: "ACPI Rankings", desc: "Performance index rankings" },
+  { href: "/rankings", label: "CPI Rankings", desc: "Cricket Performance Index" },
   { href: "/form-meter", label: "AI Form Meter", desc: "Rolling match form analysis" },
   { href: "/combine", label: "Combine Assessment", desc: "Athletic metrics & testing" },
   { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights & alerts" },

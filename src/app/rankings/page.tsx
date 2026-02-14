@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { generateACPIRankings, roleIcons, regionColors } from "@/data/mock";
+import { generateCPIRankings, roleIcons, regionColors } from "@/data/mock";
 import { AgeGroup, PlayerRole, Region } from "@/types";
 
 const formStatusColors: Record<string, string> = {
@@ -18,7 +18,7 @@ export default function RankingsPage() {
   const [region, setRegion] = useState<Region | "All">("All");
   const [search, setSearch] = useState("");
 
-  const allRanked = useMemo(() => generateACPIRankings(), []);
+  const allRanked = useMemo(() => generateCPIRankings(), []);
 
   const filtered = useMemo(() => {
     let result = [...allRanked];
@@ -41,8 +41,8 @@ export default function RankingsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-white">ACPI Rankings</h1>
-          <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">American Cricket Performance Index</span>
+                    <h1 className="text-3xl font-bold text-white">CPI Rankings</h1>
+                    <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">Cricket Performance Index</span>
         </div>
         <p className="text-slate-400">
           Proprietary ranking system: 40% Match Performance, 30% Athletic Metrics, 20% Form Index, 10% Consistency
@@ -137,10 +137,10 @@ export default function RankingsPage() {
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all group">
               <div className="flex items-center gap-4">
                 <div className="text-center w-12">
-                  <p className="text-2xl font-bold text-slate-500">#{player.acpiScore.nationalRank}</p>
-                  {player.acpiScore.rankChange !== 0 && (
-                    <p className={`text-xs font-medium ${player.acpiScore.rankChange > 0 ? "text-emerald-400" : "text-red-400"}`}>
-                      {player.acpiScore.rankChange > 0 ? "+" : ""}{player.acpiScore.rankChange}
+                  <p className="text-2xl font-bold text-slate-500">#{player.cpiScore.nationalRank}</p>
+                  {player.cpiScore.rankChange !== 0 && (
+                    <p className={`text-xs font-medium ${player.cpiScore.rankChange > 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {player.cpiScore.rankChange > 0 ? "+" : ""}{player.cpiScore.rankChange}
                     </p>
                   )}
                 </div>
@@ -175,37 +175,37 @@ export default function RankingsPage() {
                 <div className="hidden md:flex items-center gap-3">
                   <div className="text-center px-3">
                     <p className="text-xs text-slate-500">Match</p>
-                    <p className="text-sm font-bold text-emerald-400">{player.acpiScore.matchPerformance}</p>
+                    <p className="text-sm font-bold text-emerald-400">{player.cpiScore.matchPerformance}</p>
                   </div>
                   <div className="text-center px-3">
                     <p className="text-xs text-slate-500">Athletic</p>
-                    <p className="text-sm font-bold text-blue-400">{player.acpiScore.athleticMetrics}</p>
+                    <p className="text-sm font-bold text-blue-400">{player.cpiScore.athleticMetrics}</p>
                   </div>
                   <div className="text-center px-3">
                     <p className="text-xs text-slate-500">Form</p>
-                    <p className="text-sm font-bold text-purple-400">{player.acpiScore.formIndex}</p>
+                    <p className="text-sm font-bold text-purple-400">{player.cpiScore.formIndex}</p>
                   </div>
                   <div className="text-center px-3">
                     <p className="text-xs text-slate-500">Consist.</p>
-                    <p className="text-sm font-bold text-amber-400">{player.acpiScore.consistency}</p>
+                    <p className="text-sm font-bold text-amber-400">{player.cpiScore.consistency}</p>
                   </div>
                 </div>
 
                 <div className="text-center shrink-0">
                   <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 ${
-                    player.acpiScore.overall >= 75 ? "border-emerald-500 bg-emerald-500/10" :
-                    player.acpiScore.overall >= 55 ? "border-blue-500 bg-blue-500/10" :
-                    player.acpiScore.overall >= 35 ? "border-amber-500 bg-amber-500/10" :
+                                        player.cpiScore.overall >= 75 ? "border-emerald-500 bg-emerald-500/10" :
+                                        player.cpiScore.overall >= 55 ? "border-blue-500 bg-blue-500/10" :
+                                        player.cpiScore.overall >= 35 ? "border-amber-500 bg-amber-500/10" :
                     "border-slate-600 bg-slate-700/50"
                   }`}>
                     <p className={`text-lg font-bold ${
-                      player.acpiScore.overall >= 75 ? "text-emerald-400" :
-                      player.acpiScore.overall >= 55 ? "text-blue-400" :
-                      player.acpiScore.overall >= 35 ? "text-amber-400" :
+                                            player.cpiScore.overall >= 75 ? "text-emerald-400" :
+                                            player.cpiScore.overall >= 55 ? "text-blue-400" :
+                                            player.cpiScore.overall >= 35 ? "text-amber-400" :
                       "text-slate-400"
-                    }`}>{player.acpiScore.overall}</p>
+                    }`}>{player.cpiScore.overall}</p>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">ACPI</p>
+                  <p className="text-xs text-slate-500 mt-1">CPI</p>
                 </div>
               </div>
             </div>

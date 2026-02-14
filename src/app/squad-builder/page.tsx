@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { generateACPIRankings, roleIcons } from "@/data/mock";
+import { generateCPIRankings, roleIcons } from "@/data/mock";
 import { PlayerRole } from "@/types";
 
-type RankedPlayer = ReturnType<typeof generateACPIRankings>[number];
+type RankedPlayer = ReturnType<typeof generateCPIRankings>[number];
 
 interface SquadAnalysis {
   balanceScore: number;
@@ -36,7 +36,7 @@ function analyzeSquad(squad: RankedPlayer[]): SquadAnalysis {
   const battingStyles = new Set(squad.filter((p) => p.role === "Batsman" || p.role === "All-Rounder" || p.role === "Wicket-Keeper").map((p) => p.battingStyle));
   if (battingStyles.size === 1 && squad.length >= 5) weaknesses.push("All batsmen are " + [...battingStyles][0] + " - no variety");
 
-  const avgACPI = squad.length > 0 ? squad.reduce((s, p) => s + p.acpiScore.overall, 0) / squad.length : 0;
+  const avgCPI = squad.length > 0 ? squad.reduce((s, p) => s + p.cpiScore.overall, 0) / squad.length : 0;
   const battingDepth = Math.min(100, (roleCounts["Batsman"] + roleCounts["All-Rounder"] + roleCounts["Wicket-Keeper"]) / 7 * 100);
 
   const paceCount = squad.filter((p) => (p.role === "Bowler" || p.role === "All-Rounder") && (p.bowlingStyle.includes("Fast") || p.bowlingStyle.includes("Medium"))).length;
@@ -51,7 +51,7 @@ function analyzeSquad(squad: RankedPlayer[]): SquadAnalysis {
       balanceScore -= diff * 10;
     });
   }
-  balanceScore = Math.max(0, Math.min(100, balanceScore + (avgACPI > 60 ? 10 : 0)));
+  balanceScore = Math.max(0, Math.min(100, balanceScore + (avgCPI > 60 ? 10 : 0)));
 
   return { balanceScore: Math.round(balanceScore), battingDepth: Math.round(battingDepth), bowlingVariety: Math.round(bowlingVariety), alerts, weaknesses };
 }
@@ -61,7 +61,7 @@ export default function SquadBuilderPage() {
   const [roleFilter, setRoleFilter] = useState<PlayerRole | "All">("All");
   const [search, setSearch] = useState("");
 
-  const allPlayers = useMemo(() => generateACPIRankings(), []);
+  const allPlayers = useMemo(() => generateCPIRankings(), []);
 
   const availablePlayers = useMemo(() => {
     const squadIds = new Set(squad.map((p) => p.id));
@@ -132,7 +132,7 @@ export default function SquadBuilderPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-white truncate">{player.name}</p>
-                      <p className="text-xs text-slate-500">{roleIcons[player.role]} {player.role} &middot; ACPI {player.acpiScore.overall}</p>
+                      <p className="text-xs text-slate-500">{roleIcons[player.role]} {player.role} &middot; CPI {player.cpiScore.overall}</p>
                     </div>
                     <button
                       onClick={() => removeFromSquad(player.id)}
@@ -260,8 +260,8 @@ export default function SquadBuilderPage() {
                     </div>
                     <div className="hidden sm:flex items-center gap-4 text-xs">
                       <div className="text-center">
-                        <p className="text-slate-500">ACPI</p>
-                        <p className="font-bold text-white">{player.acpiScore.overall}</p>
+                                                <p className="text-slate-500">CPI</p>
+                                                <p className="font-bold text-white">{player.cpiScore.overall}</p>
                       </div>
                       <div className="text-center">
                         <p className="text-slate-500">Form</p>
@@ -273,7 +273,7 @@ export default function SquadBuilderPage() {
                       </div>
                       <div className="text-center">
                         <p className="text-slate-500">Rank</p>
-                        <p className="font-bold text-white">#{player.acpiScore.nationalRank}</p>
+                        <p className="font-bold text-white">#{player.cpiScore.nationalRank}</p>
                       </div>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/30 flex items-center justify-center text-orange-400 shrink-0">

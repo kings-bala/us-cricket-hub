@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { generateACPIRankings, playerMatchHistory, regionColors } from "@/data/mock";
+import { generateCPIRankings, playerMatchHistory, regionColors } from "@/data/mock";
 import { FormStatus, PlayerRole, Region } from "@/types";
 
 const formStatusConfig: Record<FormStatus, { color: string; bg: string; border: string; label: string }> = {
@@ -18,7 +18,7 @@ export default function FormMeterPage() {
   const [region, setRegion] = useState<Region | "All">("All");
   const [search, setSearch] = useState("");
 
-  const allRanked = useMemo(() => generateACPIRankings(), []);
+  const allRanked = useMemo(() => generateCPIRankings(), []);
 
   const filtered = useMemo(() => {
     let result = [...allRanked];
@@ -173,8 +173,8 @@ export default function FormMeterPage() {
                     {player.country}
                   </span>
                   <div className="flex items-center gap-2">
-                    <span className="text-slate-500">ACPI: <span className="text-white font-semibold">{player.acpiScore.overall}</span></span>
-                    <span className="text-slate-500">Rank: <span className="text-white font-semibold">#{player.acpiScore.nationalRank}</span></span>
+                    <span className="text-slate-500">CPI: <span className="text-white font-semibold">{player.cpiScore.overall}</span></span>
+                    <span className="text-slate-500">Rank: <span className="text-white font-semibold">#{player.cpiScore.nationalRank}</span></span>
                   </div>
                 </div>
               </div>
