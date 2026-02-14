@@ -1,0 +1,182 @@
+export type PlayerRole = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper";
+export type BowlingStyle = "Right-arm Fast" | "Right-arm Medium" | "Left-arm Fast" | "Left-arm Medium" | "Right-arm Off-spin" | "Left-arm Orthodox" | "Left-arm Chinaman" | "Right-arm Leg-spin";
+export type BattingStyle = "Right-hand Bat" | "Left-hand Bat";
+export type AgeGroup = "U15" | "U17" | "U19" | "U21" | "U23";
+export type ProfileTier = "Free" | "Premium" | "Elite";
+export type UserRole = "player" | "agent" | "owner" | "sponsor";
+export type Region = "South Asia" | "Oceania" | "Europe" | "Caribbean" | "Africa" | "Americas" | "Middle East" | "East Asia";
+export type T20LeagueId = "IPL" | "BBL" | "CPL" | "PSL" | "SA20" | "BPL" | "LPL" | "ILT20" | "MLC" | "THE100" | "SSA" | "GT20";
+
+export interface T20League {
+  id: T20LeagueId;
+  name: string;
+  country: string;
+  region: Region;
+  logo: string;
+  localQuota: number;
+  localFilled: number;
+  teams: number;
+  season: string;
+}
+
+export interface Player {
+  id: string;
+  name: string;
+  age: number;
+  ageGroup: AgeGroup;
+  country: string;
+  countryCode: string;
+  region: Region;
+  state: string;
+  city: string;
+  role: PlayerRole;
+  battingStyle: BattingStyle;
+  bowlingStyle: BowlingStyle;
+  profileTier: ProfileTier;
+  avatar: string;
+  agentId?: string;
+  verified: boolean;
+  stats: PlayerStats;
+  fitnessData: FitnessData;
+  highlights: VideoHighlight[];
+  achievements: string[];
+  showcaseEvents: string[];
+  targetLeagues: T20LeagueId[];
+  streetCricketer?: boolean;
+}
+
+export interface PlayerStats {
+  matches: number;
+  innings: number;
+  runs: number;
+  battingAverage: number;
+  strikeRate: number;
+  fifties: number;
+  hundreds: number;
+  wickets: number;
+  bowlingAverage: number;
+  economy: number;
+  bestBowling: string;
+  catches: number;
+  stumpings: number;
+}
+
+export interface FitnessData {
+  sprintSpeed: number;
+  yoYoTest: number;
+  bowlingSpeed?: number;
+  throwDistance: number;
+  beepTestLevel: number;
+}
+
+export interface VideoHighlight {
+  id: string;
+  title: string;
+  thumbnail: string;
+  duration: string;
+  event: string;
+  date: string;
+}
+
+export interface Agent {
+  id: string;
+  name: string;
+  agency: string;
+  avatar: string;
+  bio: string;
+  specialization: string;
+  playerIds: string[];
+  placements: number;
+  successRate: number;
+  rating: number;
+  contactEmail: string;
+  country: string;
+  region: Region;
+  verified: boolean;
+  leagueConnections: T20LeagueId[];
+}
+
+export interface T20Team {
+  id: string;
+  name: string;
+  city: string;
+  country: string;
+  league: T20LeagueId;
+  logo: string;
+  owner: string;
+  rosterSize: number;
+  localQuota: number;
+  localFilled: number;
+}
+
+export interface Sponsor {
+  id: string;
+  name: string;
+  logo: string;
+  tier: "Gold" | "Silver" | "Bronze";
+  country: string;
+  sponsoredAssets: SponsoredAsset[];
+}
+
+export interface SponsoredAsset {
+  id: string;
+  type: "leaderboard" | "tournament" | "player" | "showcase";
+  name: string;
+  description: string;
+  price: number;
+  available: boolean;
+}
+
+export interface Tournament {
+  id: string;
+  name: string;
+  ageGroup: AgeGroup;
+  country: string;
+  region: Region;
+  startDate: string;
+  endDate: string;
+  venue: string;
+  teams: number;
+  status: "upcoming" | "live" | "completed";
+  sponsorId?: string;
+}
+
+export interface Coach {
+  id: string;
+  name: string;
+  country: string;
+  region: Region;
+  specialization: string;
+  experience: number;
+  certifications: string[];
+  bio: string;
+  rating: number;
+  reviewCount: number;
+  hourlyRate: number;
+  currency: string;
+  availability: "available" | "limited" | "waitlist";
+  languages: string[];
+  remote: boolean;
+  inPerson: boolean;
+  playersDeveloped: number;
+  leagueExperience: T20LeagueId[];
+  verified: boolean;
+}
+
+export interface VideoAnalysis {
+  id: string;
+  playerId: string;
+  videoUrl: string;
+  uploadDate: string;
+  analysisType: "batting" | "bowling" | "fielding" | "general";
+  status: "pending" | "analyzing" | "completed";
+  aiScore: number;
+  feedback: AIFeedback[];
+}
+
+export interface AIFeedback {
+  category: string;
+  score: number;
+  comment: string;
+  suggestion: string;
+}
