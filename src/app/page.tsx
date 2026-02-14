@@ -194,7 +194,7 @@ export default function Home() {
                 <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
                 <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
                   {league.logo ? (
-                    <Image src={league.logo} alt={league.name} width={40} height={40} className="object-contain drop-shadow-lg mb-1" />
+                    <Image src={league.logo} alt={league.name} width={40} height={40} className="object-contain drop-shadow-lg mb-1" unoptimized />
                   ) : (
                     <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
                   )}
@@ -386,7 +386,7 @@ export default function Home() {
           {t20Teams.filter((t) => t.league === "IPL").map((team) => (
             <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-blue-500/50 transition-all group text-center">
               {team.logo ? (
-                <Image src={team.logo} alt={team.name} width={56} height={56} className="w-14 h-14 object-contain mx-auto mb-3" />
+                <Image src={team.logo} alt={team.name} width={56} height={56} className="w-14 h-14 object-contain mx-auto mb-3" unoptimized />
               ) : (
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-900 flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
                   {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
@@ -410,7 +410,7 @@ export default function Home() {
                 <div className="absolute inset-0 flex flex-col justify-end p-4">
                   <div className="flex items-center gap-2 mb-1">
                     {league.logo ? (
-                      <Image src={league.logo} alt={league.name} width={32} height={32} className="object-contain drop-shadow-lg" />
+                      <Image src={league.logo} alt={league.name} width={32} height={32} className="object-contain drop-shadow-lg" unoptimized />
                     ) : (
                       <span className="text-lg font-extrabold text-white drop-shadow-lg">{league.id}</span>
                     )}
