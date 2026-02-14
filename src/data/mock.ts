@@ -19,7 +19,7 @@ export const players: Player[] = [
   {
         id: "p1", name: "Arjun Patel", age: 17, ageGroup: "U17", country: "India", countryCode: "IN", region: "South Asia",
         state: "Gujarat", city: "Ahmedabad", role: "Batsman", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Off-spin",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=11", agentId: "a1", verified: true, streetCricketer: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081476744-95da9bc99008?w=200&h=200&fit=crop&crop=faces", agentId: "a1", verified: true, streetCricketer: true,
     targetLeagues: ["IPL", "BBL", "THE100"],
     stats: { matches: 45, innings: 42, runs: 1580, battingAverage: 42.7, strikeRate: 128.5, fifties: 12, hundreds: 3, wickets: 8, bowlingAverage: 34.2, economy: 7.1, bestBowling: "2/18", catches: 15, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.2, yoYoTest: 18.4, throwDistance: 62, beepTestLevel: 12.3 },
@@ -33,7 +33,7 @@ export const players: Player[] = [
   {
         id: "p2", name: "Jake Thompson", age: 19, ageGroup: "U19", country: "Australia", countryCode: "AU", region: "Oceania",
         state: "New South Wales", city: "Sydney", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Left-arm Fast",
-        profileTier: "Elite", avatar: "https://i.pravatar.cc/150?img=12", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1595210382051-4d2c31fcc2f4?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
     targetLeagues: ["BBL", "IPL", "SA20"],
     stats: { matches: 52, innings: 48, runs: 320, battingAverage: 12.3, strikeRate: 95.2, fifties: 1, hundreds: 0, wickets: 78, bowlingAverage: 18.6, economy: 5.4, bestBowling: "5/22", catches: 12, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.8, yoYoTest: 19.2, bowlingSpeed: 145, throwDistance: 70, beepTestLevel: 13.1 },
@@ -47,7 +47,7 @@ export const players: Player[] = [
   {
         id: "p3", name: "Rashid Mohammed", age: 16, ageGroup: "U17", country: "Pakistan", countryCode: "PK", region: "South Asia",
         state: "Punjab", city: "Lahore", role: "All-Rounder", battingStyle: "Left-hand Bat", bowlingStyle: "Left-arm Orthodox",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=13", agentId: "a3", verified: true, streetCricketer: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081437099-ea6cef0f6c84?w=200&h=200&fit=crop&crop=faces", agentId: "a3", verified: true, streetCricketer: true,
     targetLeagues: ["PSL", "IPL", "BPL"],
     stats: { matches: 38, innings: 36, runs: 1120, battingAverage: 35.0, strikeRate: 118.7, fifties: 8, hundreds: 1, wickets: 42, bowlingAverage: 22.4, economy: 5.8, bestBowling: "4/28", catches: 18, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.5, yoYoTest: 17.8, bowlingSpeed: 82, throwDistance: 58, beepTestLevel: 11.8 },
@@ -60,7 +60,7 @@ export const players: Player[] = [
   {
         id: "p4", name: "Kieron Baptiste", age: 18, ageGroup: "U19", country: "West Indies", countryCode: "WI", region: "Caribbean",
         state: "Trinidad", city: "Port of Spain", role: "Wicket-Keeper", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=14", agentId: "a4", verified: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1599982946086-eb42d9e14eb8?w=200&h=200&fit=crop&crop=faces", agentId: "a4", verified: true,
     targetLeagues: ["CPL", "IPL", "BBL"],
     stats: { matches: 55, innings: 50, runs: 1450, battingAverage: 36.25, strikeRate: 132.1, fifties: 10, hundreds: 2, wickets: 0, bowlingAverage: 0, economy: 0, bestBowling: "-", catches: 42, stumpings: 18 },
     fitnessData: { sprintSpeed: 8.0, yoYoTest: 18.8, throwDistance: 55, beepTestLevel: 12.6 },
@@ -74,7 +74,7 @@ export const players: Player[] = [
   {
         id: "p5", name: "Sipho Ndlovu", age: 20, ageGroup: "U21", country: "South Africa", countryCode: "ZA", region: "Africa",
         state: "Gauteng", city: "Johannesburg", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Fast",
-        profileTier: "Elite", avatar: "https://i.pravatar.cc/150?img=15", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1614683911823-609a503fc76e?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
     targetLeagues: ["SA20", "IPL", "BBL", "THE100"],
     stats: { matches: 62, innings: 58, runs: 280, battingAverage: 9.3, strikeRate: 88.6, fifties: 0, hundreds: 0, wickets: 95, bowlingAverage: 16.8, economy: 5.2, bestBowling: "6/31", catches: 8, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.5, yoYoTest: 20.1, bowlingSpeed: 148, throwDistance: 75, beepTestLevel: 13.8 },
@@ -88,7 +88,7 @@ export const players: Player[] = [
   {
         id: "p6", name: "Oliver Hughes", age: 15, ageGroup: "U15", country: "England", countryCode: "GB", region: "Europe",
         state: "Yorkshire", city: "Leeds", role: "Batsman", battingStyle: "Left-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Free", avatar: "https://i.pravatar.cc/150?img=33", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1579714219145-7c6b90201508?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
     targetLeagues: ["THE100", "IPL"],
     stats: { matches: 22, innings: 20, runs: 680, battingAverage: 38.8, strikeRate: 112.4, fifties: 5, hundreds: 1, wickets: 5, bowlingAverage: 28.0, economy: 6.5, bestBowling: "2/15", catches: 8, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.8, yoYoTest: 16.2, throwDistance: 48, beepTestLevel: 10.5 },
@@ -99,7 +99,7 @@ export const players: Player[] = [
   {
         id: "p7", name: "Sunil Perera", age: 17, ageGroup: "U17", country: "Sri Lanka", countryCode: "LK", region: "South Asia",
         state: "Western Province", city: "Colombo", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Leg-spin",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=17", agentId: "a3", verified: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081427664-be2a556ea019?w=200&h=200&fit=crop&crop=faces", agentId: "a3", verified: true,
     targetLeagues: ["LPL", "IPL", "BPL"],
     stats: { matches: 40, innings: 38, runs: 420, battingAverage: 14.0, strikeRate: 92.3, fifties: 1, hundreds: 0, wickets: 58, bowlingAverage: 20.1, economy: 5.9, bestBowling: "5/18", catches: 10, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.6, yoYoTest: 17.5, bowlingSpeed: 78, throwDistance: 52, beepTestLevel: 11.5 },
@@ -112,7 +112,7 @@ export const players: Player[] = [
   {
         id: "p8", name: "Rahul Desai", age: 19, ageGroup: "U19", country: "USA", countryCode: "US", region: "Americas",
         state: "Illinois", city: "Chicago", role: "Batsman", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Off-spin",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=18", agentId: "a1", verified: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1593766821405-f605e0f9535f?w=200&h=200&fit=crop&crop=faces", agentId: "a1", verified: true,
     targetLeagues: ["MLC", "GT20", "CPL"],
     stats: { matches: 48, innings: 46, runs: 1820, battingAverage: 45.5, strikeRate: 135.2, fifties: 14, hundreds: 4, wickets: 12, bowlingAverage: 30.5, economy: 6.8, bestBowling: "3/22", catches: 20, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.1, yoYoTest: 18.6, throwDistance: 60, beepTestLevel: 12.4 },
@@ -126,7 +126,7 @@ export const players: Player[] = [
   {
         id: "p9", name: "Priya Sharma", age: 16, ageGroup: "U17", country: "India", countryCode: "IN", region: "South Asia",
         state: "Maharashtra", city: "Mumbai", role: "All-Rounder", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Fast",
-        profileTier: "Free", avatar: "https://i.pravatar.cc/150?img=19", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1565787154274-c8d076ad34e7?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
     targetLeagues: ["IPL"],
     stats: { matches: 25, innings: 24, runs: 720, battingAverage: 32.7, strikeRate: 110.8, fifties: 5, hundreds: 0, wickets: 28, bowlingAverage: 24.3, economy: 6.2, bestBowling: "3/19", catches: 12, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.4, yoYoTest: 17.0, bowlingSpeed: 118, throwDistance: 56, beepTestLevel: 11.2 },
@@ -137,7 +137,7 @@ export const players: Player[] = [
   {
         id: "p10", name: "Ryan van der Berg", age: 20, ageGroup: "U21", country: "South Africa", countryCode: "ZA", region: "Africa",
         state: "Western Cape", city: "Cape Town", role: "All-Rounder", battingStyle: "Left-hand Bat", bowlingStyle: "Left-arm Medium",
-        profileTier: "Elite", avatar: "https://i.pravatar.cc/150?img=52", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1595210382266-2d0077c1f541?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
     targetLeagues: ["SA20", "IPL", "THE100", "BBL"],
     stats: { matches: 58, innings: 55, runs: 1650, battingAverage: 37.5, strikeRate: 125.0, fifties: 11, hundreds: 2, wickets: 52, bowlingAverage: 21.8, economy: 5.7, bestBowling: "4/25", catches: 22, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.9, yoYoTest: 19.0, bowlingSpeed: 125, throwDistance: 65, beepTestLevel: 12.8 },
@@ -151,7 +151,7 @@ export const players: Player[] = [
   {
         id: "p11", name: "Tamim Hossain", age: 18, ageGroup: "U19", country: "Bangladesh", countryCode: "BD", region: "South Asia",
         state: "Dhaka Division", city: "Dhaka", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Left-arm Chinaman",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=51", agentId: "a3", verified: true, streetCricketer: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1667839412541-f7cafaa94319?w=200&h=200&fit=crop&crop=faces", agentId: "a3", verified: true, streetCricketer: true,
     targetLeagues: ["BPL", "IPL", "CPL"],
     stats: { matches: 35, innings: 32, runs: 180, battingAverage: 8.6, strikeRate: 78.3, fifties: 0, hundreds: 0, wickets: 52, bowlingAverage: 19.8, economy: 5.6, bestBowling: "5/14", catches: 6, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.7, yoYoTest: 17.2, bowlingSpeed: 75, throwDistance: 50, beepTestLevel: 11.0 },
@@ -164,7 +164,7 @@ export const players: Player[] = [
   {
         id: "p12", name: "Aarav Gupta", age: 15, ageGroup: "U15", country: "India", countryCode: "IN", region: "South Asia",
         state: "Delhi", city: "New Delhi", role: "Batsman", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Free", avatar: "https://i.pravatar.cc/150?img=53", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1596807996038-612df413be5e?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
     targetLeagues: ["IPL"],
     stats: { matches: 18, innings: 17, runs: 590, battingAverage: 39.3, strikeRate: 105.4, fifties: 4, hundreds: 1, wickets: 3, bowlingAverage: 35.0, economy: 7.2, bestBowling: "1/12", catches: 6, stumpings: 0 },
     fitnessData: { sprintSpeed: 9.0, yoYoTest: 15.8, throwDistance: 45, beepTestLevel: 10.0 },
@@ -175,7 +175,7 @@ export const players: Player[] = [
   {
         id: "p13", name: "Navjot Gill", age: 19, ageGroup: "U19", country: "Canada", countryCode: "CA", region: "Americas",
         state: "Ontario", city: "Brampton", role: "All-Rounder", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=54", agentId: "a4", verified: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=200&h=200&fit=crop&crop=faces", agentId: "a4", verified: true,
     targetLeagues: ["GT20", "MLC", "CPL"],
     stats: { matches: 40, innings: 38, runs: 1200, battingAverage: 34.3, strikeRate: 121.5, fifties: 9, hundreds: 1, wickets: 35, bowlingAverage: 25.1, economy: 6.3, bestBowling: "3/21", catches: 16, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.3, yoYoTest: 18.0, bowlingSpeed: 128, throwDistance: 58, beepTestLevel: 12.0 },
@@ -188,7 +188,7 @@ export const players: Player[] = [
   {
         id: "p14", name: "Mohammed Al-Rashid", age: 17, ageGroup: "U17", country: "UAE", countryCode: "AE", region: "Middle East",
         state: "Dubai", city: "Dubai", role: "Batsman", battingStyle: "Left-hand Bat", bowlingStyle: "Right-arm Off-spin",
-        profileTier: "Premium", avatar: "https://i.pravatar.cc/150?img=55", verified: true,
+        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081431824-77f72421f32d?w=200&h=200&fit=crop&crop=faces", verified: true,
     targetLeagues: ["ILT20", "IPL", "PSL"],
     stats: { matches: 30, innings: 28, runs: 980, battingAverage: 38.0, strikeRate: 126.3, fifties: 7, hundreds: 1, wickets: 10, bowlingAverage: 28.5, economy: 6.8, bestBowling: "2/20", catches: 12, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.3, yoYoTest: 17.5, throwDistance: 55, beepTestLevel: 11.8 },
@@ -201,7 +201,7 @@ export const players: Player[] = [
   {
         id: "p15", name: "Tom Mitchell", age: 21, ageGroup: "U21", country: "New Zealand", countryCode: "NZ", region: "Oceania",
         state: "Auckland", city: "Auckland", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Fast",
-        profileTier: "Elite", avatar: "https://i.pravatar.cc/150?img=56", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1595207732481-22cccd3480fe?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
     targetLeagues: ["SSA", "BBL", "IPL", "THE100"],
     stats: { matches: 50, innings: 46, runs: 250, battingAverage: 10.0, strikeRate: 85.0, fifties: 0, hundreds: 0, wickets: 82, bowlingAverage: 17.5, economy: 5.3, bestBowling: "6/22", catches: 10, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.6, yoYoTest: 19.5, bowlingSpeed: 143, throwDistance: 72, beepTestLevel: 13.5 },
@@ -214,7 +214,7 @@ export const players: Player[] = [
   {
         id: "p16", name: "Ravi Kumar", age: 14, ageGroup: "U15", country: "India", countryCode: "IN", region: "South Asia",
         state: "Tamil Nadu", city: "Chennai", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Left-arm Fast",
-        profileTier: "Free", avatar: "https://i.pravatar.cc/150?img=57", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1593341646647-75b32930e4a1?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
     targetLeagues: ["IPL"],
     stats: { matches: 15, innings: 14, runs: 120, battingAverage: 10.0, strikeRate: 75.0, fifties: 0, hundreds: 0, wickets: 32, bowlingAverage: 15.5, economy: 4.8, bestBowling: "4/12", catches: 5, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.9, yoYoTest: 15.5, bowlingSpeed: 122, throwDistance: 48, beepTestLevel: 10.2 },
@@ -226,7 +226,7 @@ export const players: Player[] = [
 
 export const agents: Agent[] = [
   {
-    id: "a1", name: "Raj Malhotra", agency: "Global Cricket Pathway", avatar: "https://i.pravatar.cc/150?img=60",
+    id: "a1", name: "Raj Malhotra", agency: "Global Cricket Pathway", avatar: "https://images.unsplash.com/photo-1685541000562-a00dcf472343?w=200&h=200&fit=crop&crop=faces",
     bio: "Former first-class cricketer with 15+ years in player development. Connecting South Asian and American youth with T20 leagues worldwide.",
     specialization: "T20 League Placement & Contract Negotiation",
     playerIds: ["p1", "p8"], placements: 28, successRate: 85, rating: 4.8,
@@ -234,7 +234,7 @@ export const agents: Agent[] = [
     leagueConnections: ["IPL", "MLC", "BBL", "THE100"],
   },
   {
-    id: "a2", name: "Sarah Mitchell", agency: "NextGen Cricket International", avatar: "https://i.pravatar.cc/150?img=32",
+    id: "a2", name: "Sarah Mitchell", agency: "NextGen Cricket International", avatar: "https://images.unsplash.com/photo-1599982917650-21da4d09c437?w=200&h=200&fit=crop&crop=faces",
     bio: "Sports management professional with deep connections across multiple T20 ecosystems globally.",
     specialization: "Youth Development & Academy Placement",
     playerIds: ["p2", "p5", "p10", "p15"], placements: 22, successRate: 82, rating: 4.6,
@@ -242,7 +242,7 @@ export const agents: Agent[] = [
     leagueConnections: ["BBL", "SA20", "IPL", "SSA", "THE100"],
   },
   {
-    id: "a3", name: "Imran Siddiqui", agency: "Cricket Stars Management", avatar: "https://i.pravatar.cc/150?img=61",
+    id: "a3", name: "Imran Siddiqui", agency: "Cricket Stars Management", avatar: "https://images.unsplash.com/photo-1685541001104-91fe7ae1d8e1?w=200&h=200&fit=crop&crop=faces",
     bio: "Licensed sports agent with expertise in South Asian markets and emerging cricket nations.",
     specialization: "Sponsorship & Brand Deals",
     playerIds: ["p3", "p7", "p11"], placements: 35, successRate: 90, rating: 4.9,
@@ -250,7 +250,7 @@ export const agents: Agent[] = [
     leagueConnections: ["PSL", "IPL", "BPL", "LPL", "CPL"],
   },
   {
-    id: "a4", name: "Marcus Williams", agency: "Caribbean Cricket Connect", avatar: "https://i.pravatar.cc/150?img=68",
+    id: "a4", name: "Marcus Williams", agency: "Caribbean Cricket Connect", avatar: "https://images.unsplash.com/photo-1757396392470-ecb7959cf8bd?w=200&h=200&fit=crop&crop=faces",
     bio: "Former West Indies player turned agent. Connecting Caribbean and Americas talent with global T20 opportunities.",
     specialization: "Caribbean & Americas Talent Pipeline",
     playerIds: ["p4", "p13"], placements: 18, successRate: 80, rating: 4.5,
@@ -318,7 +318,7 @@ export const tournaments: Tournament[] = [
 
 export const coaches: Coach[] = [
   {
-    id: "c1", name: "Anil Kumble Academy", avatar: "https://i.pravatar.cc/150?img=3", country: "India", region: "South Asia",
+    id: "c1", name: "Anil Kumble Academy", avatar: "https://images.unsplash.com/photo-1659081476962-df97acad7f1a?w=200&h=200&fit=crop&crop=faces", country: "India", region: "South Asia",
     specialization: "Spin Bowling", experience: 25, certifications: ["BCCI Level 3", "ICC Level 4"],
     bio: "World-class spin coaching from the legendary Anil Kumble's academy. Developing young spinners for international and T20 league cricket.",
     rating: 4.9, reviewCount: 342, hourlyRate: 150, currency: "USD",
@@ -326,7 +326,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 85, leagueExperience: ["IPL", "BBL", "THE100"], verified: true,
   },
   {
-    id: "c2", name: "Brett Lee Cricket Academy", avatar: "https://i.pravatar.cc/150?img=7", country: "Australia", region: "Oceania",
+    id: "c2", name: "Brett Lee Cricket Academy", avatar: "https://images.unsplash.com/photo-1706102005258-aa606694526a?w=200&h=200&fit=crop&crop=faces", country: "Australia", region: "Oceania",
     specialization: "Fast Bowling", experience: 20, certifications: ["Cricket Australia Level 3", "ICC Level 4"],
     bio: "Fast bowling program led by former Australian pace legend. Focus on speed, technique, fitness, and injury prevention.",
     rating: 4.8, reviewCount: 256, hourlyRate: 200, currency: "USD",
@@ -334,7 +334,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 62, leagueExperience: ["BBL", "IPL", "SA20"], verified: true,
   },
   {
-    id: "c3", name: "Mahela Jayawardene", avatar: "https://i.pravatar.cc/150?img=8", country: "Sri Lanka", region: "South Asia",
+    id: "c3", name: "Mahela Jayawardene", avatar: "https://images.unsplash.com/photo-1685541000847-f764510e2175?w=200&h=200&fit=crop&crop=faces", country: "Sri Lanka", region: "South Asia",
     specialization: "Batting Technique", experience: 22, certifications: ["SLC Level 3", "ICC Level 4"],
     bio: "Learn batting from one of cricket's finest. T20 batting strategies, mental conditioning, and match awareness.",
     rating: 4.9, reviewCount: 198, hourlyRate: 175, currency: "USD",
@@ -342,7 +342,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: false, playersDeveloped: 48, leagueExperience: ["IPL", "LPL", "CPL", "BBL"], verified: true,
   },
   {
-    id: "c4", name: "Wasim Akram Foundation", avatar: "https://i.pravatar.cc/150?img=4", country: "Pakistan", region: "South Asia",
+    id: "c4", name: "Wasim Akram Foundation", avatar: "https://images.unsplash.com/photo-1743241160261-d19e6d3663ca?w=200&h=200&fit=crop&crop=faces", country: "Pakistan", region: "South Asia",
     specialization: "Pace & Swing Bowling", experience: 28, certifications: ["PCB Level 3", "ICC Level 4"],
     bio: "The Sultan of Swing's coaching academy. Discovering raw pace talent from streets and gullies.",
     rating: 4.9, reviewCount: 412, hourlyRate: 120, currency: "USD",
@@ -350,7 +350,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 110, leagueExperience: ["PSL", "IPL", "ILT20"], verified: true,
   },
   {
-    id: "c5", name: "AB de Villiers Performance Lab", avatar: "https://i.pravatar.cc/150?img=5", country: "South Africa", region: "Africa",
+    id: "c5", name: "AB de Villiers Performance Lab", avatar: "https://images.unsplash.com/photo-1769442872238-e1912656f940?w=200&h=200&fit=crop&crop=faces", country: "South Africa", region: "Africa",
     specialization: "360-degree Batting & Fitness", experience: 15, certifications: ["CSA Level 3", "ICC Level 3"],
     bio: "Innovative batting coaching combining 360-degree stroke play with advanced fitness.",
     rating: 4.8, reviewCount: 185, hourlyRate: 180, currency: "USD",
@@ -358,7 +358,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 35, leagueExperience: ["SA20", "IPL", "BBL", "PSL"], verified: true,
   },
   {
-    id: "c6", name: "Mike Hesson Cricket Intelligence", avatar: "https://i.pravatar.cc/150?img=6", country: "New Zealand", region: "Oceania",
+    id: "c6", name: "Mike Hesson Cricket Intelligence", avatar: "https://images.unsplash.com/photo-1624897174291-1bd715e371d5?w=200&h=200&fit=crop&crop=faces", country: "New Zealand", region: "Oceania",
     specialization: "Cricket Strategy & Analytics", experience: 18, certifications: ["NZC Level 3", "ICC Level 3"],
     bio: "Strategic cricket coaching combining modern analytics with traditional skills.",
     rating: 4.7, reviewCount: 128, hourlyRate: 140, currency: "USD",
@@ -366,7 +366,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: false, playersDeveloped: 42, leagueExperience: ["SSA", "IPL", "BBL"], verified: true,
   },
   {
-    id: "c7", name: "Brian Lara Batting Academy", avatar: "https://i.pravatar.cc/150?img=9", country: "West Indies", region: "Caribbean",
+    id: "c7", name: "Brian Lara Batting Academy", avatar: "https://images.unsplash.com/photo-1689176796800-ab67fbf93329?w=200&h=200&fit=crop&crop=faces", country: "West Indies", region: "Caribbean",
     specialization: "Caribbean Flair Batting", experience: 20, certifications: ["CWI Level 3", "ICC Level 4"],
     bio: "Channel the spirit of Caribbean cricket. Developing fearless batsmen with flair, power, and creativity.",
     rating: 4.9, reviewCount: 290, hourlyRate: 160, currency: "USD",
@@ -374,7 +374,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 72, leagueExperience: ["CPL", "IPL", "BBL", "THE100"], verified: true,
   },
   {
-    id: "c8", name: "Kumar Sangakkara MasterClass", avatar: "https://i.pravatar.cc/150?img=10", country: "Sri Lanka", region: "South Asia",
+    id: "c8", name: "Kumar Sangakkara MasterClass", avatar: "https://images.unsplash.com/photo-1652513842544-ca66b676757a?w=200&h=200&fit=crop&crop=faces", country: "Sri Lanka", region: "South Asia",
     specialization: "Wicket-Keeping & Leadership", experience: 18, certifications: ["SLC Level 3", "ICC Level 3"],
     bio: "World-class wicket-keeping and batting instruction with leadership development.",
     rating: 4.8, reviewCount: 165, hourlyRate: 170, currency: "USD",
