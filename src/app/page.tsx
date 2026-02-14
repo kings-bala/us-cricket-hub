@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { players, agents, milcTeams, tournaments } from "@/data/mock";
+import { players, tournaments, t20Leagues, coaches } from "@/data/mock";
 
 export default function Home() {
   const topPlayers = [...players].sort((a, b) => b.stats.runs - a.stats.runs).slice(0, 4);
@@ -13,17 +13,17 @@ export default function Home() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-sm text-emerald-400">Building the Missing Pathway in US Cricket</span>
+              <span className="text-sm text-emerald-400">Discover Cricket Talent Worldwide</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              From Youth Cricket to{" "}
+              From Street Cricket to{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                Minor League
+                Global T20 Leagues
               </span>
             </h1>
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              The digital scouting and management hub connecting U15-U21 talent with MiLC franchises,
-              professional agents, and sponsors. Don&apos;t let talent fall off the cliff.
+              The global talent discovery platform connecting youth cricketers from every country with
+              IPL, BBL, CPL, PSL, SA20, The Hundred, and more. Upload videos, get AI analysis, connect with coaches.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -46,10 +46,10 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Registered Players", value: `${players.length}+` },
-            { label: "Verified Agents", value: agents.length },
-            { label: "MiLC Teams", value: milcTeams.length },
-            { label: "Upcoming Events", value: upcomingTournaments.length },
+            { label: "Global Players", value: `${players.length}+` },
+            { label: "T20 Leagues", value: t20Leagues.length },
+            { label: "World-Class Coaches", value: coaches.length },
+            { label: "Countries", value: "12+" },
           ].map((stat) => (
             <div key={stat.label} className="bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-xl p-4 text-center">
               <p className="text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
@@ -61,13 +61,15 @@ export default function Home() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <h2 className="text-2xl font-bold text-white mb-2">How It Works</h2>
-        <p className="text-slate-400 mb-8">Four pillars connecting the US cricket ecosystem</p>
-        <div className="grid md:grid-cols-4 gap-6">
+        <p className="text-slate-400 mb-8">Six pillars connecting the global cricket ecosystem</p>
+        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">
           {[
-            { title: "Players", desc: "Create verified profiles with stats, video highlights, and fitness data. Stay on the radar from U15 to U21.", icon: "🏏", href: "/players" },
-            { title: "Agents", desc: "Manage talent stables with data-backed proof of player value. Earn commissions through successful placements.", icon: "🤝", href: "/agents" },
-            { title: "MiLC Owners", desc: "Search draft-ready local talent with advanced filters. Reduce scouting costs and build homegrown rosters.", icon: "🏟️", href: "/scouting" },
-            { title: "Sponsors", desc: "Fund tournaments, sponsor leaderboards, and back Rising Stars. Targeted marketing to cricket fans.", icon: "💰", href: "/sponsors" },
+            { title: "Players", desc: "Upload your profile from any country. Street cricketers to academy stars.", icon: "🏏", href: "/players" },
+            { title: "AI Analysis", desc: "Upload videos and get AI-powered technique feedback on batting, bowling, and fielding.", icon: "🤖", href: "/analyze" },
+            { title: "Coaches", desc: "Connect with world-class coaches. Learn from legends like Kumble, Brett Lee, and Lara.", icon: "🎓", href: "/coaches" },
+            { title: "Agents", desc: "Get discovered by international agents with connections to T20 leagues worldwide.", icon: "🤝", href: "/agents" },
+            { title: "T20 Owners", desc: "Scout global talent for IPL, BBL, PSL, CPL, SA20, and more T20 leagues.", icon: "🏟️", href: "/scouting" },
+            { title: "Sponsors", desc: "Back rising stars and tournaments across 8 regions worldwide.", icon: "💰", href: "/sponsors" },
           ].map((pillar) => (
             <Link key={pillar.title} href={pillar.href}>
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-emerald-500/50 transition-all duration-200 h-full group">
@@ -100,7 +102,7 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="font-semibold text-white text-sm group-hover:text-emerald-400 transition-colors">{player.name}</p>
-                      <p className="text-xs text-slate-400">{player.ageGroup} &middot; {player.zone}</p>
+                      <p className="text-xs text-slate-400">{player.ageGroup} &middot; {player.country}</p>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2 text-center">
@@ -125,8 +127,8 @@ export default function Home() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-2xl font-bold text-white mb-2">Upcoming Showcases</h2>
-        <p className="text-slate-400 mb-8">Regional camps and tournaments for the 16-21 age bracket</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Upcoming Global Showcases</h2>
+        <p className="text-slate-400 mb-8">International camps and tournaments across all regions</p>
         <div className="grid md:grid-cols-3 gap-4">
           {upcomingTournaments.map((t) => (
             <div key={t.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
@@ -145,11 +147,24 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <h2 className="text-2xl font-bold text-white mb-6">T20 Leagues Worldwide</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {t20Leagues.map((league) => (
+            <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:border-emerald-500/50 transition-all">
+              <p className="text-sm font-bold text-white">{league.id}</p>
+              <p className="text-xs text-slate-400 mt-1">{league.country}</p>
+              <p className="text-xs text-emerald-400 mt-1">{league.teams} teams</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="bg-gradient-to-r from-emerald-900/50 to-blue-900/50 border-y border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Bridge the Gap?</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Ready to Go Global?</h2>
           <p className="text-slate-300 mb-8 max-w-xl mx-auto">
-            Whether you&apos;re a player, agent, franchise owner, or sponsor, join the platform that&apos;s building the future of American cricket.
+            Whether you&apos;re a street cricketer in Mumbai, a coach in Sydney, or a T20 franchise owner&mdash;join the platform connecting cricket talent worldwide.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">

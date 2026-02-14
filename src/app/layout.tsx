@@ -4,8 +4,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "CricketHub USA - US Cricket Development Platform",
-  description: "Bridging the developmental gap in US cricket. Connecting youth talent (U15-U21) with MiLC franchises, agents, and sponsors.",
+  title: "CricketHub Global - International Cricket Talent Discovery Platform",
+  description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
 };
 
 export default function RootLayout({

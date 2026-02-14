@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { players, agents, zoneColors, roleIcons } from "@/data/mock";
+import { players, agents, regionColors, roleIcons, t20Leagues } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 
 interface PageProps {
@@ -40,12 +40,15 @@ export default async function PlayerProfilePage({ params }: PageProps) {
                   </svg>
                 )}
               </div>
-              <p className="text-slate-400 text-sm">{player.city}, {player.state}</p>
+              <p className="text-slate-400 text-sm">{player.city}, {player.country}</p>
+              {player.streetCricketer && (
+                <span className="inline-block mt-1 text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full">Street Cricketer</span>
+              )}
               <div className="flex flex-wrap gap-2 justify-center mt-3">
                 <span className="text-xs bg-slate-700/50 px-2 py-1 rounded-full text-slate-300">
                   {roleIcons[player.role]} {player.role}
                 </span>
-                <span className={`text-xs px-2 py-1 rounded-full ${zoneColors[player.zone]}`}>{player.zone} Zone</span>
+                <span className={`text-xs px-2 py-1 rounded-full ${regionColors[player.region] || "bg-slate-700/50 text-slate-300"}`}>{player.region}</span>
                 <span className="text-xs bg-slate-700/50 px-2 py-1 rounded-full text-slate-300">{player.ageGroup} &middot; Age {player.age}</span>
               </div>
               <div className="mt-3">
@@ -59,11 +62,29 @@ export default async function PlayerProfilePage({ params }: PageProps) {
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
             <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Player Info</h3>
             <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-slate-400">Country</span><span className="text-white">{player.country}</span></div>
+              <div className="flex justify-between"><span className="text-slate-400">Region</span><span className="text-white">{player.region}</span></div>
               <div className="flex justify-between"><span className="text-slate-400">Batting</span><span className="text-white">{player.battingStyle}</span></div>
               <div className="flex justify-between"><span className="text-slate-400">Bowling</span><span className="text-white">{player.bowlingStyle}</span></div>
               <div className="flex justify-between"><span className="text-slate-400">Matches</span><span className="text-white">{player.stats.matches}</span></div>
             </div>
           </div>
+
+          {player.targetLeagues && player.targetLeagues.length > 0 && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+              <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Target Leagues</h3>
+              <div className="flex flex-wrap gap-2">
+                {player.targetLeagues.map((leagueId) => {
+                  const league = t20Leagues.find((l) => l.id === leagueId);
+                  return (
+                    <span key={leagueId} className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">
+                      {league ? league.name : leagueId}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {agent && (
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">

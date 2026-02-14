@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { players, milcTeams, zoneColors, roleIcons } from "@/data/mock";
-import { AgeGroup, Zone, PlayerRole, BowlingStyle } from "@/types";
+import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
+import { AgeGroup, Region, PlayerRole, BowlingStyle } from "@/types";
 
 export default function ScoutingPage() {
-  const [zone, setZone] = useState<Zone | "All">("All");
+  const [region, setRegion] = useState<Region | "All">("All");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [bowlingStyle, setBowlingStyle] = useState<BowlingStyle | "All">("All");
@@ -19,7 +19,7 @@ export default function ScoutingPage() {
   const filtered = useMemo(() => {
     let result = players.filter((p) => p.verified);
 
-    if (zone !== "All") result = result.filter((p) => p.zone === zone);
+    if (region !== "All") result = result.filter((p) => p.region === region);
     if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
     if (role !== "All") result = result.filter((p) => p.role === role);
     if (bowlingStyle !== "All") result = result.filter((p) => p.bowlingStyle === bowlingStyle);
@@ -30,7 +30,7 @@ export default function ScoutingPage() {
     if (draftReady) result = result.filter((p) => p.ageGroup === "U19" || p.ageGroup === "U21");
 
     return result;
-  }, [zone, ageGroup, role, bowlingStyle, maxEconomy, minRuns, minWickets, minBowlingSpeed, draftReady]);
+  }, [region, ageGroup, role, bowlingStyle, maxEconomy, minRuns, minWickets, minBowlingSpeed, draftReady]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -38,14 +38,14 @@ export default function ScoutingPage() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-white">Pro Scouting Dashboard</h1>
-            <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30">MiLC Owners</span>
+            <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30">T20 Owners</span>
           </div>
-          <p className="text-slate-400">Advanced talent search for MiLC franchise scouting</p>
+          <p className="text-slate-400">Advanced global talent search for T20 franchise scouting</p>
         </div>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-4 mb-6">
-        {milcTeams.slice(0, 4).map((team) => (
+        {t20Teams.slice(0, 4).map((team) => (
           <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
@@ -53,19 +53,19 @@ export default function ScoutingPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold text-white">{team.name}</p>
-                <p className="text-xs text-slate-400">{team.city}</p>
+                <p className="text-xs text-slate-400">{team.city} &middot; {team.league}</p>
               </div>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Homegrown Quota</span>
-              <span className={`font-semibold ${team.homegrownFilled >= team.homegrownQuota ? "text-emerald-400" : "text-amber-400"}`}>
-                {team.homegrownFilled}/{team.homegrownQuota}
+              <span className="text-slate-400">Local Quota</span>
+              <span className={`font-semibold ${team.localFilled >= team.localQuota ? "text-emerald-400" : "text-amber-400"}`}>
+                {team.localFilled}/{team.localQuota}
               </span>
             </div>
             <div className="w-full bg-slate-700 rounded-full h-1.5 mt-1">
               <div
-                className={`h-1.5 rounded-full ${team.homegrownFilled >= team.homegrownQuota ? "bg-emerald-500" : "bg-amber-500"}`}
-                style={{ width: `${(team.homegrownFilled / team.homegrownQuota) * 100}%` }}
+                className={`h-1.5 rounded-full ${team.localFilled >= team.localQuota ? "bg-emerald-500" : "bg-amber-500"}`}
+                style={{ width: `${(team.localFilled / team.localQuota) * 100}%` }}
               />
             </div>
           </div>
@@ -76,14 +76,16 @@ export default function ScoutingPage() {
         <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Advanced Filters</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Zone</label>
-            <select value={zone} onChange={(e) => setZone(e.target.value as Zone | "All")} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
-              <option value="All">All Zones</option>
-              <option value="Atlantic">Atlantic</option>
-              <option value="Pacific">Pacific</option>
-              <option value="Central">Central</option>
-              <option value="Southern">Southern</option>
-              <option value="Mountain">Mountain</option>
+            <label className="text-xs text-slate-400 block mb-1">Region</label>
+            <select value={region} onChange={(e) => setRegion(e.target.value as Region | "All")} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="All">All Regions</option>
+              <option value="South Asia">South Asia</option>
+              <option value="Oceania">Oceania</option>
+              <option value="Europe">Europe</option>
+              <option value="Caribbean">Caribbean</option>
+              <option value="Africa">Africa</option>
+              <option value="Americas">Americas</option>
+              <option value="Middle East">Middle East</option>
             </select>
           </div>
           <div>
@@ -145,7 +147,7 @@ export default function ScoutingPage() {
         </div>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-sm text-slate-500">{filtered.length} players match your criteria</span>
-          <button onClick={() => { setZone("All"); setAgeGroup("All"); setRole("All"); setBowlingStyle("All"); setMaxEconomy(10); setMinRuns(0); setMinWickets(0); setMinBowlingSpeed(0); setDraftReady(false); }} className="text-xs text-emerald-400 hover:text-emerald-300">
+          <button onClick={() => { setRegion("All"); setAgeGroup("All"); setRole("All"); setBowlingStyle("All"); setMaxEconomy(10); setMinRuns(0); setMinWickets(0); setMinBowlingSpeed(0); setDraftReady(false); }} className="text-xs text-emerald-400 hover:text-emerald-300">
             Reset Filters
           </button>
         </div>
@@ -159,7 +161,7 @@ export default function ScoutingPage() {
                 <th className="text-left px-4 py-3 text-xs text-slate-400 font-medium uppercase">#</th>
                 <th className="text-left px-4 py-3 text-xs text-slate-400 font-medium uppercase">Player</th>
                 <th className="text-left px-4 py-3 text-xs text-slate-400 font-medium uppercase">Role</th>
-                <th className="text-left px-4 py-3 text-xs text-slate-400 font-medium uppercase">Zone</th>
+                <th className="text-left px-4 py-3 text-xs text-slate-400 font-medium uppercase">Country</th>
                 <th className="text-left px-4 py-3 text-xs text-slate-400 font-medium uppercase">Age</th>
                 <th className="text-right px-4 py-3 text-xs text-slate-400 font-medium uppercase">Mat</th>
                 <th className="text-right px-4 py-3 text-xs text-slate-400 font-medium uppercase">Runs</th>
@@ -182,12 +184,12 @@ export default function ScoutingPage() {
                       </div>
                       <div>
                         <p className="font-medium text-white">{p.name}</p>
-                        <p className="text-xs text-slate-500">{p.city}, {p.state}</p>
+                        <p className="text-xs text-slate-500">{p.city}, {p.country}</p>
                       </div>
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-slate-300">{roleIcons[p.role]} {p.role}</td>
-                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full ${zoneColors[p.zone]}`}>{p.zone}</span></td>
+                  <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full ${regionColors[p.region] || "bg-slate-700/50 text-slate-300"}`}>{p.country}</span></td>
                   <td className="px-4 py-3 text-slate-300">{p.ageGroup}</td>
                   <td className="px-4 py-3 text-right text-slate-300">{p.stats.matches}</td>
                   <td className="px-4 py-3 text-right text-white font-medium">{p.stats.runs}</td>

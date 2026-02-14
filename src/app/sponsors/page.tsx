@@ -25,19 +25,19 @@ export default function SponsorsPage() {
           <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-full border border-amber-500/30">For Brands</span>
         </div>
         <p className="text-slate-400">
-          Invest in the future of American cricket. Sponsor tournaments, leaderboards, and rising stars.
+          Invest in the future of global cricket. Sponsor tournaments, leaderboards, and rising stars worldwide.
         </p>
       </div>
 
       <div className="bg-gradient-to-r from-amber-900/30 to-emerald-900/30 border border-amber-500/20 rounded-xl p-6 mb-8">
         <div className="grid md:grid-cols-3 gap-6">
           <div className="text-center">
-            <p className="text-3xl font-bold text-white">$2.5B+</p>
-            <p className="text-sm text-slate-400 mt-1">US Cricket Market Value by 2028</p>
+            <p className="text-3xl font-bold text-white">$30B+</p>
+            <p className="text-sm text-slate-400 mt-1">Global T20 Cricket Market</p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-bold text-white">5M+</p>
-            <p className="text-sm text-slate-400 mt-1">Cricket Fans in the US</p>
+            <p className="text-3xl font-bold text-white">2.5B+</p>
+            <p className="text-sm text-slate-400 mt-1">Cricket Fans Worldwide</p>
           </div>
           <div className="text-center">
             <p className="text-3xl font-bold text-white">18-34</p>
@@ -48,7 +48,7 @@ export default function SponsorsPage() {
 
       <div className="mb-12">
         <h2 className="text-2xl font-bold text-white mb-2">Current Sponsors</h2>
-        <p className="text-slate-400 mb-6">Brands already investing in youth cricket development</p>
+        <p className="text-slate-400 mb-6">Brands investing in global cricket talent development</p>
         <div className="grid md:grid-cols-3 gap-4">
           {sponsors.map((sponsor) => (
             <div key={sponsor.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
@@ -76,7 +76,7 @@ export default function SponsorsPage() {
 
       <div className="mb-12">
         <h2 className="text-2xl font-bold text-white mb-2">Available Sponsorship Opportunities</h2>
-        <p className="text-slate-400 mb-6">Claim your digital real estate in the US cricket ecosystem</p>
+        <p className="text-slate-400 mb-6">Claim your digital real estate in the global cricket ecosystem</p>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {availableSponsorships.map((asset) => (
             <div key={asset.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-amber-500/50 transition-all group">

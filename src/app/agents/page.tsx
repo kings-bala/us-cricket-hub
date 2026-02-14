@@ -7,7 +7,7 @@ export default function AgentsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Agent Marketplace</h1>
         <p className="text-slate-400">
-          Verified representation agents connecting youth talent with MiLC opportunities
+          Verified representation agents connecting talent with T20 leagues worldwide
         </p>
       </div>
 
@@ -19,7 +19,7 @@ export default function AgentsPage() {
               <span className="text-emerald-400 font-bold">1</span>
             </div>
             <p className="text-sm text-slate-300 font-medium">Players Get Discovered</p>
-            <p className="text-xs text-slate-500 mt-1">Agents browse verified profiles and claim promising talent</p>
+            <p className="text-xs text-slate-500 mt-1">Agents browse verified profiles from across the globe</p>
           </div>
           <div className="text-center">
             <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center mx-auto mb-2">
@@ -33,7 +33,7 @@ export default function AgentsPage() {
               <span className="text-purple-400 font-bold">3</span>
             </div>
             <p className="text-sm text-slate-300 font-medium">Platform Commission</p>
-            <p className="text-xs text-slate-500 mt-1">Platform fee on successful MiLC contracts and sponsorships</p>
+            <p className="text-xs text-slate-500 mt-1">Platform fee on successful T20 contracts and sponsorships</p>
           </div>
         </div>
       </div>
@@ -65,9 +65,13 @@ export default function AgentsPage() {
 
                 <p className="text-xs text-slate-400 mb-4 line-clamp-2">{agent.bio}</p>
 
-                <div className="bg-slate-900/50 rounded-lg p-3 mb-4">
+                <div className="bg-slate-900/50 rounded-lg p-3 mb-2">
                   <p className="text-xs text-slate-500 mb-1">Specialization</p>
                   <p className="text-sm text-emerald-400">{agent.specialization}</p>
+                </div>
+                <div className="bg-slate-900/50 rounded-lg p-3 mb-4">
+                  <p className="text-xs text-slate-500 mb-1">Based in</p>
+                  <p className="text-sm text-white">{agent.country} &middot; {agent.region}</p>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 text-center mb-4">

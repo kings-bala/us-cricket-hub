@@ -3,12 +3,13 @@
 import { useState, useMemo } from "react";
 import PlayerCard from "@/components/PlayerCard";
 import { players } from "@/data/mock";
-import { AgeGroup, Zone, PlayerRole } from "@/types";
+import { AgeGroup, Region, PlayerRole } from "@/types";
 
 export default function PlayersPage() {
   const [search, setSearch] = useState("");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
-  const [zone, setZone] = useState<Zone | "All">("All");
+  const [region, setRegion] = useState<Region | "All">("All");
+  const [streetOnly, setStreetOnly] = useState(false);
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [sortBy, setSortBy] = useState<"runs" | "wickets" | "average" | "name">("runs");
   const [verifiedOnly, setVerifiedOnly] = useState(false);
@@ -22,13 +23,15 @@ export default function PlayersPage() {
         (p) =>
           p.name.toLowerCase().includes(q) ||
           p.city.toLowerCase().includes(q) ||
+          p.country.toLowerCase().includes(q) ||
           p.state.toLowerCase().includes(q)
       );
     }
     if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
-    if (zone !== "All") result = result.filter((p) => p.zone === zone);
+    if (region !== "All") result = result.filter((p) => p.region === region);
     if (role !== "All") result = result.filter((p) => p.role === role);
     if (verifiedOnly) result = result.filter((p) => p.verified);
+    if (streetOnly) result = result.filter((p) => p.streetCricketer);
 
     switch (sortBy) {
       case "runs":
@@ -46,14 +49,14 @@ export default function PlayersPage() {
     }
 
     return result;
-  }, [search, ageGroup, zone, role, sortBy, verifiedOnly]);
+  }, [search, ageGroup, region, role, sortBy, verifiedOnly, streetOnly]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Player Registry</h1>
         <p className="text-slate-400">
-          Browse {players.length} registered youth cricket players across the US
+          Browse {players.length} registered youth cricket players from around the world
         </p>
       </div>
 
@@ -62,7 +65,7 @@ export default function PlayersPage() {
           <div className="md:col-span-2">
             <input
               type="text"
-              placeholder="Search by name, city, state..."
+              placeholder="Search by name, city, country..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
@@ -80,16 +83,18 @@ export default function PlayersPage() {
             <option value="U21">U21</option>
           </select>
           <select
-            value={zone}
-            onChange={(e) => setZone(e.target.value as Zone | "All")}
+            value={region}
+            onChange={(e) => setRegion(e.target.value as Region | "All")}
             className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
           >
-            <option value="All">All Zones</option>
-            <option value="Atlantic">Atlantic</option>
-            <option value="Pacific">Pacific</option>
-            <option value="Central">Central</option>
-            <option value="Southern">Southern</option>
-            <option value="Mountain">Mountain</option>
+            <option value="All">All Regions</option>
+            <option value="South Asia">South Asia</option>
+            <option value="Oceania">Oceania</option>
+            <option value="Europe">Europe</option>
+            <option value="Caribbean">Caribbean</option>
+            <option value="Africa">Africa</option>
+            <option value="Americas">Americas</option>
+            <option value="Middle East">Middle East</option>
           </select>
           <select
             value={role}
@@ -123,6 +128,15 @@ export default function PlayersPage() {
             />
             Verified profiles only
           </label>
+          <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={streetOnly}
+              onChange={(e) => setStreetOnly(e.target.checked)}
+              className="rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500"
+            />
+            Street cricketers only
+          </label>
           <span className="text-sm text-slate-500">
             Showing {filtered.length} of {players.length} players
           </span>
@@ -142,7 +156,8 @@ export default function PlayersPage() {
             onClick={() => {
               setSearch("");
               setAgeGroup("All");
-              setZone("All");
+              setRegion("All");
+              setStreetOnly(false);
               setRole("All");
               setVerifiedOnly(false);
             }}

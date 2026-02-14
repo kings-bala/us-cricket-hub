@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { agents, players, zoneColors } from "@/data/mock";
+import { agents, players, regionColors } from "@/data/mock";
 import PlayerCard from "@/components/PlayerCard";
 import StatCard from "@/components/StatCard";
 
@@ -44,7 +44,7 @@ export default async function AgentProfilePage({ params }: PageProps) {
                 )}
               </div>
               <p className="text-slate-400 text-sm">{agent.agency}</p>
-              <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${zoneColors[agent.zone]}`}>{agent.zone} Zone</span>
+              <span className={`inline-block mt-2 text-xs px-2 py-1 rounded-full ${regionColors[agent.region] || "bg-slate-700/50 text-slate-300"}`}>{agent.country} &middot; {agent.region}</span>
             </div>
           </div>
 

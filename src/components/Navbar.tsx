@@ -7,7 +7,7 @@ import { UserRole } from "@/types";
 const roleLabels: Record<UserRole, string> = {
   player: "Player",
   agent: "Agent",
-  owner: "MiLC Owner",
+  owner: "T20 Owner",
   sponsor: "Sponsor",
 };
 
@@ -30,7 +30,7 @@ export default function Navbar() {
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
               CH
             </div>
-            <span className="font-bold text-lg hidden sm:block">CricketHub USA</span>
+            <span className="font-bold text-lg hidden sm:block">CricketHub Global</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
@@ -45,6 +45,12 @@ export default function Navbar() {
             </Link>
             <Link href="/sponsors" className="text-sm text-slate-300 hover:text-white transition-colors">
               Sponsors
+            </Link>
+            <Link href="/analyze" className="text-sm text-slate-300 hover:text-white transition-colors">
+              AI Analysis
+            </Link>
+            <Link href="/coaches" className="text-sm text-slate-300 hover:text-white transition-colors">
+              Coaches
             </Link>
             <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
               Dashboard
@@ -96,6 +102,8 @@ export default function Navbar() {
               { href: "/agents", label: "Agents" },
               { href: "/scouting", label: "Pro Scouting" },
               { href: "/sponsors", label: "Sponsors" },
+              { href: "/analyze", label: "AI Analysis" },
+              { href: "/coaches", label: "Coaches" },
               { href: "/dashboard", label: "Dashboard" },
             ].map((link) => (
               <Link

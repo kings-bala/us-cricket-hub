@@ -11,7 +11,7 @@ export default function AuthPage() {
   const roles: { value: UserRole; label: string; desc: string; icon: string }[] = [
     { value: "player", label: "Player", desc: "Create your profile and get discovered", icon: "🏏" },
     { value: "agent", label: "Agent", desc: "Manage talent and negotiate placements", icon: "🤝" },
-    { value: "owner", label: "MiLC Owner", desc: "Scout and recruit homegrown talent", icon: "🏟️" },
+    { value: "owner", label: "T20 Owner", desc: "Scout and recruit global talent for your franchise", icon: "🏟️" },
     { value: "sponsor", label: "Sponsor", desc: "Invest in youth cricket development", icon: "💰" },
   ];
 
@@ -23,7 +23,7 @@ export default function AuthPage() {
             CH
           </div>
           <h1 className="text-2xl font-bold text-white">
-            {isSignUp ? "Join CricketHub USA" : "Welcome Back"}
+            {isSignUp ? "Join CricketHub Global" : "Welcome Back"}
           </h1>
           <p className="text-slate-400 mt-1">
             {isSignUp ? "Create your account to get started" : "Sign in to your account"}
@@ -63,6 +63,27 @@ export default function AuthPage() {
                   placeholder="Enter your full name"
                   className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
                 />
+              </div>
+            )}
+            {isSignUp && (
+              <div>
+                <label className="text-sm text-slate-400 block mb-1">Country</label>
+                <select className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                  <option value="">Select your country</option>
+                  <option value="IN">India</option>
+                  <option value="AU">Australia</option>
+                  <option value="PK">Pakistan</option>
+                  <option value="GB">England</option>
+                  <option value="WI">West Indies</option>
+                  <option value="ZA">South Africa</option>
+                  <option value="NZ">New Zealand</option>
+                  <option value="LK">Sri Lanka</option>
+                  <option value="BD">Bangladesh</option>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="AE">UAE</option>
+                  <option value="OTHER">Other</option>
+                </select>
               </div>
             )}
             <div>

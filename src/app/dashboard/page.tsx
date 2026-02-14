@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { players, agents, milcTeams, tournaments, sponsors } from "@/data/mock";
+import { players, agents, t20Teams, tournaments, sponsors } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 import { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
   player: "Player Dashboard",
   agent: "Agent Dashboard",
-  owner: "MiLC Owner Dashboard",
+  owner: "T20 Owner Dashboard",
   sponsor: "Sponsor Dashboard",
 };
 
@@ -24,7 +24,7 @@ function PlayerDashboard() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">{player.name}</h2>
-            <p className="text-sm text-slate-400">{player.role} &middot; {player.ageGroup} &middot; {player.zone} Zone</p>
+            <p className="text-sm text-slate-400">{player.role} &middot; {player.ageGroup} &middot; {player.country}</p>
             <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full mt-1 inline-block">{player.profileTier} Profile</span>
           </div>
         </div>
@@ -108,16 +108,16 @@ function AgentDashboard() {
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Recent Activity</h3>
           <div className="space-y-3 text-sm">
-            <div className="flex gap-2"><span className="text-emerald-400">+</span><span className="text-slate-300">New inquiry from Florida Falcons for Sameer Khan</span></div>
-            <div className="flex gap-2"><span className="text-blue-400">i</span><span className="text-slate-300">Rohan Krishnamurthy profile viewed 34 times this week</span></div>
-            <div className="flex gap-2"><span className="text-amber-400">!</span><span className="text-slate-300">MiLC Pre-Draft Camp registration closing soon</span></div>
+            <div className="flex gap-2"><span className="text-emerald-400">+</span><span className="text-slate-300">New inquiry from Mumbai Indians for talent review</span></div>
+            <div className="flex gap-2"><span className="text-blue-400">i</span><span className="text-slate-300">Player profiles viewed 340 times this week globally</span></div>
+            <div className="flex gap-2"><span className="text-amber-400">!</span><span className="text-slate-300">IPL Pre-Draft Camp registration closing soon</span></div>
           </div>
         </div>
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
           <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Pending Opportunities</h3>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-slate-300">NJ Titans - Trial invite</span><span className="text-amber-400">Pending</span></div>
-            <div className="flex justify-between"><span className="text-slate-300">SF Unicorns - Contract talk</span><span className="text-emerald-400">Active</span></div>
+            <div className="flex justify-between"><span className="text-slate-300">Mumbai Indians - Trial invite</span><span className="text-amber-400">Pending</span></div>
+            <div className="flex justify-between"><span className="text-slate-300">Sydney Sixers - Contract talk</span><span className="text-emerald-400">Active</span></div>
             <div className="flex justify-between"><span className="text-slate-300">CricGear Pro - Endorsement</span><span className="text-blue-400">Review</span></div>
           </div>
         </div>
@@ -127,7 +127,7 @@ function AgentDashboard() {
 }
 
 function OwnerDashboard() {
-  const team = milcTeams[0];
+  const team = t20Teams[0];
   const draftEligible = players.filter((p) => (p.ageGroup === "U19" || p.ageGroup === "U21") && p.verified);
 
   return (
@@ -139,14 +139,14 @@ function OwnerDashboard() {
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">{team.name}</h2>
-            <p className="text-sm text-slate-400">{team.city} &middot; {team.zone} Zone</p>
+            <p className="text-sm text-slate-400">{team.city} &middot; {team.league}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Roster Size" value={team.rosterSize} color="emerald" />
-        <StatCard label="Homegrown Quota" value={`${team.homegrownFilled}/${team.homegrownQuota}`} color="blue" />
+        <StatCard label="Local Quota" value={`${team.localFilled}/${team.localQuota}`} color="blue" />
         <StatCard label="Draft Eligible" value={draftEligible.length} color="purple" />
         <StatCard label="Shortlisted" value={5} color="amber" />
       </div>
@@ -165,7 +165,7 @@ function OwnerDashboard() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-white">{p.name}</p>
-                  <p className="text-xs text-slate-400">{p.role} &middot; {p.zone}</p>
+                  <p className="text-xs text-slate-400">{p.role} &middot; {p.country}</p>
                 </div>
               </div>
               <div className="text-right text-xs">
@@ -179,7 +179,7 @@ function OwnerDashboard() {
 
       <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
         <h3 className="text-sm font-semibold text-purple-400 mb-2">Homegrown Quota Alert</h3>
-        <p className="text-sm text-slate-400">You need {team.homegrownQuota - team.homegrownFilled} more homegrown players to meet the quota. Use the Pro Scouting Dashboard to find local talent.</p>
+        <p className="text-sm text-slate-400">You need {team.localQuota - team.localFilled} more local players to meet the quota. Use the Pro Scouting Dashboard to find global talent.</p>
       </div>
     </div>
   );
@@ -234,7 +234,7 @@ function SponsorDashboard() {
       <Link href="/sponsors">
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 hover:border-amber-500/40 transition-colors">
           <h3 className="text-sm font-semibold text-amber-400 mb-2">Expand Your Portfolio</h3>
-          <p className="text-sm text-slate-400">Browse available sponsorship opportunities to increase your brand presence in the US cricket ecosystem.</p>
+          <p className="text-sm text-slate-400">Browse available sponsorship opportunities to increase your brand presence in the global cricket ecosystem.</p>
         </div>
       </Link>
     </div>
@@ -255,7 +255,7 @@ export default function DashboardPage() {
         >
           <option value="player">Player View</option>
           <option value="agent">Agent View</option>
-          <option value="owner">MiLC Owner View</option>
+          <option value="owner">T20 Owner View</option>
           <option value="sponsor">Sponsor View</option>
         </select>
       </div>

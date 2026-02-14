@@ -1,17 +1,32 @@
 export type PlayerRole = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper";
 export type BowlingStyle = "Right-arm Fast" | "Right-arm Medium" | "Left-arm Fast" | "Left-arm Medium" | "Right-arm Off-spin" | "Left-arm Orthodox" | "Left-arm Chinaman" | "Right-arm Leg-spin";
 export type BattingStyle = "Right-hand Bat" | "Left-hand Bat";
-export type AgeGroup = "U15" | "U17" | "U19" | "U21";
-export type Zone = "Atlantic" | "Pacific" | "Central" | "Southern" | "Mountain";
+export type AgeGroup = "U15" | "U17" | "U19" | "U21" | "U23";
 export type ProfileTier = "Free" | "Premium" | "Elite";
 export type UserRole = "player" | "agent" | "owner" | "sponsor";
+export type Region = "South Asia" | "Oceania" | "Europe" | "Caribbean" | "Africa" | "Americas" | "Middle East" | "East Asia";
+export type T20LeagueId = "IPL" | "BBL" | "CPL" | "PSL" | "SA20" | "BPL" | "LPL" | "ILT20" | "MLC" | "THE100" | "SSA" | "GT20";
+
+export interface T20League {
+  id: T20LeagueId;
+  name: string;
+  country: string;
+  region: Region;
+  logo: string;
+  localQuota: number;
+  localFilled: number;
+  teams: number;
+  season: string;
+}
 
 export interface Player {
   id: string;
   name: string;
   age: number;
   ageGroup: AgeGroup;
-  zone: Zone;
+  country: string;
+  countryCode: string;
+  region: Region;
   state: string;
   city: string;
   role: PlayerRole;
@@ -26,6 +41,8 @@ export interface Player {
   highlights: VideoHighlight[];
   achievements: string[];
   showcaseEvents: string[];
+  targetLeagues: T20LeagueId[];
+  streetCricketer?: boolean;
 }
 
 export interface PlayerStats {
@@ -73,20 +90,23 @@ export interface Agent {
   successRate: number;
   rating: number;
   contactEmail: string;
-  zone: Zone;
+  country: string;
+  region: Region;
   verified: boolean;
+  leagueConnections: T20LeagueId[];
 }
 
-export interface MiLCTeam {
+export interface T20Team {
   id: string;
   name: string;
   city: string;
-  zone: Zone;
+  country: string;
+  league: T20LeagueId;
   logo: string;
   owner: string;
   rosterSize: number;
-  homegrownQuota: number;
-  homegrownFilled: number;
+  localQuota: number;
+  localFilled: number;
 }
 
 export interface Sponsor {
@@ -94,6 +114,7 @@ export interface Sponsor {
   name: string;
   logo: string;
   tier: "Gold" | "Silver" | "Bronze";
+  country: string;
   sponsoredAssets: SponsoredAsset[];
 }
 
@@ -110,11 +131,52 @@ export interface Tournament {
   id: string;
   name: string;
   ageGroup: AgeGroup;
-  zone: Zone;
+  country: string;
+  region: Region;
   startDate: string;
   endDate: string;
   venue: string;
   teams: number;
   status: "upcoming" | "live" | "completed";
   sponsorId?: string;
+}
+
+export interface Coach {
+  id: string;
+  name: string;
+  country: string;
+  region: Region;
+  specialization: string;
+  experience: number;
+  certifications: string[];
+  bio: string;
+  rating: number;
+  reviewCount: number;
+  hourlyRate: number;
+  currency: string;
+  availability: "available" | "limited" | "waitlist";
+  languages: string[];
+  remote: boolean;
+  inPerson: boolean;
+  playersDeveloped: number;
+  leagueExperience: T20LeagueId[];
+  verified: boolean;
+}
+
+export interface VideoAnalysis {
+  id: string;
+  playerId: string;
+  videoUrl: string;
+  uploadDate: string;
+  analysisType: "batting" | "bowling" | "fielding" | "general";
+  status: "pending" | "analyzing" | "completed";
+  aiScore: number;
+  feedback: AIFeedback[];
+}
+
+export interface AIFeedback {
+  category: string;
+  score: number;
+  comment: string;
+  suggestion: string;
 }

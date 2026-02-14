@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Player } from "@/types";
-import { zoneColors, roleIcons } from "@/data/mock";
+import { regionColors, roleIcons } from "@/data/mock";
 
 interface PlayerCardProps {
   player: Player;
@@ -31,7 +31,7 @@ export default function PlayerCard({ player, rank }: PlayerCardProps) {
                 )}
               </div>
               <p className="text-xs text-slate-400">
-                {player.city}, {player.state}
+                {player.city}, {player.country}
               </p>
             </div>
           </div>
@@ -44,15 +44,17 @@ export default function PlayerCard({ player, rank }: PlayerCardProps) {
           <span className="text-xs bg-slate-700/50 px-2 py-1 rounded-full text-slate-300">
             {roleIcons[player.role]} {player.role}
           </span>
-          <span className={`text-xs px-2 py-1 rounded-full ${zoneColors[player.zone]}`}>
-            {player.zone}
+          <span className={`text-xs px-2 py-1 rounded-full ${regionColors[player.region] || "bg-slate-700/50 text-slate-300"}`}>
+            {player.region}
           </span>
           <span className="text-xs bg-slate-700/50 px-2 py-1 rounded-full text-slate-300">
             {player.ageGroup} &middot; Age {player.age}
           </span>
-          <span className="text-xs bg-slate-700/50 px-2 py-1 rounded-full text-slate-300">
-            {player.battingStyle}
-          </span>
+          {player.streetCricketer && (
+            <span className="text-xs bg-amber-500/20 px-2 py-1 rounded-full text-amber-400">
+              Street Cricketer
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-4 gap-2 text-center">
