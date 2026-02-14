@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "CricketHub Global - International Cricket Talent Discovery Platform",
+  title: "Cricket Verse - International Cricket Talent Discovery Platform",
   description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
 };
 

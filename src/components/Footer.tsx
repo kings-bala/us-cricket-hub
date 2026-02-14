@@ -8,9 +8,9 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-white">
-                CH
+                CV
               </div>
-              <span className="font-bold text-lg text-white">CricketHub Global</span>
+              <span className="font-bold text-lg text-white">Cricket Verse</span>
             </div>
             <p className="text-sm">
               Connecting street cricket talent worldwide with T20 leagues. From gully cricket to global stardom.
@@ -55,7 +55,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; 2026 CricketHub Global. All rights reserved. Connecting cricket talent worldwide.</p>
+          <p>&copy; 2026 Cricket Verse. All rights reserved. Connecting cricket talent worldwide.</p>
         </div>
       </div>
     </footer>

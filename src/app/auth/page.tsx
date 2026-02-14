@@ -20,10 +20,10 @@ export default function AuthPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-lg text-white mx-auto mb-4">
-            CH
+            CV
           </div>
           <h1 className="text-2xl font-bold text-white">
-            {isSignUp ? "Join CricketHub Global" : "Welcome Back"}
+            {isSignUp ? "Join Cricket Verse" : "Welcome Back"}
           </h1>
           <p className="text-slate-400 mt-1">
             {isSignUp ? "Create your account to get started" : "Sign in to your account"}
