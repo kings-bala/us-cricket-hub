@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { players, agents, t20Teams, tournaments, sponsors } from "@/data/mock";
+import { players, agents, t20Teams, tournaments, sponsors, coaches } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 import { UserRole } from "@/types";
 
@@ -11,6 +11,7 @@ const roleLabels: Record<UserRole, string> = {
   agent: "Agent Dashboard",
   owner: "T20 Owner Dashboard",
   sponsor: "Sponsor Dashboard",
+  coach: "Coach Dashboard",
 };
 
 function PlayerDashboard() {
@@ -185,6 +186,50 @@ function OwnerDashboard() {
   );
 }
 
+function CoachDashboard() {
+  const coach = coaches[0];
+  const myPlayers = players.slice(0, 6);
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
+            {coach.name.split(" ").map((n) => n[0]).join("")}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">{coach.name}</h2>
+            <p className="text-sm text-slate-400">{coach.specialization} • {coach.experience}+ yrs • {coach.region}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Players Developed" value={coach.playersDeveloped} color="emerald" />
+        <StatCard label="Rating" value={coach.rating} color="amber" />
+        <StatCard label="Certifications" value={coach.certifications.length} color="blue" />
+        <StatCard label="Review Count" value={coach.reviewCount} color="purple" />
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">My Trainees</h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {myPlayers.map((p) => (
+            <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                {p.name.split(" ").map((n) => n[0]).join("")}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">{p.name}</p>
+                <p className="text-xs text-slate-400">{p.role} • {p.ageGroup}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SponsorDashboard() {
   const sponsor = sponsors[0];
 
@@ -257,6 +302,7 @@ export default function DashboardPage() {
           <option value="agent">Agent View</option>
           <option value="owner">T20 Owner View</option>
           <option value="sponsor">Sponsor View</option>
+          <option value="coach">Coach View</option>
         </select>
       </div>
 
@@ -264,6 +310,7 @@ export default function DashboardPage() {
       {role === "agent" && <AgentDashboard />}
       {role === "owner" && <OwnerDashboard />}
       {role === "sponsor" && <SponsorDashboard />}
+      {role === "coach" && <CoachDashboard />}
     </div>
   );
 }
