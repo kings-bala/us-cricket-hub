@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { players, agents, regionColors, roleIcons, t20Leagues } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 
@@ -29,9 +30,13 @@ export default async function PlayerProfilePage({ params }: PageProps) {
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
             <div className="text-center">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">
-                {player.name.split(" ").map((n) => n[0]).join("")}
-              </div>
+              {player.avatar ? (
+                <Image src={player.avatar} alt={player.name} width={96} height={96} className="w-24 h-24 rounded-full object-cover mx-auto mb-4" />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4">
+                  {player.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+              )}
               <div className="flex items-center justify-center gap-2 mb-1">
                 <h1 className="text-2xl font-bold text-white">{player.name}</h1>
                 {player.verified && (
@@ -90,9 +95,13 @@ export default async function PlayerProfilePage({ params }: PageProps) {
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
               <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Representation</h3>
               <Link href={`/agents/${agent.id}`} className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -m-2 transition-colors">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
-                  {agent.name.split(" ").map((n) => n[0]).join("")}
-                </div>
+                {agent.avatar ? (
+                  <Image src={agent.avatar} alt={agent.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                    {agent.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-semibold text-white">{agent.name}</p>
                   <p className="text-xs text-slate-400">{agent.agency}</p>

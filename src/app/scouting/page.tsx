@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
-import { AgeGroup, Region, PlayerRole, BowlingStyle } from "@/types";
+import { AgeGroup, PlayerRole, BowlingStyle } from "@/types";
 
 export default function ScoutingPage() {
-  const [region, setRegion] = useState<Region | "All">("All");
+  const [country, setCountry] = useState<string>("All");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [bowlingStyle, setBowlingStyle] = useState<BowlingStyle | "All">("All");
@@ -19,7 +20,7 @@ export default function ScoutingPage() {
   const filtered = useMemo(() => {
     let result = players.filter((p) => p.verified);
 
-    if (region !== "All") result = result.filter((p) => p.region === region);
+    if (country !== "All") result = result.filter((p) => p.country === country);
     if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
     if (role !== "All") result = result.filter((p) => p.role === role);
     if (bowlingStyle !== "All") result = result.filter((p) => p.bowlingStyle === bowlingStyle);
@@ -30,7 +31,12 @@ export default function ScoutingPage() {
     if (draftReady) result = result.filter((p) => p.ageGroup === "U19" || p.ageGroup === "U21");
 
     return result;
-  }, [region, ageGroup, role, bowlingStyle, maxEconomy, minRuns, minWickets, minBowlingSpeed, draftReady]);
+  }, [country, ageGroup, role, bowlingStyle, maxEconomy, minRuns, minWickets, minBowlingSpeed, draftReady]);
+
+  const countries = useMemo(() => {
+    const set = new Set(players.filter((p) => p.verified).map((p) => p.country));
+    return Array.from(set).sort();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -76,16 +82,12 @@ export default function ScoutingPage() {
         <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Advanced Filters</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Region</label>
-            <select value={region} onChange={(e) => setRegion(e.target.value as Region | "All")} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
-              <option value="All">All Regions</option>
-              <option value="South Asia">South Asia</option>
-              <option value="Oceania">Oceania</option>
-              <option value="Europe">Europe</option>
-              <option value="Caribbean">Caribbean</option>
-              <option value="Africa">Africa</option>
-              <option value="Americas">Americas</option>
-              <option value="Middle East">Middle East</option>
+            <label className="text-xs text-slate-400 block mb-1">Country</label>
+            <select value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="All">All Countries</option>
+              {countries.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -147,7 +149,7 @@ export default function ScoutingPage() {
         </div>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-sm text-slate-500">{filtered.length} players match your criteria</span>
-          <button onClick={() => { setRegion("All"); setAgeGroup("All"); setRole("All"); setBowlingStyle("All"); setMaxEconomy(10); setMinRuns(0); setMinWickets(0); setMinBowlingSpeed(0); setDraftReady(false); }} className="text-xs text-emerald-400 hover:text-emerald-300">
+          <button onClick={() => { setCountry("All"); setAgeGroup("All"); setRole("All"); setBowlingStyle("All"); setMaxEconomy(10); setMinRuns(0); setMinWickets(0); setMinBowlingSpeed(0); setDraftReady(false); }} className="text-xs text-emerald-400 hover:text-emerald-300">
             Reset Filters
           </button>
         </div>
@@ -179,9 +181,13 @@ export default function ScoutingPage() {
                   <td className="px-4 py-3 text-slate-500">{i + 1}</td>
                   <td className="px-4 py-3">
                     <Link href={`/players/${p.id}`} className="flex items-center gap-2 hover:text-emerald-400 transition-colors">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                        {p.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
+                      {p.avatar ? (
+                        <Image src={p.avatar} alt={p.name} width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                          {p.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium text-white">{p.name}</p>
                         <p className="text-xs text-slate-500">{p.city}, {p.country}</p>

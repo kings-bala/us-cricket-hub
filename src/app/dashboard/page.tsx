@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { players, agents, t20Teams, tournaments, sponsors } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 import { UserRole } from "@/types";
+import { useRole } from "@/context/RoleContext";
 
 const roleLabels: Record<UserRole, string> = {
   player: "Player Dashboard",
@@ -242,22 +242,13 @@ function SponsorDashboard() {
 }
 
 export default function DashboardPage() {
-  const [role, setRole] = useState<UserRole>("player");
+  const { role } = useRole();
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">{roleLabels[role]}</h1>
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value as UserRole)}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-        >
-          <option value="player">Player View</option>
-          <option value="agent">Agent View</option>
-          <option value="owner">T20 Owner View</option>
-          <option value="sponsor">Sponsor View</option>
-        </select>
+        <p className="text-sm text-slate-400 mt-1">Switch roles using the &quot;View as&quot; dropdown in the navigation bar</p>
       </div>
 
       {role === "player" && <PlayerDashboard />}
