@@ -1,7 +1,7 @@
 export type PlayerRole = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper";
 export type BowlingStyle = "Right-arm Fast" | "Right-arm Medium" | "Left-arm Fast" | "Left-arm Medium" | "Right-arm Off-spin" | "Left-arm Orthodox" | "Left-arm Chinaman" | "Right-arm Leg-spin";
 export type BattingStyle = "Right-hand Bat" | "Left-hand Bat";
-export type AgeGroup = "U15" | "U17" | "U19" | "U21" | "U23";
+export type AgeGroup = "U13" | "U15" | "U17" | "U19" | "U21" | "U23" | "Men";
 export type ProfileTier = "Free" | "Premium" | "Elite";
 export type UserRole = "player" | "agent" | "owner" | "sponsor";
 export type Region = "South Asia" | "Oceania" | "Europe" | "Caribbean" | "Africa" | "Americas" | "Middle East" | "East Asia";
@@ -179,4 +179,70 @@ export interface AIFeedback {
   score: number;
   comment: string;
   suggestion: string;
+}
+
+export type FormStatus = "Red Hot" | "In Form" | "Steady" | "Cold";
+
+export interface MatchPerformance {
+  matchId: string;
+  date: string;
+  opponent: string;
+  venue: string;
+  league: string;
+  runsScored: number;
+  ballsFaced: number;
+  wicketsTaken: number;
+  oversBowled: number;
+  runsConceded: number;
+  catches: number;
+  runOuts: number;
+  stumpings: number;
+  manOfMatch: boolean;
+}
+
+export interface ACPIScore {
+  overall: number;
+  matchPerformance: number;
+  athleticMetrics: number;
+  formIndex: number;
+  consistency: number;
+  nationalRank: number;
+  stateRank: number;
+  rankChange: number;
+}
+
+export interface CombineData {
+  yoYoScore: number;
+  sprint20m: number;
+  bowlingSpeed?: number;
+  batSpeed?: number;
+  verticalJump: number;
+  fieldingEfficiency: number;
+  throwAccuracy: number;
+  reactionTime: number;
+  assessmentDate: string;
+  nextAssessmentDate: string;
+  verifiedAthlete: boolean;
+  history: CombineHistory[];
+}
+
+export interface CombineHistory {
+  date: string;
+  yoYoScore: number;
+  sprint20m: number;
+  verticalJump: number;
+  fieldingEfficiency: number;
+}
+
+export interface PerformanceFeedItem {
+  id: string;
+  playerId: string;
+  playerName: string;
+  type: "top-score" | "best-bowling" | "fastest-innings" | "form-spike" | "hot-prospect" | "rank-movement";
+  title: string;
+  description: string;
+  value: string;
+  date: string;
+  state: string;
+  league: string;
 }

@@ -49,6 +49,21 @@ export default function Navbar() {
             <Link href="/analyze" className="text-sm text-slate-300 hover:text-white transition-colors">
               AI Analysis
             </Link>
+            <Link href="/rankings" className="text-sm text-slate-300 hover:text-white transition-colors">
+              Rankings
+            </Link>
+            <Link href="/form-meter" className="text-sm text-slate-300 hover:text-white transition-colors">
+              Form Meter
+            </Link>
+            <Link href="/squad-builder" className="text-sm text-slate-300 hover:text-white transition-colors">
+              Squad Builder
+            </Link>
+            <Link href="/combine" className="text-sm text-slate-300 hover:text-white transition-colors">
+              Combine
+            </Link>
+            <Link href="/performance-feed" className="text-sm text-slate-300 hover:text-white transition-colors">
+              Feed
+            </Link>
             <Link href="/coaches" className="text-sm text-slate-300 hover:text-white transition-colors">
               Coaches
             </Link>
@@ -103,6 +118,11 @@ export default function Navbar() {
               { href: "/scouting", label: "Pro Scouting" },
               { href: "/sponsors", label: "Sponsors" },
               { href: "/analyze", label: "AI Analysis" },
+              { href: "/rankings", label: "ACPI Rankings" },
+              { href: "/form-meter", label: "Form Meter" },
+              { href: "/squad-builder", label: "Squad Builder" },
+              { href: "/combine", label: "Combine" },
+              { href: "/performance-feed", label: "Feed" },
               { href: "/coaches", label: "Coaches" },
               { href: "/dashboard", label: "Dashboard" },
             ].map((link) => (

@@ -25,6 +25,11 @@ export default function Footer() {
               <Link href="/sponsors" className="block text-sm hover:text-white transition-colors">Sponsorships</Link>
               <Link href="/analyze" className="block text-sm hover:text-white transition-colors">AI Video Analysis</Link>
               <Link href="/coaches" className="block text-sm hover:text-white transition-colors">Coach Directory</Link>
+              <Link href="/rankings" className="block text-sm hover:text-white transition-colors">ACPI Rankings</Link>
+              <Link href="/form-meter" className="block text-sm hover:text-white transition-colors">AI Form Meter</Link>
+              <Link href="/squad-builder" className="block text-sm hover:text-white transition-colors">Squad Builder</Link>
+              <Link href="/combine" className="block text-sm hover:text-white transition-colors">Combine Assessment</Link>
+              <Link href="/performance-feed" className="block text-sm hover:text-white transition-colors">Performance Feed</Link>
             </div>
           </div>
           <div>

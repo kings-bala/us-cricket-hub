@@ -1,4 +1,4 @@
-import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach } from "@/types";
+import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach, MatchPerformance, ACPIScore, CombineData, FormStatus, PerformanceFeedItem } from "@/types";
 
 export const t20Leagues: T20League[] = [
   { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
@@ -415,3 +415,261 @@ export const countryFlags: Record<string, string> = {
   UAE: "AE",
   Canada: "CA",
 };
+
+export const playerMatchHistory: Record<string, MatchPerformance[]> = {
+  p1: [
+    { matchId: "m1", date: "2026-02-10", opponent: "Maharashtra U17", venue: "Ahmedabad", league: "State U17", runsScored: 87, ballsFaced: 62, wicketsTaken: 0, oversBowled: 2, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m2", date: "2026-02-05", opponent: "Rajasthan U17", venue: "Jaipur", league: "State U17", runsScored: 45, ballsFaced: 38, wicketsTaken: 1, oversBowled: 3, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m3", date: "2026-01-28", opponent: "Delhi U17", venue: "Delhi", league: "BCCI Youth", runsScored: 112, ballsFaced: 78, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 1, stumpings: 0, manOfMatch: true },
+    { matchId: "m4", date: "2026-01-20", opponent: "Karnataka U17", venue: "Bangalore", league: "BCCI Youth", runsScored: 23, ballsFaced: 20, wicketsTaken: 1, oversBowled: 2, runsConceded: 14, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m5", date: "2026-01-14", opponent: "Tamil Nadu U17", venue: "Chennai", league: "BCCI Youth", runsScored: 68, ballsFaced: 52, wicketsTaken: 0, oversBowled: 1, runsConceded: 12, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p2: [
+    { matchId: "m6", date: "2026-02-12", opponent: "Victoria U19", venue: "Melbourne", league: "Shield Colts", runsScored: 12, ballsFaced: 18, wicketsTaken: 4, oversBowled: 8, runsConceded: 28, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m7", date: "2026-02-06", opponent: "Queensland U19", venue: "Brisbane", league: "Shield Colts", runsScored: 5, ballsFaced: 10, wicketsTaken: 3, oversBowled: 7, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m8", date: "2026-01-30", opponent: "SA U19", venue: "Sydney", league: "U19 International", runsScored: 18, ballsFaced: 14, wicketsTaken: 5, oversBowled: 8, runsConceded: 31, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m9", date: "2026-01-22", opponent: "Tasmania U19", venue: "Hobart", league: "Shield Colts", runsScored: 2, ballsFaced: 8, wicketsTaken: 2, oversBowled: 6, runsConceded: 19, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m10", date: "2026-01-15", opponent: "WA U19", venue: "Perth", league: "Shield Colts", runsScored: 8, ballsFaced: 12, wicketsTaken: 3, oversBowled: 7, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p3: [
+    { matchId: "m11", date: "2026-02-08", opponent: "Sindh U17", venue: "Karachi", league: "PCB Youth", runsScored: 72, ballsFaced: 55, wicketsTaken: 3, oversBowled: 6, runsConceded: 28, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m12", date: "2026-02-02", opponent: "KPK U17", venue: "Peshawar", league: "PCB Youth", runsScored: 38, ballsFaced: 30, wicketsTaken: 2, oversBowled: 5, runsConceded: 24, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m13", date: "2026-01-25", opponent: "Balochistan U17", venue: "Lahore", league: "PCB Youth", runsScored: 55, ballsFaced: 42, wicketsTaken: 1, oversBowled: 4, runsConceded: 20, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m14", date: "2026-01-18", opponent: "Islamabad U17", venue: "Islamabad", league: "PCB Youth", runsScored: 15, ballsFaced: 18, wicketsTaken: 4, oversBowled: 7, runsConceded: 28, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m15", date: "2026-01-12", opponent: "Northern U17", venue: "Rawalpindi", league: "PCB Youth", runsScored: 41, ballsFaced: 35, wicketsTaken: 2, oversBowled: 5, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p4: [
+    { matchId: "m16", date: "2026-02-11", opponent: "Jamaica U19", venue: "Kingston", league: "CWI U19", runsScored: 95, ballsFaced: 68, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 3, runOuts: 0, stumpings: 2, manOfMatch: true },
+    { matchId: "m17", date: "2026-02-04", opponent: "Barbados U19", venue: "Bridgetown", league: "CWI U19", runsScored: 42, ballsFaced: 35, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 0, stumpings: 1, manOfMatch: false },
+    { matchId: "m18", date: "2026-01-28", opponent: "Guyana U19", venue: "Georgetown", league: "CWI U19", runsScored: 78, ballsFaced: 58, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 4, runOuts: 1, stumpings: 0, manOfMatch: true },
+    { matchId: "m19", date: "2026-01-20", opponent: "Leeward Islands U19", venue: "Port of Spain", league: "Regional U19", runsScored: 8, ballsFaced: 12, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 1, runOuts: 0, stumpings: 1, manOfMatch: false },
+    { matchId: "m20", date: "2026-01-14", opponent: "Windward Islands U19", venue: "St Lucia", league: "Regional U19", runsScored: 55, ballsFaced: 40, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 0, stumpings: 2, manOfMatch: false },
+  ],
+  p5: [
+    { matchId: "m21", date: "2026-02-13", opponent: "Western Cape", venue: "Cape Town", league: "CSA Youth", runsScored: 5, ballsFaced: 8, wicketsTaken: 6, oversBowled: 8, runsConceded: 31, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m22", date: "2026-02-07", opponent: "KwaZulu-Natal", venue: "Durban", league: "CSA Youth", runsScored: 12, ballsFaced: 15, wicketsTaken: 4, oversBowled: 7, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m23", date: "2026-01-31", opponent: "Free State", venue: "Johannesburg", league: "CSA Youth", runsScored: 0, ballsFaced: 3, wicketsTaken: 3, oversBowled: 6, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m24", date: "2026-01-23", opponent: "Northerns", venue: "Pretoria", league: "CSA Youth", runsScored: 8, ballsFaced: 12, wicketsTaken: 5, oversBowled: 8, runsConceded: 28, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m25", date: "2026-01-16", opponent: "Eastern Cape", venue: "Port Elizabeth", league: "CSA Youth", runsScored: 2, ballsFaced: 5, wicketsTaken: 2, oversBowled: 5, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p6: [
+    { matchId: "m26", date: "2026-02-09", opponent: "Lancashire U15", venue: "Leeds", league: "ECB U15", runsScored: 45, ballsFaced: 38, wicketsTaken: 0, oversBowled: 2, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m27", date: "2026-02-03", opponent: "Surrey U15", venue: "London", league: "ECB U15", runsScored: 22, ballsFaced: 25, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m28", date: "2026-01-26", opponent: "Hampshire U15", venue: "Southampton", league: "ECB U15", runsScored: 68, ballsFaced: 50, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m29", date: "2026-01-19", opponent: "Nottinghamshire U15", venue: "Nottingham", league: "ECB U15", runsScored: 12, ballsFaced: 15, wicketsTaken: 1, oversBowled: 2, runsConceded: 12, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m30", date: "2026-01-12", opponent: "Middlesex U15", venue: "Lords", league: "ECB U15", runsScored: 55, ballsFaced: 42, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p7: [
+    { matchId: "m31", date: "2026-02-10", opponent: "Southern Province U17", venue: "Galle", league: "SLC U17", runsScored: 8, ballsFaced: 12, wicketsTaken: 5, oversBowled: 8, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m32", date: "2026-02-04", opponent: "Central Province U17", venue: "Kandy", league: "SLC U17", runsScored: 15, ballsFaced: 18, wicketsTaken: 3, oversBowled: 6, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m33", date: "2026-01-28", opponent: "North Central U17", venue: "Colombo", league: "SLC U17", runsScored: 22, ballsFaced: 20, wicketsTaken: 4, oversBowled: 7, runsConceded: 25, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m34", date: "2026-01-20", opponent: "Eastern Province U17", venue: "Trincomalee", league: "SLC U17", runsScored: 5, ballsFaced: 8, wicketsTaken: 2, oversBowled: 5, runsConceded: 15, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m35", date: "2026-01-13", opponent: "North Western U17", venue: "Kurunegala", league: "SLC U17", runsScored: 10, ballsFaced: 14, wicketsTaken: 3, oversBowled: 6, runsConceded: 20, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p8: [
+    { matchId: "m36", date: "2026-02-12", opponent: "New York XI", venue: "New York", league: "MLC Dev", runsScored: 142, ballsFaced: 95, wicketsTaken: 1, oversBowled: 2, runsConceded: 15, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m37", date: "2026-02-06", opponent: "Texas XI", venue: "Dallas", league: "MLC Dev", runsScored: 78, ballsFaced: 55, wicketsTaken: 2, oversBowled: 4, runsConceded: 28, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m38", date: "2026-01-30", opponent: "California XI", venue: "Los Angeles", league: "MLC Dev", runsScored: 55, ballsFaced: 40, wicketsTaken: 0, oversBowled: 2, runsConceded: 18, catches: 1, runOuts: 1, stumpings: 0, manOfMatch: false },
+    { matchId: "m39", date: "2026-01-22", opponent: "Florida XI", venue: "Miami", league: "USA U19", runsScored: 92, ballsFaced: 68, wicketsTaken: 1, oversBowled: 3, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m40", date: "2026-01-15", opponent: "New Jersey XI", venue: "Newark", league: "USA U19", runsScored: 35, ballsFaced: 28, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p9: [
+    { matchId: "m41", date: "2026-02-08", opponent: "Pune XI", venue: "Mumbai", league: "MCA U17", runsScored: 35, ballsFaced: 30, wicketsTaken: 2, oversBowled: 4, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m42", date: "2026-02-01", opponent: "Nagpur XI", venue: "Nagpur", league: "MCA U17", runsScored: 48, ballsFaced: 38, wicketsTaken: 3, oversBowled: 5, runsConceded: 25, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m43", date: "2026-01-25", opponent: "Thane XI", venue: "Thane", league: "MCA U17", runsScored: 12, ballsFaced: 15, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m44", date: "2026-01-18", opponent: "Kolhapur XI", venue: "Kolhapur", league: "MCA U17", runsScored: 22, ballsFaced: 20, wicketsTaken: 2, oversBowled: 4, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m45", date: "2026-01-11", opponent: "Aurangabad XI", venue: "Aurangabad", league: "MCA U17", runsScored: 55, ballsFaced: 42, wicketsTaken: 1, oversBowled: 3, runsConceded: 15, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p10: [
+    { matchId: "m46", date: "2026-02-11", opponent: "Gauteng", venue: "Johannesburg", league: "CSA Provincial", runsScored: 88, ballsFaced: 65, wicketsTaken: 4, oversBowled: 8, runsConceded: 32, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m47", date: "2026-02-05", opponent: "North West", venue: "Potchefstroom", league: "CSA Provincial", runsScored: 45, ballsFaced: 38, wicketsTaken: 2, oversBowled: 6, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m48", date: "2026-01-29", opponent: "Limpopo", venue: "Cape Town", league: "CSA Provincial", runsScored: 62, ballsFaced: 48, wicketsTaken: 3, oversBowled: 7, runsConceded: 28, catches: 0, runOuts: 1, stumpings: 0, manOfMatch: true },
+    { matchId: "m49", date: "2026-01-21", opponent: "Mpumalanga", venue: "Nelspruit", league: "CSA Provincial", runsScored: 15, ballsFaced: 18, wicketsTaken: 1, oversBowled: 4, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m50", date: "2026-01-14", opponent: "Border", venue: "East London", league: "CSA Provincial", runsScored: 72, ballsFaced: 55, wicketsTaken: 2, oversBowled: 5, runsConceded: 22, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p11: [
+    { matchId: "m51", date: "2026-02-09", opponent: "Chittagong Div", venue: "Chittagong", league: "BCB Youth", runsScored: 5, ballsFaced: 8, wicketsTaken: 5, oversBowled: 8, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m52", date: "2026-02-03", opponent: "Sylhet Div", venue: "Sylhet", league: "BCB Youth", runsScored: 8, ballsFaced: 12, wicketsTaken: 3, oversBowled: 6, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m53", date: "2026-01-27", opponent: "Rajshahi Div", venue: "Rajshahi", league: "BCB Youth", runsScored: 2, ballsFaced: 5, wicketsTaken: 4, oversBowled: 7, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m54", date: "2026-01-19", opponent: "Khulna Div", venue: "Khulna", league: "BCB Youth", runsScored: 12, ballsFaced: 15, wicketsTaken: 2, oversBowled: 5, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m55", date: "2026-01-12", opponent: "Rangpur Div", venue: "Rangpur", league: "BCB Youth", runsScored: 0, ballsFaced: 3, wicketsTaken: 3, oversBowled: 6, runsConceded: 15, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p12: [
+    { matchId: "m56", date: "2026-02-10", opponent: "UP U15", venue: "Delhi", league: "DDCA U15", runsScored: 78, ballsFaced: 58, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m57", date: "2026-02-04", opponent: "Haryana U15", venue: "Gurgaon", league: "DDCA U15", runsScored: 25, ballsFaced: 22, wicketsTaken: 1, oversBowled: 2, runsConceded: 12, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m58", date: "2026-01-28", opponent: "Punjab U15", venue: "Delhi", league: "DDCA U15", runsScored: 42, ballsFaced: 35, wicketsTaken: 0, oversBowled: 1, runsConceded: 10, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m59", date: "2026-01-20", opponent: "Rajasthan U15", venue: "Jaipur", league: "BCCI U15", runsScored: 55, ballsFaced: 40, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m60", date: "2026-01-13", opponent: "MP U15", venue: "Indore", league: "BCCI U15", runsScored: 18, ballsFaced: 20, wicketsTaken: 1, oversBowled: 2, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p13: [
+    { matchId: "m61", date: "2026-02-12", opponent: "BC XI", venue: "Vancouver", league: "Cricket Canada", runsScored: 68, ballsFaced: 50, wicketsTaken: 2, oversBowled: 5, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m62", date: "2026-02-06", opponent: "Alberta XI", venue: "Calgary", league: "Cricket Canada", runsScored: 35, ballsFaced: 28, wicketsTaken: 3, oversBowled: 6, runsConceded: 28, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m63", date: "2026-01-30", opponent: "Quebec XI", venue: "Montreal", league: "Cricket Canada", runsScored: 82, ballsFaced: 60, wicketsTaken: 1, oversBowled: 4, runsConceded: 22, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m64", date: "2026-01-22", opponent: "Manitoba XI", venue: "Winnipeg", league: "Cricket Canada", runsScored: 15, ballsFaced: 18, wicketsTaken: 2, oversBowled: 5, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m65", date: "2026-01-15", opponent: "Saskatchewan XI", venue: "Brampton", league: "GT20 Dev", runsScored: 45, ballsFaced: 35, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p14: [
+    { matchId: "m66", date: "2026-02-08", opponent: "Abu Dhabi U17", venue: "Dubai", league: "Emirates Youth", runsScored: 92, ballsFaced: 65, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m67", date: "2026-02-02", opponent: "Sharjah U17", venue: "Sharjah", league: "Emirates Youth", runsScored: 38, ballsFaced: 30, wicketsTaken: 0, oversBowled: 2, runsConceded: 14, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m68", date: "2026-01-26", opponent: "Ajman U17", venue: "Ajman", league: "Emirates Youth", runsScored: 55, ballsFaced: 42, wicketsTaken: 2, oversBowled: 4, runsConceded: 22, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m69", date: "2026-01-18", opponent: "RAK U17", venue: "Dubai", league: "Emirates Youth", runsScored: 18, ballsFaced: 20, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m70", date: "2026-01-11", opponent: "Fujairah U17", venue: "Fujairah", league: "Emirates Youth", runsScored: 72, ballsFaced: 52, wicketsTaken: 1, oversBowled: 3, runsConceded: 16, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+  ],
+  p15: [
+    { matchId: "m71", date: "2026-02-13", opponent: "Canterbury", venue: "Christchurch", league: "NZC Youth", runsScored: 8, ballsFaced: 12, wicketsTaken: 6, oversBowled: 8, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m72", date: "2026-02-07", opponent: "Wellington", venue: "Wellington", league: "NZC Youth", runsScored: 2, ballsFaced: 5, wicketsTaken: 4, oversBowled: 7, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m73", date: "2026-01-31", opponent: "Otago", venue: "Dunedin", league: "NZC Youth", runsScored: 15, ballsFaced: 18, wicketsTaken: 3, oversBowled: 6, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m74", date: "2026-01-23", opponent: "Northern Districts", venue: "Hamilton", league: "NZC Youth", runsScored: 5, ballsFaced: 8, wicketsTaken: 2, oversBowled: 5, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m75", date: "2026-01-16", opponent: "Central Districts", venue: "Auckland", league: "NZC Youth", runsScored: 12, ballsFaced: 14, wicketsTaken: 5, oversBowled: 8, runsConceded: 28, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+  ],
+  p16: [
+    { matchId: "m76", date: "2026-02-09", opponent: "Coimbatore XI", venue: "Chennai", league: "TNCA U15", runsScored: 5, ballsFaced: 8, wicketsTaken: 4, oversBowled: 6, runsConceded: 12, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m77", date: "2026-02-03", opponent: "Madurai XI", venue: "Madurai", league: "TNCA U15", runsScored: 8, ballsFaced: 10, wicketsTaken: 3, oversBowled: 5, runsConceded: 15, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m78", date: "2026-01-27", opponent: "Salem XI", venue: "Salem", league: "TNCA U15", runsScored: 2, ballsFaced: 5, wicketsTaken: 2, oversBowled: 4, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m79", date: "2026-01-19", opponent: "Trichy XI", venue: "Trichy", league: "TNCA U15", runsScored: 12, ballsFaced: 15, wicketsTaken: 4, oversBowled: 6, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m80", date: "2026-01-12", opponent: "Tirunelveli XI", venue: "Tirunelveli", league: "TNCA U15", runsScored: 0, ballsFaced: 2, wicketsTaken: 3, oversBowled: 5, runsConceded: 16, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+};
+
+export function calculateACPI(player: Player, matches: MatchPerformance[]): ACPIScore {
+  const last5 = matches.slice(0, 5);
+
+  let matchPerfScore = 0;
+  if (player.role === "Bowler") {
+    const totalWickets = last5.reduce((s, m) => s + m.wicketsTaken, 0);
+    const avgEconomy = last5.reduce((s, m) => m.oversBowled > 0 ? s + (m.runsConceded / m.oversBowled) : s, 0) / Math.max(last5.filter(m => m.oversBowled > 0).length, 1);
+    matchPerfScore = Math.min(100, (totalWickets * 8) + Math.max(0, (6 - avgEconomy) * 10));
+  } else if (player.role === "Batsman" || player.role === "Wicket-Keeper") {
+    const totalRuns = last5.reduce((s, m) => s + m.runsScored, 0);
+    const avgSR = last5.reduce((s, m) => m.ballsFaced > 0 ? s + (m.runsScored / m.ballsFaced * 100) : s, 0) / Math.max(last5.filter(m => m.ballsFaced > 0).length, 1);
+    matchPerfScore = Math.min(100, (totalRuns / 3) + (avgSR > 100 ? (avgSR - 100) * 0.3 : 0));
+  } else {
+    const totalRuns = last5.reduce((s, m) => s + m.runsScored, 0);
+    const totalWickets = last5.reduce((s, m) => s + m.wicketsTaken, 0);
+    matchPerfScore = Math.min(100, (totalRuns / 4) + (totalWickets * 6));
+  }
+
+  const athleticScore = Math.min(100,
+    (player.fitnessData.yoYoTest / 20 * 30) +
+    (Math.max(0, 10 - player.fitnessData.sprintSpeed) * 8) +
+    (player.fitnessData.beepTestLevel / 14 * 20) +
+    ((player.fitnessData.bowlingSpeed || 0) / 150 * 20)
+  );
+
+  const recentScores = last5.map(m => {
+    if (player.role === "Bowler") return m.wicketsTaken * 15 + (m.oversBowled > 0 ? Math.max(0, 6 - m.runsConceded / m.oversBowled) * 5 : 0);
+    return m.runsScored + (m.wicketsTaken * 10);
+  });
+  const avgRecent = recentScores.reduce((s, v) => s + v, 0) / Math.max(recentScores.length, 1);
+  const formScore = Math.min(100, avgRecent * 1.2);
+
+  const variance = recentScores.length > 1 ? Math.sqrt(recentScores.reduce((s, v) => s + Math.pow(v - avgRecent, 2), 0) / recentScores.length) : 0;
+  const consistencyScore = Math.min(100, Math.max(0, 100 - variance * 1.5));
+
+  const overall = Math.round(
+    matchPerfScore * 0.4 +
+    athleticScore * 0.3 +
+    formScore * 0.2 +
+    consistencyScore * 0.1
+  );
+
+  return {
+    overall,
+    matchPerformance: Math.round(matchPerfScore),
+    athleticMetrics: Math.round(athleticScore),
+    formIndex: Math.round(formScore),
+    consistency: Math.round(consistencyScore),
+    nationalRank: 0,
+    stateRank: 0,
+    rankChange: 0,
+  };
+}
+
+export function getFormStatus(matches: MatchPerformance[], role: string): FormStatus {
+  if (matches.length === 0) return "Cold";
+  const last5 = matches.slice(0, 5);
+  const weights = [0.35, 0.25, 0.2, 0.12, 0.08];
+
+  const weightedScore = last5.reduce((sum, match, i) => {
+    let perf = 0;
+    if (role === "Bowler") {
+      perf = match.wicketsTaken * 20 + (match.oversBowled > 0 ? Math.max(0, 6 - match.runsConceded / match.oversBowled) * 8 : 0);
+    } else if (role === "Batsman" || role === "Wicket-Keeper") {
+      perf = match.runsScored * 1.2 + (match.ballsFaced > 0 && match.runsScored / match.ballsFaced > 1 ? 15 : 0);
+    } else {
+      perf = match.runsScored + match.wicketsTaken * 15;
+    }
+    if (match.manOfMatch) perf += 20;
+    return sum + perf * (weights[i] || 0.08);
+  }, 0);
+
+  if (weightedScore >= 60) return "Red Hot";
+  if (weightedScore >= 35) return "In Form";
+  if (weightedScore >= 15) return "Steady";
+  return "Cold";
+}
+
+export const playerCombineData: Record<string, CombineData> = {
+  p1: { yoYoScore: 18.4, sprint20m: 3.1, batSpeed: 112, verticalJump: 58, fieldingEfficiency: 82, throwAccuracy: 78, reactionTime: 0.28, assessmentDate: "2025-12-15", nextAssessmentDate: "2026-06-15", verifiedAthlete: true, history: [{ date: "2025-06-15", yoYoScore: 17.8, sprint20m: 3.2, verticalJump: 55, fieldingEfficiency: 78 }, { date: "2025-12-15", yoYoScore: 18.4, sprint20m: 3.1, verticalJump: 58, fieldingEfficiency: 82 }] },
+  p2: { yoYoScore: 19.2, sprint20m: 2.9, bowlingSpeed: 145, verticalJump: 62, fieldingEfficiency: 75, throwAccuracy: 85, reactionTime: 0.25, assessmentDate: "2025-11-20", nextAssessmentDate: "2026-05-20", verifiedAthlete: true, history: [{ date: "2025-05-20", yoYoScore: 18.6, sprint20m: 3.0, verticalJump: 59, fieldingEfficiency: 72 }, { date: "2025-11-20", yoYoScore: 19.2, sprint20m: 2.9, verticalJump: 62, fieldingEfficiency: 75 }] },
+  p3: { yoYoScore: 17.8, sprint20m: 3.2, bowlingSpeed: 82, batSpeed: 105, verticalJump: 55, fieldingEfficiency: 80, throwAccuracy: 76, reactionTime: 0.30, assessmentDate: "2025-12-01", nextAssessmentDate: "2026-06-01", verifiedAthlete: true, history: [{ date: "2025-06-01", yoYoScore: 17.2, sprint20m: 3.3, verticalJump: 52, fieldingEfficiency: 76 }, { date: "2025-12-01", yoYoScore: 17.8, sprint20m: 3.2, verticalJump: 55, fieldingEfficiency: 80 }] },
+  p4: { yoYoScore: 18.8, sprint20m: 3.0, batSpeed: 108, verticalJump: 60, fieldingEfficiency: 88, throwAccuracy: 82, reactionTime: 0.24, assessmentDate: "2025-11-10", nextAssessmentDate: "2026-05-10", verifiedAthlete: true, history: [{ date: "2025-05-10", yoYoScore: 18.2, sprint20m: 3.1, verticalJump: 57, fieldingEfficiency: 85 }, { date: "2025-11-10", yoYoScore: 18.8, sprint20m: 3.0, verticalJump: 60, fieldingEfficiency: 88 }] },
+  p5: { yoYoScore: 20.1, sprint20m: 2.8, bowlingSpeed: 148, verticalJump: 65, fieldingEfficiency: 72, throwAccuracy: 88, reactionTime: 0.23, assessmentDate: "2025-12-10", nextAssessmentDate: "2026-06-10", verifiedAthlete: true, history: [{ date: "2025-06-10", yoYoScore: 19.5, sprint20m: 2.9, verticalJump: 62, fieldingEfficiency: 68 }, { date: "2025-12-10", yoYoScore: 20.1, sprint20m: 2.8, verticalJump: 65, fieldingEfficiency: 72 }] },
+  p6: { yoYoScore: 16.2, sprint20m: 3.4, batSpeed: 95, verticalJump: 48, fieldingEfficiency: 70, throwAccuracy: 68, reactionTime: 0.32, assessmentDate: "2025-10-15", nextAssessmentDate: "2026-04-15", verifiedAthlete: false, history: [{ date: "2025-10-15", yoYoScore: 16.2, sprint20m: 3.4, verticalJump: 48, fieldingEfficiency: 70 }] },
+  p7: { yoYoScore: 17.5, sprint20m: 3.3, bowlingSpeed: 78, verticalJump: 52, fieldingEfficiency: 78, throwAccuracy: 74, reactionTime: 0.29, assessmentDate: "2025-11-25", nextAssessmentDate: "2026-05-25", verifiedAthlete: true, history: [{ date: "2025-05-25", yoYoScore: 17.0, sprint20m: 3.4, verticalJump: 50, fieldingEfficiency: 75 }, { date: "2025-11-25", yoYoScore: 17.5, sprint20m: 3.3, verticalJump: 52, fieldingEfficiency: 78 }] },
+  p8: { yoYoScore: 18.6, sprint20m: 3.0, batSpeed: 118, verticalJump: 60, fieldingEfficiency: 84, throwAccuracy: 80, reactionTime: 0.26, assessmentDate: "2025-12-05", nextAssessmentDate: "2026-06-05", verifiedAthlete: true, history: [{ date: "2025-06-05", yoYoScore: 18.0, sprint20m: 3.1, verticalJump: 57, fieldingEfficiency: 80 }, { date: "2025-12-05", yoYoScore: 18.6, sprint20m: 3.0, verticalJump: 60, fieldingEfficiency: 84 }] },
+  p9: { yoYoScore: 17.0, sprint20m: 3.2, bowlingSpeed: 118, batSpeed: 100, verticalJump: 50, fieldingEfficiency: 72, throwAccuracy: 70, reactionTime: 0.31, assessmentDate: "2025-10-20", nextAssessmentDate: "2026-04-20", verifiedAthlete: false, history: [{ date: "2025-10-20", yoYoScore: 17.0, sprint20m: 3.2, verticalJump: 50, fieldingEfficiency: 72 }] },
+  p10: { yoYoScore: 19.0, sprint20m: 2.9, bowlingSpeed: 125, batSpeed: 110, verticalJump: 63, fieldingEfficiency: 85, throwAccuracy: 82, reactionTime: 0.25, assessmentDate: "2025-12-08", nextAssessmentDate: "2026-06-08", verifiedAthlete: true, history: [{ date: "2025-06-08", yoYoScore: 18.4, sprint20m: 3.0, verticalJump: 60, fieldingEfficiency: 82 }, { date: "2025-12-08", yoYoScore: 19.0, sprint20m: 2.9, verticalJump: 63, fieldingEfficiency: 85 }] },
+  p11: { yoYoScore: 17.2, sprint20m: 3.3, bowlingSpeed: 75, verticalJump: 50, fieldingEfficiency: 68, throwAccuracy: 72, reactionTime: 0.30, assessmentDate: "2025-11-15", nextAssessmentDate: "2026-05-15", verifiedAthlete: true, history: [{ date: "2025-05-15", yoYoScore: 16.8, sprint20m: 3.4, verticalJump: 48, fieldingEfficiency: 65 }, { date: "2025-11-15", yoYoScore: 17.2, sprint20m: 3.3, verticalJump: 50, fieldingEfficiency: 68 }] },
+  p12: { yoYoScore: 15.8, sprint20m: 3.5, batSpeed: 88, verticalJump: 45, fieldingEfficiency: 65, throwAccuracy: 64, reactionTime: 0.34, assessmentDate: "2025-10-10", nextAssessmentDate: "2026-04-10", verifiedAthlete: false, history: [{ date: "2025-10-10", yoYoScore: 15.8, sprint20m: 3.5, verticalJump: 45, fieldingEfficiency: 65 }] },
+  p13: { yoYoScore: 18.0, sprint20m: 3.1, bowlingSpeed: 128, batSpeed: 106, verticalJump: 56, fieldingEfficiency: 78, throwAccuracy: 76, reactionTime: 0.28, assessmentDate: "2025-11-30", nextAssessmentDate: "2026-05-30", verifiedAthlete: true, history: [{ date: "2025-05-30", yoYoScore: 17.5, sprint20m: 3.2, verticalJump: 54, fieldingEfficiency: 75 }, { date: "2025-11-30", yoYoScore: 18.0, sprint20m: 3.1, verticalJump: 56, fieldingEfficiency: 78 }] },
+  p14: { yoYoScore: 17.5, sprint20m: 3.1, batSpeed: 108, verticalJump: 54, fieldingEfficiency: 76, throwAccuracy: 74, reactionTime: 0.29, assessmentDate: "2025-12-01", nextAssessmentDate: "2026-06-01", verifiedAthlete: true, history: [{ date: "2025-06-01", yoYoScore: 17.0, sprint20m: 3.2, verticalJump: 52, fieldingEfficiency: 73 }, { date: "2025-12-01", yoYoScore: 17.5, sprint20m: 3.1, verticalJump: 54, fieldingEfficiency: 76 }] },
+  p15: { yoYoScore: 19.5, sprint20m: 2.8, bowlingSpeed: 143, verticalJump: 64, fieldingEfficiency: 74, throwAccuracy: 86, reactionTime: 0.24, assessmentDate: "2025-12-12", nextAssessmentDate: "2026-06-12", verifiedAthlete: true, history: [{ date: "2025-06-12", yoYoScore: 19.0, sprint20m: 2.9, verticalJump: 61, fieldingEfficiency: 70 }, { date: "2025-12-12", yoYoScore: 19.5, sprint20m: 2.8, verticalJump: 64, fieldingEfficiency: 74 }] },
+  p16: { yoYoScore: 15.5, sprint20m: 3.4, bowlingSpeed: 122, verticalJump: 44, fieldingEfficiency: 62, throwAccuracy: 66, reactionTime: 0.32, assessmentDate: "2025-10-05", nextAssessmentDate: "2026-04-05", verifiedAthlete: false, history: [{ date: "2025-10-05", yoYoScore: 15.5, sprint20m: 3.4, verticalJump: 44, fieldingEfficiency: 62 }] },
+};
+
+export function generateACPIRankings(): (Player & { acpiScore: ACPIScore; formStatus: FormStatus })[] {
+  const ranked = players.map((player) => {
+    const matches = playerMatchHistory[player.id] || [];
+    const acpiScore = calculateACPI(player, matches);
+    const formStatus = getFormStatus(matches, player.role);
+    return { ...player, acpiScore, formStatus };
+  });
+
+  ranked.sort((a, b) => b.acpiScore.overall - a.acpiScore.overall);
+
+  ranked.forEach((p, i) => {
+    p.acpiScore.nationalRank = i + 1;
+    p.acpiScore.rankChange = Math.floor(Math.random() * 7) - 3;
+  });
+
+  const stateGroups: Record<string, typeof ranked> = {};
+  ranked.forEach((p) => {
+    if (!stateGroups[p.state]) stateGroups[p.state] = [];
+    stateGroups[p.state].push(p);
+  });
+  Object.values(stateGroups).forEach((group) => {
+    group.forEach((p, i) => { p.acpiScore.stateRank = i + 1; });
+  });
+
+  return ranked;
+}
+
+export const performanceFeedItems: PerformanceFeedItem[] = [
+  { id: "pf1", playerId: "p8", playerName: "Rahul Desai", type: "top-score", title: "Massive Century!", description: "Rahul Desai smashed an unbeaten 142 off 95 balls against New York XI in the MLC Development League", value: "142*", date: "2026-02-12", state: "Illinois", league: "MLC Dev" },
+  { id: "pf2", playerId: "p5", playerName: "Sipho Ndlovu", type: "best-bowling", title: "6-Wicket Haul!", description: "Sipho Ndlovu took 6/31 with devastating pace bowling against Western Cape", value: "6/31", date: "2026-02-13", state: "Gauteng", league: "CSA Youth" },
+  { id: "pf3", playerId: "p15", playerName: "Tom Mitchell", type: "best-bowling", title: "Devastating Spell", description: "Tom Mitchell ripped through Canterbury with 6/22 in the NZC Youth T20", value: "6/22", date: "2026-02-13", state: "Auckland", league: "NZC Youth" },
+  { id: "pf4", playerId: "p4", playerName: "Kieron Baptiste", type: "fastest-innings", title: "Blitz Knock!", description: "Kieron Baptiste blasted 95 off just 68 balls with 8 sixes against Jamaica U19", value: "95 (68)", date: "2026-02-11", state: "Trinidad", league: "CWI U19" },
+  { id: "pf5", playerId: "p1", playerName: "Arjun Patel", type: "form-spike", title: "Form Spike Alert", description: "Arjun Patel has scored 87, 45, and 112 in his last 3 matches - now rated Red Hot", value: "Red Hot", date: "2026-02-10", state: "Gujarat", league: "State U17" },
+  { id: "pf6", playerId: "p11", playerName: "Tamim Hossain", type: "best-bowling", title: "Chinaman Magic", description: "Tamim Hossain bamboozled Chittagong Division with unplayable 5/14", value: "5/14", date: "2026-02-09", state: "Dhaka Division", league: "BCB Youth" },
+  { id: "pf7", playerId: "p7", playerName: "Sunil Perera", type: "best-bowling", title: "Spin Masterclass", description: "Sunil Perera spun a web with 5/18 against Southern Province U17 in Galle", value: "5/18", date: "2026-02-10", state: "Western Province", league: "SLC U17" },
+  { id: "pf8", playerId: "p8", playerName: "Rahul Desai", type: "hot-prospect", title: "Hot Prospect Alert", description: "Rahul Desai averaging 80.4 in last 5 matches with 2 centuries. MLC franchise scouts taking notice", value: "ACPI 88", date: "2026-02-12", state: "Illinois", league: "MLC Dev" },
+  { id: "pf9", playerId: "p2", playerName: "Jake Thompson", type: "rank-movement", title: "Rank Up!", description: "Jake Thompson moved up 3 spots in the national bowling rankings after 17 wickets in 5 matches", value: "+3", date: "2026-02-12", state: "New South Wales", league: "Shield Colts" },
+  { id: "pf10", playerId: "p10", playerName: "Ryan van der Berg", type: "form-spike", title: "All-Round Brilliance", description: "Ryan van der Berg scored 282 runs and took 12 wickets in his last 5 matches", value: "In Form", date: "2026-02-11", state: "Western Cape", league: "CSA Provincial" },
+  { id: "pf11", playerId: "p3", playerName: "Rashid Mohammed", type: "hot-prospect", title: "Hot Prospect", description: "Rashid Mohammed's all-round ability (221 runs + 12 wickets in 5 matches) catching PSL attention", value: "ACPI 75", date: "2026-02-08", state: "Punjab", league: "PCB Youth" },
+  { id: "pf12", playerId: "p13", playerName: "Navjot Gill", type: "top-score", title: "Canadian Record!", description: "Navjot Gill hit 82 off 60 balls against Quebec XI in Cricket Canada League", value: "82", date: "2026-01-30", state: "Ontario", league: "Cricket Canada" },
+  { id: "pf13", playerId: "p14", playerName: "Mohammed Al-Rashid", type: "top-score", title: "UAE Star Shines", description: "Mohammed Al-Rashid scored a brilliant 92 off 65 balls against Abu Dhabi U17", value: "92", date: "2026-02-08", state: "Dubai", league: "Emirates Youth" },
+  { id: "pf14", playerId: "p16", playerName: "Ravi Kumar", type: "form-spike", title: "Chennai Express", description: "Left-arm quick Ravi Kumar took 4/12 in latest match, now with 16 wickets in last 5 games", value: "Steady", date: "2026-02-09", state: "Tamil Nadu", league: "TNCA U15" },
+  { id: "pf15", playerId: "p12", playerName: "Aarav Gupta", type: "top-score", title: "Delhi Delight", description: "Aarav Gupta hit 78 off 58 balls against UP U15 in the DDCA Championship", value: "78", date: "2026-02-10", state: "Delhi", league: "DDCA U15" },
+  { id: "pf16", playerId: "p6", playerName: "Oliver Hughes", type: "rank-movement", title: "Rising Through Ranks", description: "Oliver Hughes climbed 2 positions in the U15 national rankings after consistent performances", value: "+2", date: "2026-02-09", state: "Yorkshire", league: "ECB U15" },
+];
