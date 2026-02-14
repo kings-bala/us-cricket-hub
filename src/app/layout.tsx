@@ -3,8 +3,8 @@ import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
-  title: "CricketHub Global - International Cricket Talent Discovery Platform",
-  description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
+  title: "CricVerse - Global Cricket Talent Discovery Platform",
+  description: "The global cricket talent universe. AI-powered video analysis, T20 league scouting, coach directory, and professional talent management.",
 };
 
 export default function RootLayout({

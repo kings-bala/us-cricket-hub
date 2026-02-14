@@ -58,7 +58,11 @@ export default function ScoutingPage() {
                 <Image src={league.bgImage} alt={league.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" sizes="128px" />
                 <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
                 <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
-                  <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  {league.logo ? (
+                    <Image src={league.logo} alt={league.name} width={36} height={36} className="object-contain drop-shadow-lg mb-1" />
+                  ) : (
+                    <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  )}
                   <p className="text-[10px] text-white/70">{league.teams} teams</p>
                 </div>
               </div>
