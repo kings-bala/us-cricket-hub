@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
+import { players, t20Teams, t20Leagues, regionColors, roleIcons, leagueBrandColors } from "@/data/mock";
 import { AgeGroup, PlayerRole, BowlingStyle } from "@/types";
 
 export default function ScoutingPage() {
@@ -50,32 +50,52 @@ export default function ScoutingPage() {
         </div>
       </div>
 
+      <div className="flex gap-3 overflow-x-auto pb-3 mb-6 scrollbar-hide">
+        {t20Leagues.map((league) => {
+          return (
+            <div key={league.id} className="flex-shrink-0">
+              <div className={`relative rounded-xl overflow-hidden h-20 w-32 cursor-pointer group`}>
+                <Image src={league.bgImage} alt={league.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" sizes="128px" />
+                <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
+                <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
+                  <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  <p className="text-[10px] text-white/70">{league.teams} teams</p>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <div className="grid lg:grid-cols-4 gap-4 mb-6">
-        {t20Teams.slice(0, 4).map((team) => (
-          <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
-                {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+        {t20Teams.slice(0, 4).map((team) => {
+          const colors = leagueBrandColors[team.league] || { gradient: "from-purple-500 to-blue-500", bg: "bg-slate-500/20", text: "text-slate-400" };
+          return (
+            <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
+              <div className="flex items-center gap-3 mb-2">
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-white font-bold text-sm`}>
+                  {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{team.name}</p>
+                  <p className="text-xs text-slate-400">{team.city} <span className={`${colors.text} font-medium`}>{team.league}</span></p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-semibold text-white">{team.name}</p>
-                <p className="text-xs text-slate-400">{team.city} &middot; {team.league}</p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Local Quota</span>
+                <span className={`font-semibold ${team.localFilled >= team.localQuota ? "text-emerald-400" : "text-amber-400"}`}>
+                  {team.localFilled}/{team.localQuota}
+                </span>
+              </div>
+              <div className="w-full bg-slate-700 rounded-full h-1.5 mt-1">
+                <div
+                  className={`h-1.5 rounded-full ${team.localFilled >= team.localQuota ? "bg-emerald-500" : "bg-amber-500"}`}
+                  style={{ width: `${(team.localFilled / team.localQuota) * 100}%` }}
+                />
               </div>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Local Quota</span>
-              <span className={`font-semibold ${team.localFilled >= team.localQuota ? "text-emerald-400" : "text-amber-400"}`}>
-                {team.localFilled}/{team.localQuota}
-              </span>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-1.5 mt-1">
-              <div
-                className={`h-1.5 rounded-full ${team.localFilled >= team.localQuota ? "bg-emerald-500" : "bg-amber-500"}`}
-                style={{ width: `${(team.localFilled / team.localQuota) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 mb-6">
