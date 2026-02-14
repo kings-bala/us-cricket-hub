@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 import { coaches } from "@/data/mock";
 import { Region } from "@/types";
 
@@ -99,9 +100,13 @@ export default function CoachesPage() {
         {filtered.map((coach) => (
           <div key={coach.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-emerald-500/50 transition-all group">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
-                {coach.name.split(" ").map((n) => n[0]).join("")}
-              </div>
+              {coach.avatar ? (
+                <Image src={coach.avatar} alt={coach.name} width={56} height={56} className="w-14 h-14 rounded-full object-cover" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                  {coach.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+              )}
               <div>
                 <h3 className="text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors">
                   {coach.name}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Player } from "@/types";
 import { regionColors, roleIcons } from "@/data/mock";
 
@@ -16,9 +17,13 @@ export default function PlayerCard({ player, rank }: PlayerCardProps) {
             {rank && (
               <span className="text-2xl font-bold text-slate-600 w-8">#{rank}</span>
             )}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
-              {player.name.split(" ").map((n) => n[0]).join("")}
-            </div>
+            {player.avatar ? (
+              <Image src={player.avatar} alt={player.name} width={48} height={48} className="w-12 h-12 rounded-full object-cover" />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
+                {player.name.split(" ").map((n) => n[0]).join("")}
+              </div>
+            )}
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-white group-hover:text-emerald-400 transition-colors">

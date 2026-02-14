@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { agents, players } from "@/data/mock";
 
 export default function AgentsPage() {
@@ -45,9 +46,13 @@ export default function AgentsPage() {
             <Link key={agent.id} href={`/agents/${agent.id}`}>
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-emerald-500/50 transition-all group h-full">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                    {agent.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
+                  {agent.avatar ? (
+                    <Image src={agent.avatar} alt={agent.name} width={56} height={56} className="w-14 h-14 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                      {agent.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
+                  )}
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors">
@@ -93,9 +98,13 @@ export default function AgentsPage() {
                   <p className="text-xs text-slate-500 mb-2">Current Stable ({agentPlayers.length} players)</p>
                   <div className="flex -space-x-2">
                     {agentPlayers.slice(0, 5).map((p) => (
-                      <div key={p.id} className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-800">
-                        {p.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
+                      p.avatar ? (
+                        <Image key={p.id} src={p.avatar} alt={p.name} width={32} height={32} className="w-8 h-8 rounded-full object-cover border-2 border-slate-800" />
+                      ) : (
+                        <div key={p.id} className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold border-2 border-slate-800">
+                          {p.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                      )
                     ))}
                     {agentPlayers.length > 5 && (
                       <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white text-xs border-2 border-slate-800">

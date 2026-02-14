@@ -144,6 +144,7 @@ export interface Tournament {
 export interface Coach {
   id: string;
   name: string;
+  avatar: string;
   country: string;
   region: Region;
   specialization: string;
