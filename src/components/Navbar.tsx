@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
@@ -91,7 +92,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/coaches", label: "Connect with Coach", desc: "Find a coach" },
     ]},
     { title: "Store", id: "store", links: [
-      { href: "/sponsors", label: "Merchandise Store", desc: "Gear & sponsors" },
+      { href: "/store", label: "Merchandise Store", desc: "Cricket gear & equipment" },
     ]},
   ],
   agent: [
@@ -134,6 +135,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
 
 export default function Navbar() {
   const [role, setRole] = useState<UserRole>("player");
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
@@ -170,7 +172,7 @@ export default function Navbar() {
               <span className="text-xs text-slate-400">View as:</span>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
+                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setOpenDropdown(null); setMobileOpen(false); router.push("/"); }}
                 className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[role]}`}
               >
                 {(Object.keys(roleLabels) as UserRole[]).map((r) => (
@@ -226,7 +228,7 @@ export default function Navbar() {
               <span className="text-xs text-slate-400">View as:</span>
               <select
                 value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
+                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setOpenDropdown(null); setMobileOpen(false); router.push("/"); }}
                 className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[role]}`}
               >
                 {(Object.keys(roleLabels) as UserRole[]).map((r) => (
