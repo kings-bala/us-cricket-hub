@@ -136,7 +136,8 @@ export default function Home() {
   return (
     <div>
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-slate-900 to-blue-900/30" />
+        <Image src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1920&h=1080&fit=crop" alt="Cricket stadium" fill className="object-cover opacity-20" priority sizes="100vw" />
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/60 via-slate-900/80 to-blue-900/60" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
@@ -176,6 +177,26 @@ export default function Home() {
             <div key={stat.label} className="bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-xl p-4 text-center">
               <p className="text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
               <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="py-10 overflow-hidden border-y border-slate-700/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+          <h2 className="text-xl font-bold text-white">Powering 12 T20 Leagues Worldwide</h2>
+        </div>
+        <div className="flex gap-4 animate-scroll px-4">
+          {[...t20Leagues, ...t20Leagues].map((league, i) => (
+            <div key={`${league.id}-${i}`} className="flex-shrink-0 w-36">
+              <div className="group relative rounded-xl overflow-hidden h-24 cursor-pointer">
+                <Image src={league.bgImage} alt={league.name} fill className="object-cover" sizes="144px" />
+                <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
+                <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
+                  <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  <p className="text-[10px] text-white/80 mt-0.5">{league.country}</p>
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -352,12 +373,19 @@ export default function Home() {
       {(role === "owner" || role === "sponsor") && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-bold text-white mb-6">T20 Leagues Worldwide</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {t20Leagues.map((league) => (
-              <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:border-emerald-500/50 transition-all">
-                <p className="text-sm font-bold text-white">{league.id}</p>
-                <p className="text-xs text-slate-400 mt-1">{league.country}</p>
-                <p className="text-xs text-emerald-400 mt-1">{league.teams} teams</p>
+              <div key={league.id} className="group relative rounded-xl overflow-hidden h-44 cursor-pointer">
+                <Image src={league.bgImage} alt={league.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" sizes="(max-width: 768px) 50vw, 25vw" />
+                <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-75 group-hover:opacity-85 transition-opacity`} />
+                <div className="absolute inset-0 flex flex-col justify-end p-4">
+                  <p className="text-lg font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  <p className="text-sm font-medium text-white/90">{league.name}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-white/80">{league.country}</span>
+                    <span className="text-xs bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{league.teams} teams</span>
+                  </div>
+                </div>
               </div>
             ))}
           </div>

@@ -13,6 +13,8 @@ export interface T20League {
   country: string;
   region: Region;
   logo: string;
+  bgImage: string;
+  brandColor: string;
   localQuota: number;
   localFilled: number;
   teams: number;

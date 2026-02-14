@@ -1,18 +1,18 @@
 import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach } from "@/types";
 
 export const t20Leagues: T20League[] = [
-  { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
-  { id: "BBL", name: "Big Bash League", country: "Australia", region: "Oceania", logo: "", localQuota: 6, localFilled: 4, teams: 8, season: "Dec-Feb" },
-  { id: "PSL", name: "Pakistan Super League", country: "Pakistan", region: "South Asia", logo: "", localQuota: 7, localFilled: 5, teams: 6, season: "Feb-Mar" },
-  { id: "CPL", name: "Caribbean Premier League", country: "West Indies", region: "Caribbean", logo: "", localQuota: 6, localFilled: 3, teams: 6, season: "Aug-Oct" },
-  { id: "SA20", name: "SA20", country: "South Africa", region: "Africa", logo: "", localQuota: 7, localFilled: 4, teams: 6, season: "Jan-Feb" },
-  { id: "THE100", name: "The Hundred", country: "England", region: "Europe", logo: "", localQuota: 5, localFilled: 3, teams: 8, season: "Jul-Aug" },
-  { id: "MLC", name: "Major League Cricket", country: "USA", region: "Americas", logo: "", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
-  { id: "BPL", name: "Bangladesh Premier League", country: "Bangladesh", region: "South Asia", logo: "", localQuota: 7, localFilled: 5, teams: 7, season: "Jan-Feb" },
-  { id: "LPL", name: "Lanka Premier League", country: "Sri Lanka", region: "South Asia", logo: "", localQuota: 7, localFilled: 4, teams: 5, season: "Jul-Aug" },
-  { id: "ILT20", name: "International League T20", country: "UAE", region: "Middle East", logo: "", localQuota: 2, localFilled: 1, teams: 6, season: "Jan-Feb" },
-  { id: "SSA", name: "Super Smash", country: "New Zealand", region: "Oceania", logo: "", localQuota: 6, localFilled: 5, teams: 6, season: "Nov-Feb" },
-  { id: "GT20", name: "Global T20 Canada", country: "Canada", region: "Americas", logo: "", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
+  { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=600&h=400&fit=crop", brandColor: "from-blue-600 to-indigo-900", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
+  { id: "BBL", name: "Big Bash League", country: "Australia", region: "Oceania", logo: "https://images.unsplash.com/photo-1512719994953-d1e8429dbcf2?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1512719994953-d1e8429dbcf2?w=600&h=400&fit=crop", brandColor: "from-teal-500 to-green-800", localQuota: 6, localFilled: 4, teams: 8, season: "Dec-Feb" },
+  { id: "PSL", name: "Pakistan Super League", country: "Pakistan", region: "South Asia", logo: "https://images.unsplash.com/photo-1607734834519-d5e0a5a23e60?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1607734834519-d5e0a5a23e60?w=600&h=400&fit=crop", brandColor: "from-green-600 to-emerald-900", localQuota: 7, localFilled: 5, teams: 6, season: "Feb-Mar" },
+  { id: "CPL", name: "Caribbean Premier League", country: "West Indies", region: "Caribbean", logo: "https://images.unsplash.com/photo-1594470117722-de4b9a02ebed?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1594470117722-de4b9a02ebed?w=600&h=400&fit=crop", brandColor: "from-yellow-500 to-amber-800", localQuota: 6, localFilled: 3, teams: 6, season: "Aug-Oct" },
+  { id: "SA20", name: "SA20", country: "South Africa", region: "Africa", logo: "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=600&h=400&fit=crop", brandColor: "from-orange-500 to-red-800", localQuota: 7, localFilled: 4, teams: 6, season: "Jan-Feb" },
+  { id: "THE100", name: "The Hundred", country: "England", region: "Europe", logo: "https://images.unsplash.com/photo-1625401586060-1e3312e7de11?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1625401586060-1e3312e7de11?w=600&h=400&fit=crop", brandColor: "from-purple-500 to-violet-900", localQuota: 5, localFilled: 3, teams: 8, season: "Jul-Aug" },
+  { id: "MLC", name: "Major League Cricket", country: "USA", region: "Americas", logo: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=600&h=400&fit=crop", brandColor: "from-red-600 to-blue-800", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
+  { id: "BPL", name: "Bangladesh Premier League", country: "Bangladesh", region: "South Asia", logo: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&h=400&fit=crop", brandColor: "from-lime-500 to-green-800", localQuota: 7, localFilled: 5, teams: 7, season: "Jan-Feb" },
+  { id: "LPL", name: "Lanka Premier League", country: "Sri Lanka", region: "South Asia", logo: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=600&h=400&fit=crop", brandColor: "from-red-500 to-yellow-700", localQuota: 7, localFilled: 4, teams: 5, season: "Jul-Aug" },
+  { id: "ILT20", name: "International League T20", country: "UAE", region: "Middle East", logo: "https://images.unsplash.com/photo-1675693303492-516d62feab1a?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1675693303492-516d62feab1a?w=600&h=400&fit=crop", brandColor: "from-amber-500 to-rose-900", localQuota: 2, localFilled: 1, teams: 6, season: "Jan-Feb" },
+  { id: "SSA", name: "Super Smash", country: "New Zealand", region: "Oceania", logo: "https://images.unsplash.com/photo-1622225074638-94b0e0f53a04?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1622225074638-94b0e0f53a04?w=600&h=400&fit=crop", brandColor: "from-orange-500 to-gray-900", localQuota: 6, localFilled: 5, teams: 6, season: "Nov-Feb" },
+  { id: "GT20", name: "Global T20 Canada", country: "Canada", region: "Americas", logo: "https://images.unsplash.com/photo-1663832952954-9a6a7ce8ac12?w=80&h=80&fit=crop", bgImage: "https://images.unsplash.com/photo-1663832952954-9a6a7ce8ac12?w=600&h=400&fit=crop", brandColor: "from-red-600 to-rose-900", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
 ];
 
 export const players: Player[] = [
@@ -399,6 +399,21 @@ export const roleIcons: Record<string, string> = {
   Bowler: "W",
   "All-Rounder": "AR",
   "Wicket-Keeper": "WK",
+};
+
+export const leagueBrandColors: Record<string, { gradient: string; bg: string; text: string }> = {
+  IPL: { gradient: "from-blue-600 to-indigo-900", bg: "bg-blue-500/20", text: "text-blue-400" },
+  BBL: { gradient: "from-teal-500 to-green-800", bg: "bg-teal-500/20", text: "text-teal-400" },
+  PSL: { gradient: "from-green-600 to-emerald-900", bg: "bg-green-500/20", text: "text-green-400" },
+  CPL: { gradient: "from-yellow-500 to-amber-800", bg: "bg-yellow-500/20", text: "text-yellow-400" },
+  SA20: { gradient: "from-orange-500 to-red-800", bg: "bg-orange-500/20", text: "text-orange-400" },
+  THE100: { gradient: "from-purple-500 to-violet-900", bg: "bg-purple-500/20", text: "text-purple-400" },
+  MLC: { gradient: "from-red-600 to-blue-800", bg: "bg-red-500/20", text: "text-red-400" },
+  BPL: { gradient: "from-lime-500 to-green-800", bg: "bg-lime-500/20", text: "text-lime-400" },
+  LPL: { gradient: "from-red-500 to-yellow-700", bg: "bg-rose-500/20", text: "text-rose-400" },
+  ILT20: { gradient: "from-amber-500 to-rose-900", bg: "bg-amber-500/20", text: "text-amber-400" },
+  SSA: { gradient: "from-orange-500 to-gray-900", bg: "bg-orange-500/20", text: "text-orange-400" },
+  GT20: { gradient: "from-red-600 to-rose-900", bg: "bg-red-500/20", text: "text-red-400" },
 };
 
 export const countryFlags: Record<string, string> = {
