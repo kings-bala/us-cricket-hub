@@ -1,7 +1,48 @@
+"use client";
+
 import Link from "next/link";
 import { players, tournaments, t20Leagues, coaches } from "@/data/mock";
+import { useRole } from "@/context/RoleContext";
+import { UserRole } from "@/types";
+
+const heroContent: Record<UserRole, { badge: string; heading: string; highlight: string; desc: string; cta1: { label: string; href: string }; cta2: { label: string; href: string } }> = {
+  player: {
+    badge: "Discover Cricket Talent Worldwide",
+    heading: "From Street Cricket to",
+    highlight: "Global T20 Leagues",
+    desc: "Upload your profile, get AI video analysis, connect with world-class coaches, and get discovered by T20 leagues worldwide.",
+    cta1: { label: "Create Your Profile", href: "/players" },
+    cta2: { label: "AI Video Analysis", href: "/analyze" },
+  },
+  agent: {
+    badge: "Global Talent Management Platform",
+    heading: "Discover & Manage",
+    highlight: "World-Class Cricket Talent",
+    desc: "Build your stable of international players. Connect with T20 franchises across IPL, BBL, CPL, PSL, SA20, and more.",
+    cta1: { label: "Browse Players", href: "/players" },
+    cta2: { label: "Pro Scouting Dashboard", href: "/scouting" },
+  },
+  owner: {
+    badge: "T20 Franchise Scouting Hub",
+    heading: "Scout Global Talent for Your",
+    highlight: "T20 Franchise",
+    desc: "Advanced scouting tools to find draft-ready talent across 12+ countries. Meet local quotas with verified player data and AI analysis.",
+    cta1: { label: "Pro Scouting Dashboard", href: "/scouting" },
+    cta2: { label: "Browse Players", href: "/players" },
+  },
+  sponsor: {
+    badge: "Global Cricket Sponsorship Platform",
+    heading: "Reach 2.5 Billion Cricket Fans",
+    highlight: "Worldwide",
+    desc: "Sponsor tournaments, back rising stars, and brand your presence across the $30B+ global cricket ecosystem.",
+    cta1: { label: "Sponsorship Opportunities", href: "/sponsors" },
+    cta2: { label: "View Players", href: "/players" },
+  },
+};
 
 export default function Home() {
+  const { role } = useRole();
+  const hero = heroContent[role];
   const topPlayers = [...players].sort((a, b) => b.stats.runs - a.stats.runs).slice(0, 4);
   const upcomingTournaments = tournaments.filter((t) => t.status === "upcoming").slice(0, 3);
 
@@ -13,30 +54,29 @@ export default function Home() {
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
               <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-sm text-emerald-400">Discover Cricket Talent Worldwide</span>
+              <span className="text-sm text-emerald-400">{hero.badge}</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              From Street Cricket to{" "}
+              {hero.heading}{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                Global T20 Leagues
+                {hero.highlight}
               </span>
             </h1>
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              The global talent discovery platform connecting youth cricketers from every country with
-              IPL, BBL, CPL, PSL, SA20, The Hundred, and more. Upload videos, get AI analysis, connect with coaches.
+              {hero.desc}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/players"
+                href={hero.cta1.href}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors"
               >
-                Explore Players
+                {hero.cta1.label}
               </Link>
               <Link
-                href="/scouting"
+                href={hero.cta2.href}
                 className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-full font-semibold border border-slate-700 transition-colors"
               >
-                Pro Scouting Dashboard
+                {hero.cta2.label}
               </Link>
             </div>
           </div>
