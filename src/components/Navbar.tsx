@@ -86,7 +86,6 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
       { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
-      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
     ]},
     { title: "Training", id: "training", links: [
       { href: "/dashboard", label: "Idol Capture", desc: "Mirror routines & goals" },
@@ -102,7 +101,6 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
       { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
-      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
     ]},
     { title: "Tools", id: "tools", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
@@ -115,7 +113,6 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
       { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
-      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
     ]},
     { title: "Tools", id: "tools", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
@@ -138,7 +135,6 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
       { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
-      { href: "/performance-feed", label: "Performance Feed", desc: "Daily highlights" },
     ]},
     { title: "Tools", id: "tools", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
