@@ -59,7 +59,7 @@ export default function ScoutingPage() {
                 <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
                 <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
                   {league.logo ? (
-                    <Image src={league.logo} alt={league.name} width={36} height={36} className="object-contain drop-shadow-lg mb-1" />
+                    <Image src={league.logo} alt={league.name} width={36} height={36} className="object-contain drop-shadow-lg mb-1" unoptimized />
                   ) : (
                     <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
                   )}
@@ -78,7 +78,7 @@ export default function ScoutingPage() {
             <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
               <div className="flex items-center gap-3 mb-2">
                 {team.logo ? (
-                  <Image src={team.logo} alt={team.name} width={40} height={40} className="w-10 h-10 object-contain" />
+                  <Image src={team.logo} alt={team.name} width={40} height={40} className="w-10 h-10 object-contain" unoptimized />
                 ) : (
                   <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-white font-bold text-sm`}>
                     {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
