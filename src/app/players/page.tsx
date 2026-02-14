@@ -3,12 +3,12 @@
 import { useState, useMemo } from "react";
 import PlayerCard from "@/components/PlayerCard";
 import { players } from "@/data/mock";
-import { AgeGroup, Region, PlayerRole } from "@/types";
+import { AgeGroup, PlayerRole } from "@/types";
 
 export default function PlayersPage() {
   const [search, setSearch] = useState("");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
-  const [region, setRegion] = useState<Region | "All">("All");
+  const [country, setCountry] = useState<string>("All");
   const [streetOnly, setStreetOnly] = useState(false);
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [sortBy, setSortBy] = useState<"runs" | "wickets" | "average" | "name">("runs");
@@ -28,7 +28,7 @@ export default function PlayersPage() {
       );
     }
     if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
-    if (region !== "All") result = result.filter((p) => p.region === region);
+    if (country !== "All") result = result.filter((p) => p.country === country);
     if (role !== "All") result = result.filter((p) => p.role === role);
     if (verifiedOnly) result = result.filter((p) => p.verified);
     if (streetOnly) result = result.filter((p) => p.streetCricketer);
@@ -49,7 +49,12 @@ export default function PlayersPage() {
     }
 
     return result;
-  }, [search, ageGroup, region, role, sortBy, verifiedOnly, streetOnly]);
+  }, [search, ageGroup, country, role, sortBy, verifiedOnly, streetOnly]);
+
+  const countries = useMemo(() => {
+    const set = new Set(players.map((p) => p.country));
+    return Array.from(set).sort();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -83,18 +88,14 @@ export default function PlayersPage() {
             <option value="U21">U21</option>
           </select>
           <select
-            value={region}
-            onChange={(e) => setRegion(e.target.value as Region | "All")}
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
             className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
           >
-            <option value="All">All Regions</option>
-            <option value="South Asia">South Asia</option>
-            <option value="Oceania">Oceania</option>
-            <option value="Europe">Europe</option>
-            <option value="Caribbean">Caribbean</option>
-            <option value="Africa">Africa</option>
-            <option value="Americas">Americas</option>
-            <option value="Middle East">Middle East</option>
+            <option value="All">All Countries</option>
+            {countries.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
           </select>
           <select
             value={role}
@@ -156,7 +157,7 @@ export default function PlayersPage() {
             onClick={() => {
               setSearch("");
               setAgeGroup("All");
-              setRegion("All");
+              setCountry("All");
               setStreetOnly(false);
               setRole("All");
               setVerifiedOnly(false);

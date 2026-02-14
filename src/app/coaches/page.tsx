@@ -3,13 +3,12 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { coaches } from "@/data/mock";
-import { Region } from "@/types";
 
 type Specialization = "Batting" | "Bowling" | "Fielding" | "Wicket-Keeping" | "All-Round" | "Fitness";
 
 export default function CoachesPage() {
   const [search, setSearch] = useState("");
-  const [region, setRegion] = useState<Region | "All">("All");
+  const [country, setCountry] = useState<string>("All");
   const [specialization, setSpecialization] = useState<Specialization | "All">("All");
   const [minRating, setMinRating] = useState(0);
 
@@ -25,12 +24,17 @@ export default function CoachesPage() {
           c.specialization.toLowerCase().includes(q)
       );
     }
-    if (region !== "All") result = result.filter((c) => c.region === region);
+    if (country !== "All") result = result.filter((c) => c.country === country);
     if (specialization !== "All") result = result.filter((c) => c.specialization === specialization);
     if (minRating > 0) result = result.filter((c) => c.rating >= minRating);
 
     return result.sort((a, b) => b.rating - a.rating);
-  }, [search, region, specialization, minRating]);
+  }, [search, country, specialization, minRating]);
+
+  const countries = useMemo(() => {
+    const set = new Set(coaches.map((c) => c.country));
+    return Array.from(set).sort();
+  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -54,18 +58,14 @@ export default function CoachesPage() {
             className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
           <select
-            value={region}
-            onChange={(e) => setRegion(e.target.value as Region | "All")}
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
             className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
           >
-            <option value="All">All Regions</option>
-            <option value="South Asia">South Asia</option>
-            <option value="Oceania">Oceania</option>
-            <option value="Europe">Europe</option>
-            <option value="Caribbean">Caribbean</option>
-            <option value="Africa">Africa</option>
-            <option value="Americas">Americas</option>
-            <option value="Middle East">Middle East</option>
+            <option value="All">All Countries</option>
+            {countries.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
           </select>
           <select
             value={specialization}
@@ -176,7 +176,7 @@ export default function CoachesPage() {
         <div className="text-center py-16">
           <p className="text-slate-500 text-lg">No coaches match your filters</p>
           <button
-            onClick={() => { setSearch(""); setRegion("All"); setSpecialization("All"); setMinRating(0); }}
+            onClick={() => { setSearch(""); setCountry("All"); setSpecialization("All"); setMinRating(0); }}
             className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm"
           >
             Clear all filters
