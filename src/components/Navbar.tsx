@@ -61,9 +61,9 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
-              CH
+              CV
             </div>
-            <span className="font-bold text-lg hidden sm:block">CricketHub Global</span>
+            <span className="font-bold text-lg hidden sm:block">CricVerse</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">

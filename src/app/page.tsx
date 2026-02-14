@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { players, tournaments, t20Leagues, coaches, availableSponsorships } from "@/data/mock";
+import { players, tournaments, t20Leagues, t20Teams, coaches, availableSponsorships } from "@/data/mock";
 import { useRole } from "@/context/RoleContext";
 import { UserRole } from "@/types";
 
@@ -134,7 +134,7 @@ export default function Home() {
   const upcomingTournaments = tournaments.filter((t) => t.status === "upcoming").slice(0, 3);
 
   return (
-    <div>
+    <div key={role}>
       <section className="relative overflow-hidden">
         <Image src="https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=1920&h=1080&fit=crop" alt="Cricket stadium" fill className="object-cover opacity-20" priority sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/60 via-slate-900/80 to-blue-900/60" />
@@ -193,7 +193,11 @@ export default function Home() {
                 <Image src={league.bgImage} alt={league.name} fill className="object-cover" sizes="144px" />
                 <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
                 <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
-                  <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  {league.logo ? (
+                    <Image src={league.logo} alt={league.name} width={40} height={40} className="object-contain drop-shadow-lg mb-1" />
+                  ) : (
+                    <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
+                  )}
                   <p className="text-[10px] text-white/80 mt-0.5">{league.country}</p>
                 </div>
               </div>
@@ -370,6 +374,31 @@ export default function Home() {
         </section>
       )}
 
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white">IPL Teams</h2>
+            <p className="text-slate-400 text-sm mt-1">The biggest T20 league in the world</p>
+          </div>
+          <Link href="/scouting" className="text-sm text-emerald-400 hover:text-emerald-300">View All Teams &rarr;</Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {t20Teams.filter((t) => t.league === "IPL").map((team) => (
+            <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-blue-500/50 transition-all group text-center">
+              {team.logo ? (
+                <Image src={team.logo} alt={team.name} width={56} height={56} className="w-14 h-14 object-contain mx-auto mb-3" />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-indigo-900 flex items-center justify-center text-white font-bold text-lg mx-auto mb-3">
+                  {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                </div>
+              )}
+              <p className="text-sm font-semibold text-white group-hover:text-blue-400 transition-colors">{team.name}</p>
+              <p className="text-xs text-slate-400 mt-1">{team.city}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {(role === "owner" || role === "sponsor") && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <h2 className="text-2xl font-bold text-white mb-6">T20 Leagues Worldwide</h2>
@@ -379,9 +408,15 @@ export default function Home() {
                 <Image src={league.bgImage} alt={league.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" sizes="(max-width: 768px) 50vw, 25vw" />
                 <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-75 group-hover:opacity-85 transition-opacity`} />
                 <div className="absolute inset-0 flex flex-col justify-end p-4">
-                  <p className="text-lg font-extrabold text-white drop-shadow-lg">{league.id}</p>
-                  <p className="text-sm font-medium text-white/90">{league.name}</p>
-                  <div className="flex items-center justify-between mt-2">
+                  <div className="flex items-center gap-2 mb-1">
+                    {league.logo ? (
+                      <Image src={league.logo} alt={league.name} width={32} height={32} className="object-contain drop-shadow-lg" />
+                    ) : (
+                      <span className="text-lg font-extrabold text-white drop-shadow-lg">{league.id}</span>
+                    )}
+                    <p className="text-sm font-medium text-white/90">{league.name}</p>
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
                     <span className="text-xs text-white/80">{league.country}</span>
                     <span className="text-xs bg-white/20 backdrop-blur-sm text-white px-2 py-0.5 rounded-full">{league.teams} teams</span>
                   </div>
