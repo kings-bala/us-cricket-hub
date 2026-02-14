@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { players, tournaments, t20Leagues, coaches } from "@/data/mock";
+import Image from "next/image";
+import { players, tournaments, t20Leagues, coaches, availableSponsorships } from "@/data/mock";
 import { useRole } from "@/context/RoleContext";
 import { UserRole } from "@/types";
 
 const heroContent: Record<UserRole, { badge: string; heading: string; highlight: string; desc: string; cta1: { label: string; href: string }; cta2: { label: string; href: string } }> = {
   player: {
-    badge: "Discover Cricket Talent Worldwide",
+    badge: "Your Cricket Journey Starts Here",
     heading: "From Street Cricket to",
     highlight: "Global T20 Leagues",
     desc: "Upload your profile, get AI video analysis, connect with world-class coaches, and get discovered by T20 leagues worldwide.",
@@ -36,14 +37,100 @@ const heroContent: Record<UserRole, { badge: string; heading: string; highlight:
     highlight: "Worldwide",
     desc: "Sponsor tournaments, back rising stars, and brand your presence across the $30B+ global cricket ecosystem.",
     cta1: { label: "Sponsorship Opportunities", href: "/sponsors" },
-    cta2: { label: "View Players", href: "/players" },
+    cta2: { label: "View Rising Stars", href: "/players" },
+  },
+};
+
+const rolePillars: Record<UserRole, { title: string; desc: string; icon: string; href: string }[]> = {
+  player: [
+    { title: "Your Profile", desc: "Upload your profile from any country. Street cricketers to academy stars.", icon: "🏏", href: "/players" },
+    { title: "AI Analysis", desc: "Upload videos and get AI-powered technique feedback on batting, bowling, and fielding.", icon: "🤖", href: "/analyze" },
+    { title: "Find Coaches", desc: "Connect with world-class coaches. Learn from legends like Kumble, Brett Lee, and Lara.", icon: "🎓", href: "/coaches" },
+    { title: "Find an Agent", desc: "Get discovered by international agents with connections to T20 leagues worldwide.", icon: "🤝", href: "/agents" },
+  ],
+  agent: [
+    { title: "Player Registry", desc: "Access verified player profiles with stats, fitness data, and video highlights.", icon: "🏏", href: "/players" },
+    { title: "Pro Scouting", desc: "Advanced filters to find talent by country, role, speed, economy, and draft readiness.", icon: "🔍", href: "/scouting" },
+    { title: "Manage Stable", desc: "Track your players, negotiate contracts, and manage placements across T20 leagues.", icon: "📋", href: "/dashboard" },
+    { title: "League Network", desc: "Connect with IPL, BBL, PSL, CPL, SA20, and more T20 franchise owners.", icon: "🏟️", href: "/scouting" },
+  ],
+  owner: [
+    { title: "Pro Scouting", desc: "Scout global talent with advanced filters. Find draft-ready players instantly.", icon: "🔍", href: "/scouting" },
+    { title: "Player Database", desc: "Verified players across 12 countries with complete stats and fitness data.", icon: "🏏", href: "/players" },
+    { title: "Agent Network", desc: "Connect with licensed agents managing top youth talent worldwide.", icon: "🤝", href: "/agents" },
+    { title: "AI Analysis", desc: "Review AI-powered player technique analysis before making draft decisions.", icon: "🤖", href: "/analyze" },
+  ],
+  sponsor: [
+    { title: "Sponsorships", desc: "Browse leaderboard, tournament, player, and showcase sponsorship opportunities.", icon: "💰", href: "/sponsors" },
+    { title: "Rising Stars", desc: "Back individual players and attach your brand to the next generation of cricket.", icon: "⭐", href: "/players" },
+    { title: "Events", desc: "Sponsor international showcases and tournaments across all cricket regions.", icon: "🏟️", href: "/sponsors" },
+    { title: "Analytics", desc: "Track brand impressions, engagement, and ROI across the cricket ecosystem.", icon: "📊", href: "/dashboard" },
+  ],
+};
+
+const roleStats: Record<UserRole, { label: string; value: string | number }[]> = {
+  player: [
+    { label: "T20 Leagues", value: 12 },
+    { label: "World-Class Coaches", value: 8 },
+    { label: "Countries", value: "12+" },
+    { label: "Verified Agents", value: 4 },
+  ],
+  agent: [
+    { label: "Global Players", value: "16+" },
+    { label: "T20 Leagues", value: 12 },
+    { label: "Countries", value: "12+" },
+    { label: "Placements Made", value: "100+" },
+  ],
+  owner: [
+    { label: "Draft-Ready Players", value: 11 },
+    { label: "T20 Leagues", value: 12 },
+    { label: "Countries Scouted", value: "12+" },
+    { label: "Licensed Agents", value: 4 },
+  ],
+  sponsor: [
+    { label: "Global Cricket Market", value: "$30B+" },
+    { label: "Cricket Fans Worldwide", value: "2.5B+" },
+    { label: "Sponsorship Options", value: "8+" },
+    { label: "T20 Leagues", value: 12 },
+  ],
+};
+
+const roleCta: Record<UserRole, { heading: string; desc: string; cta1: { label: string; href: string }; cta2: { label: string; href: string } }> = {
+  player: {
+    heading: "Ready to Get Discovered?",
+    desc: "Create your profile, upload your highlights, and let the world see your talent. Coaches and agents are watching.",
+    cta1: { label: "Create Free Account", href: "/auth" },
+    cta2: { label: "AI Video Analysis", href: "/analyze" },
+  },
+  agent: {
+    heading: "Start Building Your Stable",
+    desc: "Access the global player registry, connect with T20 franchises, and place your talent in the best leagues.",
+    cta1: { label: "Create Agent Account", href: "/auth" },
+    cta2: { label: "Pro Scouting Dashboard", href: "/scouting" },
+  },
+  owner: {
+    heading: "Find Your Next Star Player",
+    desc: "Advanced scouting tools, verified player data, and AI analysis to help you build a championship-winning squad.",
+    cta1: { label: "Try Pro Dashboard", href: "/scouting" },
+    cta2: { label: "Browse Players", href: "/players" },
+  },
+  sponsor: {
+    heading: "Grow Your Brand in Cricket",
+    desc: "Reach 2.5 billion cricket fans worldwide. Sponsor rising stars, tournaments, and leaderboards across the global ecosystem.",
+    cta1: { label: "View Opportunities", href: "/sponsors" },
+    cta2: { label: "Create Account", href: "/auth" },
   },
 };
 
 export default function Home() {
   const { role } = useRole();
   const hero = heroContent[role];
+  const pillars = rolePillars[role];
+  const stats = roleStats[role];
+  const cta = roleCta[role];
+
   const topPlayers = [...players].sort((a, b) => b.stats.runs - a.stats.runs).slice(0, 4);
+  const topCoaches = coaches.slice(0, 4);
   const upcomingTournaments = tournaments.filter((t) => t.status === "upcoming").slice(0, 3);
 
   return (
@@ -85,12 +172,7 @@ export default function Home() {
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Global Players", value: `${players.length}+` },
-            { label: "T20 Leagues", value: t20Leagues.length },
-            { label: "World-Class Coaches", value: coaches.length },
-            { label: "Countries", value: "12+" },
-          ].map((stat) => (
+          {stats.map((stat) => (
             <div key={stat.label} className="bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-xl p-4 text-center">
               <p className="text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
               <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
@@ -100,17 +182,14 @@ export default function Home() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-2xl font-bold text-white mb-2">How It Works</h2>
-        <p className="text-slate-400 mb-8">Six pillars connecting the global cricket ecosystem</p>
-        <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">
-          {[
-            { title: "Players", desc: "Upload your profile from any country. Street cricketers to academy stars.", icon: "🏏", href: "/players" },
-            { title: "AI Analysis", desc: "Upload videos and get AI-powered technique feedback on batting, bowling, and fielding.", icon: "🤖", href: "/analyze" },
-            { title: "Coaches", desc: "Connect with world-class coaches. Learn from legends like Kumble, Brett Lee, and Lara.", icon: "🎓", href: "/coaches" },
-            { title: "Agents", desc: "Get discovered by international agents with connections to T20 leagues worldwide.", icon: "🤝", href: "/agents" },
-            { title: "T20 Owners", desc: "Scout global talent for IPL, BBL, PSL, CPL, SA20, and more T20 leagues.", icon: "🏟️", href: "/scouting" },
-            { title: "Sponsors", desc: "Back rising stars and tournaments across 8 regions worldwide.", icon: "💰", href: "/sponsors" },
-          ].map((pillar) => (
+        <h2 className="text-2xl font-bold text-white mb-2">
+          {role === "player" ? "Your Path to T20 Cricket" : role === "agent" ? "Your Toolkit" : role === "owner" ? "Scouting Tools" : "Sponsorship Channels"}
+        </h2>
+        <p className="text-slate-400 mb-8">
+          {role === "player" ? "Everything you need to get discovered" : role === "agent" ? "Manage talent and connect with franchises" : role === "owner" ? "Find and evaluate global talent" : "Multiple ways to grow your brand in cricket"}
+        </p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {pillars.map((pillar) => (
             <Link key={pillar.title} href={pillar.href}>
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 hover:border-emerald-500/50 transition-all duration-200 h-full group">
                 <div className="text-3xl mb-3">{pillar.icon}</div>
@@ -122,96 +201,179 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-slate-800/30 border-y border-slate-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Top Prospects</h2>
-              <p className="text-slate-400">Highest run-scorers in the registry</p>
+      {role === "player" && (
+        <section className="bg-slate-800/30 border-y border-slate-700/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Featured Coaches</h2>
+                <p className="text-slate-400">Learn from cricket legends worldwide</p>
+              </div>
+              <Link href="/coaches" className="text-sm text-emerald-400 hover:text-emerald-300">View All &rarr;</Link>
             </div>
-            <Link href="/players" className="text-sm text-emerald-400 hover:text-emerald-300">View All &rarr;</Link>
+            <div className="grid md:grid-cols-4 gap-4">
+              {topCoaches.map((coach) => (
+                <Link key={coach.id} href="/coaches">
+                  <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all group">
+                    <div className="flex items-center gap-3 mb-3">
+                      {coach.avatar ? (
+                        <Image src={coach.avatar} alt={coach.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                          {coach.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold text-white text-sm group-hover:text-emerald-400 transition-colors">{coach.name}</p>
+                        <p className="text-xs text-slate-400">{coach.country}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-center">
+                      <div className="bg-slate-900/50 rounded p-1.5">
+                        <p className="text-xs text-slate-500">Focus</p>
+                        <p className="text-xs font-bold text-white truncate">{coach.specialization}</p>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-1.5">
+                        <p className="text-xs text-slate-500">Rating</p>
+                        <p className="text-sm font-bold text-amber-400">{coach.rating}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
-          <div className="grid md:grid-cols-4 gap-4">
-            {topPlayers.map((player, i) => (
-              <Link key={player.id} href={`/players/${player.id}`}>
-                <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all group">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xl font-bold text-slate-600">#{i + 1}</span>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
-                      {player.name.split(" ").map((n) => n[0]).join("")}
+        </section>
+      )}
+
+      {(role === "agent" || role === "owner") && (
+        <section className="bg-slate-800/30 border-y border-slate-700/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Top Prospects</h2>
+                <p className="text-slate-400">Highest run-scorers in the registry</p>
+              </div>
+              <Link href="/players" className="text-sm text-emerald-400 hover:text-emerald-300">View All &rarr;</Link>
+            </div>
+            <div className="grid md:grid-cols-4 gap-4">
+              {topPlayers.map((player, i) => (
+                <Link key={player.id} href={`/players/${player.id}`}>
+                  <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all group">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-xl font-bold text-slate-600">#{i + 1}</span>
+                      {player.avatar ? (
+                        <Image src={player.avatar} alt={player.name} width={40} height={40} className="w-10 h-10 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                          {player.name.split(" ").map((n) => n[0]).join("")}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-semibold text-white text-sm group-hover:text-emerald-400 transition-colors">{player.name}</p>
+                        <p className="text-xs text-slate-400">{player.ageGroup} &middot; {player.country}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-white text-sm group-hover:text-emerald-400 transition-colors">{player.name}</p>
-                      <p className="text-xs text-slate-400">{player.ageGroup} &middot; {player.country}</p>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="bg-slate-900/50 rounded p-1.5">
+                        <p className="text-xs text-slate-500">Runs</p>
+                        <p className="text-sm font-bold text-white">{player.stats.runs}</p>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-1.5">
+                        <p className="text-xs text-slate-500">Avg</p>
+                        <p className="text-sm font-bold text-white">{player.stats.battingAverage}</p>
+                      </div>
+                      <div className="bg-slate-900/50 rounded p-1.5">
+                        <p className="text-xs text-slate-500">SR</p>
+                        <p className="text-sm font-bold text-white">{player.stats.strikeRate}</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-slate-900/50 rounded p-1.5">
-                      <p className="text-xs text-slate-500">Runs</p>
-                      <p className="text-sm font-bold text-white">{player.stats.runs}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {role === "sponsor" && (
+        <section className="bg-slate-800/30 border-y border-slate-700/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Available Sponsorships</h2>
+                <p className="text-slate-400">Attach your brand to the cricket ecosystem</p>
+              </div>
+              <Link href="/sponsors" className="text-sm text-emerald-400 hover:text-emerald-300">View All &rarr;</Link>
+            </div>
+            <div className="grid md:grid-cols-4 gap-4">
+              {availableSponsorships.slice(0, 4).map((asset) => (
+                <Link key={asset.id} href="/sponsors">
+                  <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/50 transition-all group">
+                    <div className="mb-3">
+                      <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full capitalize">{asset.type}</span>
                     </div>
-                    <div className="bg-slate-900/50 rounded p-1.5">
-                      <p className="text-xs text-slate-500">Avg</p>
-                      <p className="text-sm font-bold text-white">{player.stats.battingAverage}</p>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-1.5">
-                      <p className="text-xs text-slate-500">SR</p>
-                      <p className="text-sm font-bold text-white">{player.stats.strikeRate}</p>
-                    </div>
+                    <h3 className="font-semibold text-white text-sm mb-1 group-hover:text-amber-400 transition-colors">{asset.name}</h3>
+                    <p className="text-xs text-slate-400 mb-3 line-clamp-2">{asset.description}</p>
+                    <p className="text-lg font-bold text-emerald-400">${asset.price.toLocaleString()}</p>
                   </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {(role === "player" || role === "agent") && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <h2 className="text-2xl font-bold text-white mb-2">Upcoming Global Showcases</h2>
+          <p className="text-slate-400 mb-8">
+            {role === "player" ? "Register for camps and tournaments to showcase your talent" : "Send your players to international showcases"}
+          </p>
+          <div className="grid md:grid-cols-3 gap-4">
+            {upcomingTournaments.map((t) => (
+              <div key={t.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full">{t.status}</span>
+                  <span className="text-xs text-slate-400">{t.ageGroup}</span>
                 </div>
-              </Link>
+                <h3 className="text-lg font-semibold text-white mb-2">{t.name}</h3>
+                <div className="space-y-1 text-sm text-slate-400">
+                  <p>📍 {t.venue}</p>
+                  <p>📅 {t.startDate} to {t.endDate}</p>
+                  {t.teams > 0 && <p>🏏 {t.teams} teams</p>}
+                </div>
+              </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <h2 className="text-2xl font-bold text-white mb-2">Upcoming Global Showcases</h2>
-        <p className="text-slate-400 mb-8">International camps and tournaments across all regions</p>
-        <div className="grid md:grid-cols-3 gap-4">
-          {upcomingTournaments.map((t) => (
-            <div key={t.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full">{t.status}</span>
-                <span className="text-xs text-slate-400">{t.ageGroup}</span>
+      {(role === "owner" || role === "sponsor") && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <h2 className="text-2xl font-bold text-white mb-6">T20 Leagues Worldwide</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            {t20Leagues.map((league) => (
+              <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:border-emerald-500/50 transition-all">
+                <p className="text-sm font-bold text-white">{league.id}</p>
+                <p className="text-xs text-slate-400 mt-1">{league.country}</p>
+                <p className="text-xs text-emerald-400 mt-1">{league.teams} teams</p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{t.name}</h3>
-              <div className="space-y-1 text-sm text-slate-400">
-                <p>📍 {t.venue}</p>
-                <p>📅 {t.startDate} to {t.endDate}</p>
-                {t.teams > 0 && <p>🏏 {t.teams} teams</p>}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-2xl font-bold text-white mb-6">T20 Leagues Worldwide</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
-          {t20Leagues.map((league) => (
-            <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:border-emerald-500/50 transition-all">
-              <p className="text-sm font-bold text-white">{league.id}</p>
-              <p className="text-xs text-slate-400 mt-1">{league.country}</p>
-              <p className="text-xs text-emerald-400 mt-1">{league.teams} teams</p>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="bg-gradient-to-r from-emerald-900/50 to-blue-900/50 border-y border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Go Global?</h2>
-          <p className="text-slate-300 mb-8 max-w-xl mx-auto">
-            Whether you&apos;re a street cricketer in Mumbai, a coach in Sydney, or a T20 franchise owner&mdash;join the platform connecting cricket talent worldwide.
-          </p>
+          <h2 className="text-3xl font-bold text-white mb-4">{cta.heading}</h2>
+          <p className="text-slate-300 mb-8 max-w-xl mx-auto">{cta.desc}</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
-              Create Free Account
+            <Link href={cta.cta1.href} className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
+              {cta.cta1.label}
             </Link>
-            <Link href="/scouting" className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full font-semibold border border-white/20 transition-colors">
-              Try Pro Dashboard
+            <Link href={cta.cta2.href} className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full font-semibold border border-white/20 transition-colors">
+              {cta.cta2.label}
             </Link>
           </div>
         </div>
