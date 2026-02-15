@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { players, tournaments, t20Leagues, coaches } from "@/data/mock";
+import HeroSlider from "@/components/HeroSlider";
 
 export default function Home() {
   const topPlayers = [...players].sort((a, b) => b.stats.runs - a.stats.runs).slice(0, 4);
@@ -7,39 +8,15 @@ export default function Home() {
 
   return (
     <div>
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-slate-900 to-blue-900/30" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-sm text-emerald-400">Discover Cricket Talent Worldwide</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              From Street Cricket to{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                Global T20 Leagues
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              The global talent discovery platform connecting youth cricketers from every country with
-              IPL, BBL, CPL, PSL, SA20, The Hundred, and more. Upload videos, get AI analysis, connect with coaches.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/players"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors"
-              >
-                Explore Players
-              </Link>
-              <Link
-                href="/scouting"
-                className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-full font-semibold border border-slate-700 transition-colors"
-              >
-                Pro Scouting Dashboard
-              </Link>
-            </div>
-          </div>
+      <section className="relative">
+        <HeroSlider />
+        <div className="flex justify-center -mt-6 relative z-20">
+          <Link
+            href="/players?tab=profile"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors shadow-lg shadow-emerald-500/30"
+          >
+            My Profile
+          </Link>
         </div>
       </section>
 
@@ -82,49 +59,6 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="bg-slate-800/30 border-y border-slate-700/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-2xl font-bold text-white">Top Prospects</h2>
-              <p className="text-slate-400">Highest run-scorers in the registry</p>
-            </div>
-            <Link href="/players" className="text-sm text-emerald-400 hover:text-emerald-300">View All &rarr;</Link>
-          </div>
-          <div className="grid md:grid-cols-4 gap-4">
-            {topPlayers.map((player, i) => (
-              <Link key={player.id} href={`/players/${player.id}`}>
-                <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all group">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-xl font-bold text-slate-600">#{i + 1}</span>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
-                      {player.name.split(" ").map((n) => n[0]).join("")}
-                    </div>
-                    <div>
-                      <p className="font-semibold text-white text-sm group-hover:text-emerald-400 transition-colors">{player.name}</p>
-                      <p className="text-xs text-slate-400">{player.ageGroup} &middot; {player.country}</p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-slate-900/50 rounded p-1.5">
-                      <p className="text-xs text-slate-500">Runs</p>
-                      <p className="text-sm font-bold text-white">{player.stats.runs}</p>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-1.5">
-                      <p className="text-xs text-slate-500">Avg</p>
-                      <p className="text-sm font-bold text-white">{player.stats.battingAverage}</p>
-                    </div>
-                    <div className="bg-slate-900/50 rounded p-1.5">
-                      <p className="text-xs text-slate-500">SR</p>
-                      <p className="text-sm font-bold text-white">{player.stats.strikeRate}</p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <h2 className="text-2xl font-bold text-white mb-2">Upcoming Global Showcases</h2>
@@ -151,8 +85,9 @@ export default function Home() {
         <h2 className="text-2xl font-bold text-white mb-6">T20 Leagues Worldwide</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {t20Leagues.map((league) => (
-            <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:border-emerald-500/50 transition-all">
-              <p className="text-sm font-bold text-white">{league.id}</p>
+            <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 text-center hover:border-emerald-500/50 transition-all">
+              <img src={league.logo} alt={league.name} className="mx-auto w-14 h-14 rounded-lg mb-2 object-contain" />
+              <p className="text-sm font-bold text-white">{league.name}</p>
               <p className="text-xs text-slate-400 mt-1">{league.country}</p>
               <p className="text-xs text-emerald-400 mt-1">{league.teams} teams</p>
             </div>

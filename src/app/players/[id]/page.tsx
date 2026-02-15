@@ -23,7 +23,8 @@ export default async function PlayerProfilePage({ params }: PageProps) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <Link href="/players" className="text-sm text-slate-400 hover:text-white mb-6 inline-block">&larr; Back to Players</Link>
+      <Link href="/players" className="text-sm text-slate-400 hover:text-white mb-2 inline-block">&larr; Back to Players Home</Link>
+
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
