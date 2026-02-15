@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { players, tournaments, performanceFeedItems } from "@/data/mock";
+import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
@@ -132,22 +132,123 @@ function PlayersContent() {
         </div>
       )}
 
-      {tab === "mystats" && (
-        <div className="grid md:grid-cols-3 gap-4">
-          <Link href="/players" className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all">
-            <h3 className="text-lg font-semibold text-white mb-1">Cricinfo</h3>
-            <p className="text-slate-400 text-sm">Career stats, records, and splits.</p>
-          </Link>
-          <Link href="/rankings" className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all">
-            <h3 className="text-lg font-semibold text-white mb-1">CPI Metrics</h3>
-            <p className="text-slate-400 text-sm">Cricket Performance Index (CPI) details.</p>
-          </Link>
-          <Link href="/combine" className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all">
-            <h3 className="text-lg font-semibold text-white mb-1">Combine Assessment</h3>
-            <p className="text-slate-400 text-sm">YoYo, sprint, bat/bowl speed, jump, fielding.</p>
-          </Link>
-        </div>
-      )}
+      {tab === "mystats" && (() => {
+        const ranked = generateCPIRankings();
+        const playerCPI = ranked.find((p) => p.id === player.id);
+        const combine = playerCombineData[player.id];
+        const matches = playerMatchHistory[player.id] || [];
+        const formStatus = getFormStatus(matches, player.role);
+        return (
+          <div className="space-y-6">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Career Stats</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <StatCard label="Matches" value={player.stats.matches} color="emerald" />
+                <StatCard label="Innings" value={player.stats.innings} color="blue" />
+                <StatCard label="Runs" value={player.stats.runs} color="purple" />
+                <StatCard label="Average" value={player.stats.battingAverage} color="amber" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Strike Rate" value={player.stats.strikeRate} color="emerald" />
+                <StatCard label="50s / 100s" value={`${player.stats.fifties} / ${player.stats.hundreds}`} color="blue" />
+                <StatCard label="Wickets" value={player.stats.wickets} color="purple" />
+                <StatCard label="Bowl Avg" value={player.stats.bowlingAverage} color="amber" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Economy" value={player.stats.economy} color="emerald" />
+                <StatCard label="Best Bowling" value={player.stats.bestBowling} color="blue" />
+                <StatCard label="Catches" value={player.stats.catches} color="purple" />
+                <StatCard label="Stumpings" value={player.stats.stumpings} color="amber" />
+              </div>
+            </div>
+
+            {playerCPI && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">CPI Metrics</h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${formStatus === "Red Hot" ? "bg-red-500/20 text-red-400 border-red-500/30" : formStatus === "In Form" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : formStatus === "Steady" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-blue-500/20 text-blue-400 border-blue-500/30"}`}>{formStatus}</span>
+                    <span className="text-xs text-slate-500">Rank #{playerCPI.cpiScore.nationalRank}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6 mb-4">
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center border-2 ${playerCPI.cpiScore.overall >= 75 ? "border-emerald-500 bg-emerald-500/10" : playerCPI.cpiScore.overall >= 55 ? "border-blue-500 bg-blue-500/10" : "border-amber-500 bg-amber-500/10"}`}>
+                    <p className={`text-2xl font-bold ${playerCPI.cpiScore.overall >= 75 ? "text-emerald-400" : playerCPI.cpiScore.overall >= 55 ? "text-blue-400" : "text-amber-400"}`}>{playerCPI.cpiScore.overall}</p>
+                  </div>
+                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Match (40%)</p>
+                      <p className="text-lg font-bold text-emerald-400">{playerCPI.cpiScore.matchPerformance}</p>
+                    </div>
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Athletic (30%)</p>
+                      <p className="text-lg font-bold text-blue-400">{playerCPI.cpiScore.athleticMetrics}</p>
+                    </div>
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Form (20%)</p>
+                      <p className="text-lg font-bold text-purple-400">{playerCPI.cpiScore.formIndex}</p>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Consist. (10%)</p>
+                      <p className="text-lg font-bold text-amber-400">{playerCPI.cpiScore.consistency}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {combine && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Combine Assessment</h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${combine.verifiedAthlete ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-700/50 text-slate-400"}`}>{combine.verifiedAthlete ? "Verified" : "Pending"}</span>
+                    <span className="text-xs text-slate-500">Next: {new Date(combine.nextAssessmentDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Yo-Yo Score</p>
+                    <p className={`text-lg font-bold ${combine.yoYoScore >= 19 ? "text-emerald-400" : combine.yoYoScore >= 17 ? "text-amber-400" : "text-red-400"}`}>{combine.yoYoScore}</p>
+                  </div>
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">20m Sprint</p>
+                    <p className={`text-lg font-bold ${combine.sprint20m <= 3.0 ? "text-emerald-400" : combine.sprint20m <= 3.2 ? "text-amber-400" : "text-red-400"}`}>{combine.sprint20m}s</p>
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Bat Speed</p>
+                    <p className={`text-lg font-bold ${combine.batSpeed && combine.batSpeed >= 110 ? "text-emerald-400" : "text-amber-400"}`}>{combine.batSpeed || "N/A"}</p>
+                  </div>
+                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Vert. Jump</p>
+                    <p className={`text-lg font-bold ${combine.verticalJump >= 60 ? "text-emerald-400" : combine.verticalJump >= 50 ? "text-amber-400" : "text-red-400"}`}>{combine.verticalJump}cm</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                  <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Fielding Eff.</p>
+                    <p className={`text-lg font-bold ${combine.fieldingEfficiency >= 80 ? "text-emerald-400" : combine.fieldingEfficiency >= 70 ? "text-amber-400" : "text-red-400"}`}>{combine.fieldingEfficiency}%</p>
+                  </div>
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Throw Acc.</p>
+                    <p className={`text-lg font-bold ${combine.throwAccuracy >= 80 ? "text-emerald-400" : combine.throwAccuracy >= 70 ? "text-amber-400" : "text-red-400"}`}>{combine.throwAccuracy}%</p>
+                  </div>
+                  <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Reaction</p>
+                    <p className={`text-lg font-bold ${combine.reactionTime <= 0.25 ? "text-emerald-400" : combine.reactionTime <= 0.30 ? "text-amber-400" : "text-red-400"}`}>{combine.reactionTime}s</p>
+                  </div>
+                  {combine.bowlingSpeed && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Bowl Speed</p>
+                      <p className={`text-lg font-bold ${combine.bowlingSpeed >= 140 ? "text-emerald-400" : combine.bowlingSpeed >= 120 ? "text-amber-400" : "text-slate-400"}`}>{combine.bowlingSpeed} km/h</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {tab === "training" && (
         <div className="grid md:grid-cols-3 gap-4">
