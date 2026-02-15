@@ -173,8 +173,8 @@ function NavbarInner() {
       : groups.flatMap((g) => g.links.map(({ href, label }) => ({ href, label })));
   const pathname = usePathname();
   const search = useSearchParams();
-  const currentPlayerTab = pathname === "/players" ? (search.get("tab") || "profile") : null;
-  const showTabs = role === "player" ? pathname === "/players" : pathname === "/";
+  const currentPlayerTab = pathname && pathname.startsWith("/players") ? (search.get("tab") || "profile") : null;
+  const showTabs = role === "player" ? (pathname ? pathname.startsWith("/players") : false) : pathname === "/";
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
