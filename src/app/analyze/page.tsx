@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type AnalysisType = "batting" | "bowling" | "fielding" | "general";
@@ -10,6 +10,14 @@ interface AnalysisResult {
   score: number;
   comment: string;
   suggestion: string;
+}
+
+interface SavedAnalysis {
+  id: string;
+  type: AnalysisType;
+  date: string;
+  overallScore: number;
+  results: AnalysisResult[];
 }
 
 const mockResults: Record<AnalysisType, AnalysisResult[]> = {
@@ -40,27 +48,67 @@ const mockResults: Record<AnalysisType, AnalysisResult[]> = {
   ],
 };
 
+const STORAGE_KEY = "cricverse_analysis_history";
+
 export default function AnalyzePage() {
   const [analysisType, setAnalysisType] = useState<AnalysisType>("batting");
   const [uploaded, setUploaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult[] | null>(null);
+  const [history, setHistory] = useState<SavedAnalysis[]>([]);
+  const [viewingId, setViewingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) setHistory(JSON.parse(stored));
+  }, []);
+
+  const saveAnalysis = (type: AnalysisType, analysisResults: AnalysisResult[]) => {
+    const score = Math.round(analysisResults.reduce((s, r) => s + r.score, 0) / analysisResults.length);
+    const entry: SavedAnalysis = {
+      id: Date.now().toString(),
+      type,
+      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      overallScore: score,
+      results: analysisResults,
+    };
+    const updated = [entry, ...history];
+    setHistory(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
 
   const handleAnalyze = () => {
     setAnalyzing(true);
     setResults(null);
+    setViewingId(null);
     setTimeout(() => {
       setAnalyzing(false);
-      setResults(mockResults[analysisType]);
+      const r = mockResults[analysisType];
+      setResults(r);
+      saveAnalysis(analysisType, r);
     }, 2000);
   };
 
   const handleUpload = () => {
     setUploaded(true);
     setResults(null);
+    setViewingId(null);
+  };
+
+  const viewPastAnalysis = (entry: SavedAnalysis) => {
+    setResults(entry.results);
+    setAnalysisType(entry.type);
+    setViewingId(entry.id);
+    setUploaded(true);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const overallScore = results ? Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length) : 0;
+  const typeLabels: Record<AnalysisType, string> = { batting: "Batting", bowling: "Bowling", fielding: "Fielding", general: "General" };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -230,6 +278,45 @@ export default function AnalyzePage() {
           )}
         </div>
       </div>
+
+      {history.length > 0 && (
+        <div className="mt-10">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-white">Past Analyses</h2>
+            <button onClick={clearHistory} className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear History</button>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {history.map((entry) => (
+              <button
+                key={entry.id}
+                onClick={() => viewPastAnalysis(entry)}
+                className={`text-left bg-slate-800/50 border rounded-xl p-5 hover:border-emerald-500/40 transition-all ${
+                  viewingId === entry.id ? "border-emerald-500" : "border-slate-700/50"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-emerald-400">{typeLabels[entry.type]}</span>
+                  <span className={`text-lg font-bold ${entry.overallScore >= 75 ? "text-emerald-400" : entry.overallScore >= 60 ? "text-amber-400" : "text-red-400"}`}>
+                    {entry.overallScore}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">{entry.date}</p>
+                <div className="mt-3 w-full bg-slate-700 rounded-full h-1.5">
+                  <div
+                    className={`h-1.5 rounded-full ${entry.overallScore >= 75 ? "bg-emerald-500" : entry.overallScore >= 60 ? "bg-amber-500" : "bg-red-500"}`}
+                    style={{ width: `${entry.overallScore}%` }}
+                  />
+                </div>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {entry.results.map((r) => (
+                    <span key={r.category} className="text-[10px] bg-slate-700/50 px-2 py-0.5 rounded-full text-slate-400">{r.category}</span>
+                  ))}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
