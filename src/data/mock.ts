@@ -1,18 +1,18 @@
 import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach, MatchPerformance, CPIScore, CombineData, FormStatus, PerformanceFeedItem } from "@/types";
 
 export const t20Leagues: T20League[] = [
-  { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "/logos/ipl.svg", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
-  { id: "BBL", name: "Big Bash League", country: "Australia", region: "Oceania", logo: "/logos/bbl.svg", localQuota: 6, localFilled: 4, teams: 8, season: "Dec-Feb" },
-  { id: "PSL", name: "Pakistan Super League", country: "Pakistan", region: "South Asia", logo: "/logos/psl.svg", localQuota: 7, localFilled: 5, teams: 6, season: "Feb-Mar" },
-  { id: "CPL", name: "Caribbean Premier League", country: "West Indies", region: "Caribbean", logo: "/logos/cpl.svg", localQuota: 6, localFilled: 3, teams: 6, season: "Aug-Oct" },
-  { id: "SA20", name: "SA20", country: "South Africa", region: "Africa", logo: "/logos/sa20.svg", localQuota: 7, localFilled: 4, teams: 6, season: "Jan-Feb" },
-  { id: "THE100", name: "The Hundred", country: "England", region: "Europe", logo: "/logos/the100.svg", localQuota: 5, localFilled: 3, teams: 8, season: "Jul-Aug" },
-  { id: "MLC", name: "Major League Cricket", country: "USA", region: "Americas", logo: "/logos/mlc.svg", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
-  { id: "BPL", name: "Bangladesh Premier League", country: "Bangladesh", region: "South Asia", logo: "/logos/bpl.svg", localQuota: 7, localFilled: 5, teams: 7, season: "Jan-Feb" },
-  { id: "LPL", name: "Lanka Premier League", country: "Sri Lanka", region: "South Asia", logo: "/logos/lpl.svg", localQuota: 7, localFilled: 4, teams: 5, season: "Jul-Aug" },
-  { id: "ILT20", name: "International League T20", country: "UAE", region: "Middle East", logo: "/logos/ilt20.svg", localQuota: 2, localFilled: 1, teams: 6, season: "Jan-Feb" },
-  { id: "SSA", name: "Super Smash", country: "New Zealand", region: "Oceania", logo: "/logos/ssa.svg", localQuota: 6, localFilled: 5, teams: 6, season: "Nov-Feb" },
-  { id: "GT20", name: "Global T20 Canada", country: "Canada", region: "Americas", logo: "/logos/gt20.svg", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
+  { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "/logos/ipl.png", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
+  { id: "BBL", name: "Big Bash League", country: "Australia", region: "Oceania", logo: "/logos/bbl.png", localQuota: 6, localFilled: 4, teams: 8, season: "Dec-Feb" },
+  { id: "PSL", name: "Pakistan Super League", country: "Pakistan", region: "South Asia", logo: "/logos/psl.png", localQuota: 7, localFilled: 5, teams: 6, season: "Feb-Mar" },
+  { id: "CPL", name: "Caribbean Premier League", country: "West Indies", region: "Caribbean", logo: "/logos/cpl.png", localQuota: 6, localFilled: 3, teams: 6, season: "Aug-Oct" },
+  { id: "SA20", name: "SA20", country: "South Africa", region: "Africa", logo: "/logos/sa20.png", localQuota: 7, localFilled: 4, teams: 6, season: "Jan-Feb" },
+  { id: "THE100", name: "The Hundred", country: "England", region: "Europe", logo: "/logos/the100.png", localQuota: 5, localFilled: 3, teams: 8, season: "Jul-Aug" },
+  { id: "MLC", name: "Major League Cricket", country: "USA", region: "Americas", logo: "/logos/mlc.png", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
+  { id: "BPL", name: "Bangladesh Premier League", country: "Bangladesh", region: "South Asia", logo: "/logos/bpl.png", localQuota: 7, localFilled: 5, teams: 7, season: "Jan-Feb" },
+  { id: "LPL", name: "Lanka Premier League", country: "Sri Lanka", region: "South Asia", logo: "/logos/lpl.png", localQuota: 7, localFilled: 4, teams: 5, season: "Jul-Aug" },
+  { id: "ILT20", name: "International League T20", country: "UAE", region: "Middle East", logo: "/logos/ilt20.png", localQuota: 2, localFilled: 1, teams: 6, season: "Jan-Feb" },
+  { id: "SSA", name: "Super Smash", country: "New Zealand", region: "Oceania", logo: "/logos/ssa.png", localQuota: 6, localFilled: 5, teams: 6, season: "Nov-Feb" },
+  { id: "GT20", name: "Global T20 Canada", country: "Canada", region: "Americas", logo: "/logos/gt20.png", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
 ];
 
 export const players: Player[] = [
