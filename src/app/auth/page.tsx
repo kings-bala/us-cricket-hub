@@ -80,32 +80,6 @@ export default function AuthPage() {
           </div>
         </form>
 
-        <div className="mt-6 bg-slate-800/30 border border-slate-700/30 rounded-xl p-4">
-          <p className="text-xs text-slate-400 font-semibold mb-3 uppercase tracking-wide">Demo Accounts</p>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Arjun Patel (Player)</span>
-              <span className="text-slate-500 font-mono">arjun@cricverse.com / player123</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Jake Thompson (Player)</span>
-              <span className="text-slate-500 font-mono">jake@cricverse.com / player123</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Rashid Mohammed (Player)</span>
-              <span className="text-slate-500 font-mono">rashid@cricverse.com / player123</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-300">Rahul Desai (Player)</span>
-              <span className="text-slate-500 font-mono">rahul@cricverse.com / player123</span>
-            </div>
-            <div className="border-t border-slate-700/50 my-2"></div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-amber-400 font-medium">Master Admin</span>
-              <span className="text-slate-500 font-mono">admin@cricverse.com / admin123</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
