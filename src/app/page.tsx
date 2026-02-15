@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { players, tournaments, t20Leagues, coaches } from "@/data/mock";
+import HeroSlider from "@/components/HeroSlider";
 
 export default function Home() {
   const topPlayers = [...players].sort((a, b) => b.stats.runs - a.stats.runs).slice(0, 4);
@@ -7,33 +8,15 @@ export default function Home() {
 
   return (
     <div>
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-slate-900 to-blue-900/30" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-sm text-emerald-400">Discover Cricket Talent Worldwide</span>
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              From Street Cricket to{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                Global T20 Leagues
-              </span>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
-              The global talent discovery platform connecting youth cricketers from every country with
-              IPL, BBL, CPL, PSL, SA20, The Hundred, and more. Upload videos, get AI analysis, connect with coaches.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/players?tab=profile"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors"
-              >
-                My Profile
-              </Link>
-            </div>
-          </div>
+      <section className="relative">
+        <HeroSlider />
+        <div className="flex justify-center -mt-6 relative z-20">
+          <Link
+            href="/players?tab=profile"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors shadow-lg shadow-emerald-500/30"
+          >
+            My Profile
+          </Link>
         </div>
       </section>
 
