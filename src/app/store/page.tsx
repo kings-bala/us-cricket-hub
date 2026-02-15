@@ -40,7 +40,7 @@ export default function StorePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-3"><Link href="/players?tab=profile" className="text-sm text-slate-400 hover:text-white">← Back to Players Home</Link></div>
+      <div className="mb-3"><Link href="/players?tab=store" className="text-sm text-slate-400 hover:text-white">← Back to Store</Link></div>
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">Merchandise Store</h1>

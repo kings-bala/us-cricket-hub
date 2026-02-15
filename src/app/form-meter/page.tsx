@@ -42,7 +42,7 @@ export default function FormMeterPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-3"><Link href="/players?tab=profile" className="text-sm text-slate-400 hover:text-white">← Back to Players Home</Link></div>
+      <div className="mb-3"><Link href="/players?tab=mystats" className="text-sm text-slate-400 hover:text-white">← Back to My Stats</Link></div>
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">AI Form Meter</h1>
