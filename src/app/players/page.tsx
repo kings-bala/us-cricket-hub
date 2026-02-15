@@ -70,9 +70,13 @@ function PlayersContent() {
         <div className="space-y-6">
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
-                {player.name.split(" ").map((n) => n[0]).join("")}
-              </div>
+              {player.avatar ? (
+                <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                  {player.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+              )}
               <div>
                 <h2 className="text-xl font-bold text-white">{player.name}</h2>
                 <p className="text-sm text-slate-400">{player.role} &middot; {player.ageGroup} &middot; {player.country}</p>
@@ -449,10 +453,38 @@ function PlayersContent() {
       )}
 
       {tab === "store" && (
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h2 className="text-xl font-semibold text-white mb-2">Merchandise Store</h2>
-          <p className="text-slate-400 text-sm mb-4">Shop bats, balls, pads, gloves, helmets, kits, and more.</p>
-          <Link href="/store" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Open Store</Link>
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-bold text-white mb-1">Cricket Stores</h2>
+            <p className="text-slate-400 text-sm">Shop from top cricket equipment stores worldwide</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: "CricMax", url: "https://www.cricmax.com", desc: "Premium cricket bats, pads & gear for all levels", tag: "Popular", color: "emerald" },
+              { name: "Dream Cricket", url: "https://www.dreamcricket.com", desc: "Professional cricket equipment & training aids", tag: "Pro Gear", color: "blue" },
+              { name: "Kookaburra", url: "https://www.kookaburra.com.au", desc: "Official balls, bats & protective equipment", tag: "Official", color: "amber" },
+              { name: "Gray-Nicolls", url: "https://www.gray-nicolls.co.uk", desc: "Heritage cricket bats, gloves & pads since 1855", tag: "Heritage", color: "purple" },
+              { name: "SG Cricket", url: "https://www.sgcricket.com", desc: "India's top cricket brand - bats, balls & kits", tag: "India #1", color: "red" },
+              { name: "SS Cricket", url: "https://www.sscricket.com", desc: "Sareen Sports - premium English willow bats", tag: "Bats", color: "cyan" },
+              { name: "GM Cricket", url: "https://www.gmcricket.com", desc: "Gunn & Moore - world-class cricket equipment", tag: "UK Brand", color: "indigo" },
+              { name: "MRF Cricket", url: "https://www.mrfcricket.com", desc: "Match-quality bats endorsed by legends", tag: "Legend Choice", color: "orange" },
+              { name: "Cricket Store Online", url: "https://www.cricketstoreonline.com", desc: "Largest online cricket store with global shipping", tag: "Online", color: "teal" },
+            ].map((store) => (
+              <a key={store.name} href={store.url} target="_blank" rel="noopener noreferrer" className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/40 transition-all group block">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-semibold group-hover:text-emerald-400 transition-colors">{store.name}</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full bg-${store.color}-500/20 text-${store.color}-400`}>{store.tag}</span>
+                </div>
+                <p className="text-slate-400 text-sm mb-3">{store.desc}</p>
+                <span className="text-xs text-emerald-400 group-hover:underline flex items-center gap-1">
+                  Visit Store <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                </span>
+              </a>
+            ))}
+          </div>
+          <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-4">
+            <p className="text-slate-500 text-xs text-center">CricVerse is not affiliated with these stores. Links open in a new tab.</p>
+          </div>
         </div>
       )}
     </div>
