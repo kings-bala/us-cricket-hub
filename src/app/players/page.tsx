@@ -25,7 +25,7 @@ function PlayersContent() {
   }, [search]);
 
   const tabs = [
-    { id: "profile", label: "Home" },
+    { id: "profile", label: "My Profile" },
     { id: "mystats", label: "My Stats" },
     { id: "training", label: "Training" },
     { id: "ai", label: "Full Track AI" },

@@ -164,7 +164,7 @@ function NavbarInner() {
   const flatLinks: { href: string; label: string }[] =
     role === "player"
       ? [
-          { href: "/players?tab=profile", label: "Home" },
+          { href: "/players?tab=profile", label: "My Profile" },
           { href: "/players?tab=mystats", label: "My Stats" },
           { href: "/players?tab=training", label: "Training" },
           { href: "/players?tab=ai", label: "Full Track AI" },
