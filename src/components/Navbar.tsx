@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useState, useRef, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { UserRole } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 const roleLabels: Record<UserRole, string> = {
   player: "Player",
@@ -150,12 +151,14 @@ function NavbarInner() {
   const [role, setRole] = useState<UserRole>("player");
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const isAdmin = user?.role === "admin";
 
-  // load + persist persona
   useEffect(() => {
+    if (!isAdmin) { setRole("player"); return; }
     const saved = typeof window !== "undefined" ? localStorage.getItem("persona") : null;
     if (saved && ["player","agent","owner","sponsor","coach"].includes(saved)) setRole(saved as UserRole);
-  }, []);
+  }, [isAdmin]);
   useEffect(() => {
     try { localStorage.setItem("persona", role); } catch {}
   }, [role]);
@@ -209,26 +212,34 @@ function NavbarInner() {
                     )}
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs text-slate-400">View as:</span>
-              <select
-                value={role}
-                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
-                className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[role]}`}
-              >
-                {(Object.keys(roleLabels) as UserRole[]).map((r) => (
-                  <option key={r} value={r} className="bg-slate-800">
-                    {roleLabels[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Link
-              href="/auth"
-              className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors"
-            >
-              Sign In
-            </Link>
+            {isAdmin && (
+              <div className="hidden sm:flex items-center gap-2">
+                <span className="text-xs text-slate-400">View as:</span>
+                <select
+                  value={role}
+                  onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
+                  className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[role]}`}
+                >
+                  {(Object.keys(roleLabels) as UserRole[]).map((r) => (
+                    <option key={r} value={r} className="bg-slate-800">
+                      {roleLabels[r]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {user ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2">
+                  {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
+                  <span className="text-xs text-slate-300">{user.name}</span>
+                  {isAdmin && <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">Admin</span>}
+                </div>
+                <button onClick={() => { logout(); router.push("/auth"); }} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full transition-colors">Logout</button>
+              </div>
+            ) : (
+              <Link href="/auth" className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors">Sign In</Link>
+            )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden p-2 text-slate-300 hover:text-white"
@@ -262,20 +273,22 @@ function NavbarInner() {
                 ))}
               </div>
             )}
-            <div className="pt-2 border-t border-slate-700">
-              <span className="text-xs text-slate-400">View as:</span>
-              <select
-                value={role}
-                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
-                className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[role]}`}
-              >
-                {(Object.keys(roleLabels) as UserRole[]).map((r) => (
-                  <option key={r} value={r} className="bg-slate-800">
-                    {roleLabels[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {isAdmin && (
+              <div className="pt-2 border-t border-slate-700">
+                <span className="text-xs text-slate-400">View as:</span>
+                <select
+                  value={role}
+                  onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
+                  className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[role]}`}
+                >
+                  {(Object.keys(roleLabels) as UserRole[]).map((r) => (
+                    <option key={r} value={r} className="bg-slate-800">
+                      {roleLabels[r]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </div>
       )}
