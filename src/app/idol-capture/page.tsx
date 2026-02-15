@@ -29,6 +29,7 @@ const legends: Legend[] = [
       { name: "Throwdown Sessions", duration: "45 min", frequency: "5x/week", description: "Face 200+ throwdowns focusing on playing late and keeping the ball along the ground" },
       { name: "Mental Visualization", duration: "15 min", frequency: "Daily", description: "Visualize innings construction — playing out the new ball, rotating strike, and accelerating in middle overs" },
       { name: "Fitness Circuit", duration: "40 min", frequency: "Daily", description: "Core strength, wrist flexibility exercises, and footwork agility ladder drills" },
+      { name: "Batting Technique Review", duration: "2 hrs", frequency: "Monthly", description: "Full video analysis session reviewing recent innings, identifying technical flaws, and setting corrective goals" },
     ],
   }},
   { id: "l2", name: "Brian Lara", country: "West Indies", era: "1990–2007", skills: ["Batting"], highlights: "400* in Tests, 501* in first-class cricket", routines: {
@@ -36,6 +37,7 @@ const legends: Legend[] = [
       { name: "High Backlift Practice", duration: "30 min", frequency: "Daily", description: "Practice the signature high backlift with emphasis on timing and bat flow through the ball" },
       { name: "Concentration Drills", duration: "60 min", frequency: "4x/week", description: "Extended net sessions (300+ balls) to build stamina for long innings and deep concentration" },
       { name: "Footwork Against Spin", duration: "30 min", frequency: "3x/week", description: "Practice dancing down the pitch to spinners and sweeping with precision placement" },
+      { name: "Match Simulation Day", duration: "3 hrs", frequency: "Monthly", description: "Full match simulation with scoreboard pressure, field settings, and bowling changes to test concentration" },
     ],
   }},
   { id: "l3", name: "Sir Don Bradman", country: "Australia", era: "1928–1948", skills: ["Batting"], highlights: "Test average of 99.94, greatest batsman ever", routines: {
@@ -61,6 +63,7 @@ const legends: Legend[] = [
       { name: "Target Bowling", duration: "30 min", frequency: "5x/week", description: "Bowl at cones placed on good length and outside off stump to develop accuracy and drift" },
       { name: "Finger Strength", duration: "15 min", frequency: "Daily", description: "Squeeze tennis balls and do finger push-ups to build the grip strength needed for sharp spin" },
       { name: "Tactical Visualization", duration: "15 min", frequency: "Daily", description: "Study batsmen videos and plan field settings, over sequences, and dismissal strategies" },
+      { name: "Variation Assessment", duration: "2 hrs", frequency: "Monthly", description: "Test all spin variations against quality batsmen under match conditions and measure effectiveness" },
     ],
   }},
   { id: "l6", name: "Muttiah Muralitharan", country: "Sri Lanka", era: "1992–2011", skills: ["Bowling"], highlights: "800 Test wickets, all-time leading wicket-taker", routines: {
@@ -75,6 +78,7 @@ const legends: Legend[] = [
       { name: "Reverse Swing Mastery", duration: "40 min", frequency: "5x/week", description: "Practice wrist position for conventional and reverse swing with old and new balls" },
       { name: "Yorker Precision", duration: "30 min", frequency: "Daily", description: "Target the base of stumps consistently — aim for 8/10 yorker accuracy in death overs" },
       { name: "Pace Generation", duration: "30 min", frequency: "4x/week", description: "Run-up rhythm drills and explosive bowling action to maximize pace from a smooth run-up" },
+      { name: "Swing Clinic", duration: "2 hrs", frequency: "Monthly", description: "Comprehensive review of swing bowling mechanics with video analysis and corrective drills" },
     ],
   }},
   { id: "l8", name: "Glenn McGrath", country: "Australia", era: "1993–2007", skills: ["Bowling"], highlights: "563 Test wickets, relentless line and length", routines: {
@@ -89,6 +93,7 @@ const legends: Legend[] = [
       { name: "Lightning Stumping Drill", duration: "30 min", frequency: "Daily", description: "Practice collecting the ball and breaking the stumps in one motion — target sub-0.2s stumping time" },
       { name: "Standing Up to Pace", duration: "25 min", frequency: "4x/week", description: "Practice keeping up to medium pacers to improve reflexes and reduce reaction time" },
       { name: "Diving Catch Practice", duration: "20 min", frequency: "5x/week", description: "Catch tennis balls from a catching cradle while diving left and right at full stretch" },
+      { name: "Keeping Fitness Test", duration: "2 hrs", frequency: "Monthly", description: "Full day wicket-keeping drill testing stamina over 90 overs with reflex and agility benchmarks" },
     ],
     Batting: [
       { name: "Helicopter Shot Drill", duration: "20 min", frequency: "3x/week", description: "Practice the wrist roll and follow-through for the signature helicopter shot against yorkers" },
@@ -121,6 +126,7 @@ const legends: Legend[] = [
       { name: "Direct Hit Practice", duration: "25 min", frequency: "Daily", description: "Pick up and throw at a single stump from 20-30 meters while sprinting — aim for 7/10 direct hits" },
       { name: "Agility Circuit", duration: "30 min", frequency: "Daily", description: "Cone drills, ladder work, and reaction ball exercises for explosive first-step speed" },
       { name: "Boundary Sliding", duration: "20 min", frequency: "4x/week", description: "Practice sliding to save runs at the boundary and relay catches with a partner" },
+      { name: "Fielding Masterclass", duration: "3 hrs", frequency: "Monthly", description: "Full-day fielding camp covering all positions with video review of technique and movement patterns" },
     ],
   }},
   { id: "l13", name: "AB de Villiers", country: "South Africa", era: "2004–2018", skills: ["Batting", "Fielding"], highlights: "360-degree batsman, 176 international catches", routines: {
@@ -180,6 +186,7 @@ const legends: Legend[] = [
       { name: "Leave Drill", duration: "20 min", frequency: "Daily", description: "Practice leaving deliveries outside off — build patience and judgment of line and length" },
       { name: "Extended Net Sessions", duration: "90 min", frequency: "5x/week", description: "Face 500+ balls in a session to build concentration, endurance, and shot selection" },
       { name: "First Hour Batting", duration: "40 min", frequency: "4x/week", description: "Simulate the first hour of a Test match — play with soft hands, watchful leaves, and tight defense" },
+      { name: "Technical Audit", duration: "2 hrs", frequency: "Monthly", description: "Comprehensive batting technique review with coach — analyze footage, identify patterns, set monthly targets" },
     ],
   }},
   { id: "l19", name: "Dale Steyn", country: "South Africa", era: "2004–2021", skills: ["Bowling"], highlights: "439 Test wickets, fastest to 400 Test wickets", routines: {
@@ -269,6 +276,24 @@ export default function IdolCapturePage() {
   };
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
+
+  const groupedRoutines = useMemo(() => {
+    const groups: Record<string, { routine: Routine; idol: string; skill: Skill }[]> = { Daily: [], Weekly: [], Monthly: [] };
+    for (const skill of ["Batting", "Bowling", "Fielding", "Wicket-Keeping"] as Skill[]) {
+      const idol = selected[skill];
+      if (!idol) continue;
+      const routines = idol.routines[skill] || [];
+      for (const r of routines) {
+        const entry = { routine: r, idol: idol.name, skill };
+        if (r.frequency === "Daily") groups.Daily.push(entry);
+        else if (r.frequency === "Monthly") groups.Monthly.push(entry);
+        else groups.Weekly.push(entry);
+      }
+    }
+    return groups;
+  }, [selected]);
+
+  const totalRoutines = groupedRoutines.Daily.length + groupedRoutines.Weekly.length + groupedRoutines.Monthly.length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -395,48 +420,62 @@ export default function IdolCapturePage() {
         </div>
       )}
 
-      {selectedCount > 0 && (
+      {selectedCount > 0 && totalRoutines > 0 && (
         <div className="mt-10">
-          <h2 className="text-2xl font-bold text-white mb-6">My Idol Routines</h2>
-          <div className="space-y-6">
-            {(["Batting", "Bowling", "Fielding", "Wicket-Keeping"] as Skill[]).map((skill) => {
-              const idol = selected[skill];
-              if (!idol) return null;
-              const routines = idol.routines[skill] || [];
-              if (routines.length === 0) return null;
-              const colors = skillColors[skill];
-              return (
-                <div key={skill} className={`border rounded-xl p-5 ${colors.border} ${colors.bg}`}>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-xs shrink-0">
-                        {idol.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-white">{idol.name}</h3>
-                        <p className={`text-xs ${colors.text}`}>{skill} Idol &middot; {idol.country}</p>
-                      </div>
-                    </div>
-                    <span className={`text-xs px-2 py-0.5 rounded-full border ${colors.border} ${colors.text}`}>{routines.length} routines</span>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {routines.map((routine, i) => (
-                      <div key={i} className="bg-slate-900/40 border border-slate-700/30 rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-semibold text-white">{routine.name}</h4>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-slate-500">{routine.duration}</span>
-                            <span className={`text-xs px-1.5 py-0.5 rounded ${colors.bg} ${colors.text}`}>{routine.frequency}</span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-slate-400 leading-relaxed">{routine.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Consolidated Training Schedule</h2>
+            <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">{totalRoutines} total routines</span>
           </div>
+
+          {(["Daily", "Weekly", "Monthly"] as const).map((freq) => {
+            const items = groupedRoutines[freq];
+            if (items.length === 0) return null;
+            const freqColors = { Daily: { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400", badge: "bg-emerald-500/20" }, Weekly: { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400", badge: "bg-blue-500/20" }, Monthly: { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400", badge: "bg-purple-500/20" } };
+            const fc = freqColors[freq];
+            return (
+              <div key={freq} className="mb-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <h3 className={`text-lg font-semibold ${fc.text}`}>{freq} Routines</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${fc.badge} ${fc.text}`}>{items.length} routines</span>
+                </div>
+                <div className={`border rounded-xl ${fc.border} ${fc.bg} overflow-hidden`}>
+                  <div className="grid grid-cols-12 gap-2 px-5 py-3 border-b border-slate-700/40 text-xs font-semibold text-slate-400 uppercase tracking-wide">
+                    <div className="col-span-3">Routine</div>
+                    <div className="col-span-2">Idol</div>
+                    <div className="col-span-1">Skill</div>
+                    <div className="col-span-1">Duration</div>
+                    <div className="col-span-1">Frequency</div>
+                    <div className="col-span-4">Description</div>
+                  </div>
+                  {items.map((item, i) => {
+                    const sc = skillColors[item.skill];
+                    return (
+                      <div key={i} className={`grid grid-cols-12 gap-2 px-5 py-3 items-center ${i < items.length - 1 ? "border-b border-slate-700/20" : ""}`}>
+                        <div className="col-span-3">
+                          <p className="text-sm font-semibold text-white">{item.routine.name}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <p className="text-sm text-slate-300">{item.idol}</p>
+                        </div>
+                        <div className="col-span-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>{item.skill}</span>
+                        </div>
+                        <div className="col-span-1">
+                          <p className="text-xs text-slate-400">{item.routine.duration}</p>
+                        </div>
+                        <div className="col-span-1">
+                          <p className={`text-xs ${fc.text}`}>{item.routine.frequency}</p>
+                        </div>
+                        <div className="col-span-4">
+                          <p className="text-xs text-slate-400 leading-relaxed">{item.routine.description}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
