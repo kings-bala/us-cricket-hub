@@ -7,7 +7,7 @@ import StatCard from "@/components/StatCard";
 import { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
-  player: "Player Dashboard",
+  player: "My Profile",
   agent: "Agent Dashboard",
   owner: "T20 Owner Dashboard",
   sponsor: "Sponsor Dashboard",
