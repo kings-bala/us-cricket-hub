@@ -39,23 +39,6 @@ function PlayersContent() {
         <p className="text-slate-400">Player workspace with unified tabs. No dropdowns.</p>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-2 mb-8">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                tab === t.id
-                  ? "bg-emerald-500 text-white border-emerald-400"
-                  : "bg-slate-900/50 text-slate-300 border-slate-700 hover:border-slate-600"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {tab === "profile" && (
         <div className="grid md:grid-cols-2 gap-4">

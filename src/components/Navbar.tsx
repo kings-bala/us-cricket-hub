@@ -144,7 +144,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
   ],
 };
 
-export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">Cricket Verse</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
+export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">CricVerse</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
 
 function NavbarInner() {
   const [role, setRole] = useState<UserRole>("player");
@@ -174,7 +174,7 @@ function NavbarInner() {
   const pathname = usePathname();
   const search = useSearchParams();
   const currentPlayerTab = pathname && pathname.startsWith("/players") ? (search.get("tab") || "profile") : null;
-  const showTabs = role === "player" ? (pathname ? pathname.startsWith("/players") : false) : pathname === "/";
+  const showTabs = true;
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -184,7 +184,7 @@ function NavbarInner() {
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
               CV
             </div>
-            <span className="font-bold text-lg hidden sm:block">Cricket Verse</span>
+            <span className="font-bold text-lg hidden sm:block">CricVerse</span>
           </Link>
 
                     {showTabs && (

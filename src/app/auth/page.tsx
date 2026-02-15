@@ -23,7 +23,7 @@ export default function AuthPage() {
             CV
           </div>
           <h1 className="text-2xl font-bold text-white">
-            {isSignUp ? "Join Cricket Verse" : "Welcome Back"}
+            {isSignUp ? "Join CricVerse" : "Welcome Back"}
           </h1>
           <p className="text-slate-400 mt-1">
             {isSignUp ? "Create your account to get started" : "Sign in to your account"}

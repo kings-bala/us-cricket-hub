@@ -25,27 +25,6 @@ export default async function PlayerProfilePage({ params }: PageProps) {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Link href="/players" className="text-sm text-slate-400 hover:text-white mb-2 inline-block">&larr; Back to Players Home</Link>
 
-      <div className="flex flex-wrap gap-2 mb-6">
-        {[
-          { href: "/players?tab=profile", label: "Home", active: true },
-          { href: "/players?tab=mystats", label: "My Stats", active: false },
-          { href: "/players?tab=training", label: "Training", active: false },
-          { href: "/players?tab=ai", label: "Full Track AI", active: false },
-          { href: "/players?tab=store", label: "Merchandise Store", active: false },
-        ].map((t) => (
-          <Link
-            key={t.href}
-            href={t.href}
-            className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-              t.active
-                ? "bg-emerald-500 text-white border-emerald-400"
-                : "bg-slate-900/50 text-slate-300 border-slate-700 hover:border-slate-600"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
