@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus } from "@/data/mock";
+import { legends, skillColors, type Skill, type Routine } from "@/data/legends";
 import StatCard from "@/components/StatCard";
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
@@ -250,25 +251,129 @@ function PlayersContent() {
         );
       })()}
 
-      {tab === "training" && (
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-white mb-2">Idol Capture</h3>
-            <p className="text-slate-400 text-sm mb-4">Save your idol’s routines and mirror them.</p>
-            <Link href="/idol-capture" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Set Routine</Link>
+      {tab === "training" && (() => {
+        let savedSelections: Record<string, string> = {};
+        try {
+          const raw = typeof window !== "undefined" ? localStorage.getItem("idol-selections") : null;
+          if (raw) savedSelections = JSON.parse(raw);
+        } catch {}
+        const hasIdols = Object.keys(savedSelections).length > 0;
+
+        const savedLegends = Object.entries(savedSelections).map(([skill, id]) => {
+          const legend = legends.find((l) => l.id === id);
+          return legend ? { skill: skill as Skill, legend } : null;
+        }).filter(Boolean) as { skill: Skill; legend: (typeof legends)[number] }[];
+
+        const groupedRoutines: Record<string, { routine: Routine; idol: string; skill: Skill }[]> = { Daily: [], Weekly: [], Monthly: [] };
+        for (const { skill, legend } of savedLegends) {
+          const routines = legend.routines[skill] || [];
+          for (const r of routines) {
+            const entry = { routine: r, idol: legend.name, skill };
+            if (r.frequency === "Daily") groupedRoutines.Daily.push(entry);
+            else if (r.frequency === "Monthly") groupedRoutines.Monthly.push(entry);
+            else groupedRoutines.Weekly.push(entry);
+          }
+        }
+        const totalRoutines = groupedRoutines.Daily.length + groupedRoutines.Weekly.length + groupedRoutines.Monthly.length;
+
+        if (!hasIdols) {
+          return (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Link href="/idol-capture" className="group flex flex-col items-center gap-4 hover:scale-105 transition-transform">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-shadow">
+                  <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9" />
+                  </svg>
+                </div>
+                <div className="text-center">
+                  <p className="text-lg font-semibold text-white">Idol Capture</p>
+                  <p className="text-sm text-slate-400 mt-1">Select cricket legends as your idols to build your training routine</p>
+                </div>
+              </Link>
+            </div>
+          );
+        }
+
+        return (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white">Your Idol Selections</h2>
+              <Link href="/idol-capture" className="text-sm text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
+                Edit Idols
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {savedLegends.map(({ skill, legend }) => {
+                const colors = skillColors[skill];
+                return (
+                  <div key={skill} className={`rounded-xl p-4 border ${colors.border} ${colors.bg}`}>
+                    <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${colors.text}`}>{skill}</p>
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                        {legend.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">{legend.name}</p>
+                        <p className="text-xs text-slate-400">{legend.country}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {totalRoutines > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-white">Training Routines</h2>
+                  <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">{totalRoutines} routines</span>
+                </div>
+
+                {(["Daily", "Weekly", "Monthly"] as const).map((freq) => {
+                  const items = groupedRoutines[freq];
+                  if (items.length === 0) return null;
+                  const freqColors = { Daily: { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400", badge: "bg-emerald-500/20" }, Weekly: { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400", badge: "bg-blue-500/20" }, Monthly: { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400", badge: "bg-purple-500/20" } };
+                  const fc = freqColors[freq];
+                  return (
+                    <div key={freq} className="mb-6">
+                      <div className="flex items-center gap-3 mb-3">
+                        <h3 className={`text-sm font-semibold ${fc.text}`}>{freq} Routines</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${fc.badge} ${fc.text}`}>{items.length}</span>
+                      </div>
+                      <div className={`border rounded-xl ${fc.border} ${fc.bg} overflow-hidden`}>
+                        {items.map((item, i) => {
+                          const sc = skillColors[item.skill];
+                          return (
+                            <div key={i} className={`px-4 py-3 ${i < items.length - 1 ? "border-b border-slate-700/20" : ""}`}>
+                              <div className="flex items-center justify-between mb-1">
+                                <p className="text-sm font-semibold text-white">{item.routine.name}</p>
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>{item.skill}</span>
+                                  <span className="text-xs text-slate-500">{item.routine.duration}</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-slate-400 mb-1">{item.routine.description}</p>
+                              <p className="text-xs text-slate-500">Idol: {item.idol} &middot; {item.routine.frequency}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            <Link href="/coaches" className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors">
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>
+              Find Coach
+            </Link>
           </div>
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-white mb-2">Track Exercises</h3>
-            <p className="text-slate-400 text-sm mb-4">Follow coach plans and your own workouts.</p>
-            <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Open Planner</Link>
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-            <h3 className="text-lg font-semibold text-white mb-2">Connect with Coach</h3>
-            <p className="text-slate-400 text-sm mb-4">Find world-class coaches to level up.</p>
-            <Link href="/coaches" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Find Coaches</Link>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {tab === "ai" && (
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
