@@ -28,6 +28,20 @@ function PlayersContent() {
   const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
   const [trainingTab, setTrainingTab] = useState<"idol" | "exercises" | "coach">("idol");
   const search = useSearchParams();
+  const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const stored = localStorage.getItem(`cricverse_routine_log_${todayKey}`);
+    if (stored) setCompletedRoutines(JSON.parse(stored));
+  }, []);
+
+  const toggleRoutine = (routineKey: string) => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const updated = { ...completedRoutines, [routineKey]: !completedRoutines[routineKey] };
+    setCompletedRoutines(updated);
+    localStorage.setItem(`cricverse_routine_log_${todayKey}`, JSON.stringify(updated));
+  };
 
   useEffect(() => {
     const t = search.get("tab");
@@ -264,17 +278,21 @@ function PlayersContent() {
           return legend ? { skill: skill as Skill, legend } : null;
         }).filter(Boolean) as { skill: Skill; legend: (typeof legends)[number] }[];
 
-        const groupedRoutines: Record<string, { routine: Routine; idol: string; skill: Skill }[]> = { Daily: [], Weekly: [], Monthly: [] };
+        const groupedRoutines: Record<string, { routine: Routine; idol: string; skill: Skill; key: string }[]> = { Daily: [], Weekly: [], Monthly: [] };
         for (const { skill, legend } of savedLegends) {
           const routines = legend.routines[skill] || [];
           for (const r of routines) {
-            const entry = { routine: r, idol: legend.name, skill };
+            const key = `${legend.id}_${skill}_${r.name}`;
+            const entry = { routine: r, idol: legend.name, skill, key };
             if (r.frequency === "Daily") groupedRoutines.Daily.push(entry);
             else if (r.frequency === "Monthly") groupedRoutines.Monthly.push(entry);
             else groupedRoutines.Weekly.push(entry);
           }
         }
         const totalRoutines = groupedRoutines.Daily.length + groupedRoutines.Weekly.length + groupedRoutines.Monthly.length;
+        const completedCount = Object.values(completedRoutines).filter(Boolean).length;
+        const pendingDaily = groupedRoutines.Daily.filter((item) => !completedRoutines[item.key]).length;
+        const pendingWeekly = groupedRoutines.Weekly.filter((item) => !completedRoutines[item.key]).length;
 
         if (!hasIdols) {
           return (
@@ -297,6 +315,35 @@ function PlayersContent() {
 
         return (
           <div className="space-y-6">
+            {totalRoutines > 0 && (pendingDaily > 0 || pendingWeekly > 0) && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-amber-400">Pending Routines</p>
+                  <p className="text-xs text-slate-400">
+                    {pendingDaily > 0 && <span>{pendingDaily} daily routine{pendingDaily > 1 ? "s" : ""} pending</span>}
+                    {pendingDaily > 0 && pendingWeekly > 0 && <span> &middot; </span>}
+                    {pendingWeekly > 0 && <span>{pendingWeekly} weekly routine{pendingWeekly > 1 ? "s" : ""} pending</span>}
+                  </p>
+                </div>
+                <span className="text-xs text-slate-500">{completedCount}/{totalRoutines} done today</span>
+              </div>
+            )}
+
+            {totalRoutines > 0 && completedCount === totalRoutines && (
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                  <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-emerald-400">All routines completed!</p>
+                  <p className="text-xs text-slate-400">Great work today. Keep up the consistency.</p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">Your Idol Selections</h2>
               <Link href="/idol-capture" className="text-sm text-amber-400 hover:text-amber-300 flex items-center gap-1">
@@ -327,7 +374,7 @@ function PlayersContent() {
               <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-bold text-white">Training Routines</h2>
-                  <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">{totalRoutines} routines</span>
+                  <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">{completedCount}/{totalRoutines} completed</span>
                 </div>
 
                 {(["Daily", "Weekly", "Monthly"] as const).map((freq) => {
@@ -335,26 +382,40 @@ function PlayersContent() {
                   if (items.length === 0) return null;
                   const freqColors = { Daily: { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400", badge: "bg-emerald-500/20" }, Weekly: { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400", badge: "bg-blue-500/20" }, Monthly: { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400", badge: "bg-purple-500/20" } };
                   const fc = freqColors[freq];
+                  const doneInGroup = items.filter((item) => completedRoutines[item.key]).length;
                   return (
                     <div key={freq} className="mb-6">
                       <div className="flex items-center gap-3 mb-3">
                         <h3 className={`text-sm font-semibold ${fc.text}`}>{freq} Routines</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${fc.badge} ${fc.text}`}>{items.length}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${fc.badge} ${fc.text}`}>{doneInGroup}/{items.length}</span>
                       </div>
                       <div className={`border rounded-xl ${fc.border} ${fc.bg} overflow-hidden`}>
                         {items.map((item, i) => {
                           const sc = skillColors[item.skill];
+                          const done = !!completedRoutines[item.key];
                           return (
-                            <div key={i} className={`px-4 py-3 ${i < items.length - 1 ? "border-b border-slate-700/20" : ""}`}>
+                            <div key={i} className={`px-4 py-3 ${i < items.length - 1 ? "border-b border-slate-700/20" : ""} ${done ? "opacity-60" : ""}`}>
                               <div className="flex items-center justify-between mb-1">
-                                <p className="text-sm font-semibold text-white">{item.routine.name}</p>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => toggleRoutine(item.key)}
+                                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                      done ? "bg-emerald-500 border-emerald-500" : "border-slate-500 hover:border-emerald-400"
+                                    }`}
+                                  >
+                                    {done && (
+                                      <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                    )}
+                                  </button>
+                                  <p className={`text-sm font-semibold ${done ? "text-slate-400 line-through" : "text-white"}`}>{item.routine.name}</p>
+                                </div>
                                 <div className="flex items-center gap-2">
                                   <span className={`text-xs px-2 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>{item.skill}</span>
                                   <span className="text-xs text-slate-500">{item.routine.duration}</span>
                                 </div>
                               </div>
-                              <p className="text-xs text-slate-400 mb-1">{item.routine.description}</p>
-                              <p className="text-xs text-slate-500">Idol: {item.idol} &middot; {item.routine.frequency}</p>
+                              <p className="text-xs text-slate-400 mb-1 ml-8">{item.routine.description}</p>
+                              <p className="text-xs text-slate-500 ml-8">Idol: {item.idol} &middot; {item.routine.frequency}</p>
                             </div>
                           );
                         })}
