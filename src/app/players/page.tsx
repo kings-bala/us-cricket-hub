@@ -1,170 +1,138 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import PlayerCard from "@/components/PlayerCard";
-import { players } from "@/data/mock";
-import { AgeGroup, Region, PlayerRole } from "@/types";
+import { useState } from "react";
+import Link from "next/link";
 
 export default function PlayersPage() {
-  const [search, setSearch] = useState("");
-  const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
-  const [region, setRegion] = useState<Region | "All">("All");
-  const [streetOnly, setStreetOnly] = useState(false);
-  const [role, setRole] = useState<PlayerRole | "All">("All");
-  const [sortBy, setSortBy] = useState<"runs" | "wickets" | "average" | "name">("runs");
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
+  const [trainingTab, setTrainingTab] = useState<"idol" | "exercises" | "coach">("idol");
 
-  const filtered = useMemo(() => {
-    let result = [...players];
-
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.city.toLowerCase().includes(q) ||
-          p.country.toLowerCase().includes(q) ||
-          p.state.toLowerCase().includes(q)
-      );
-    }
-    if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
-    if (region !== "All") result = result.filter((p) => p.region === region);
-    if (role !== "All") result = result.filter((p) => p.role === role);
-    if (verifiedOnly) result = result.filter((p) => p.verified);
-    if (streetOnly) result = result.filter((p) => p.streetCricketer);
-
-    switch (sortBy) {
-      case "runs":
-        result.sort((a, b) => b.stats.runs - a.stats.runs);
-        break;
-      case "wickets":
-        result.sort((a, b) => b.stats.wickets - a.stats.wickets);
-        break;
-      case "average":
-        result.sort((a, b) => b.stats.battingAverage - a.stats.battingAverage);
-        break;
-      case "name":
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-    }
-
-    return result;
-  }, [search, ageGroup, region, role, sortBy, verifiedOnly, streetOnly]);
+  const tabs = [
+    { id: "profile", label: "My Profile & Feed" },
+    { id: "mystats", label: "My Stats" },
+    { id: "training", label: "Training" },
+    { id: "ai", label: "Full Track AI" },
+    { id: "store", label: "Merchandise Store" },
+  ] as const;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Player Registry</h1>
-        <p className="text-slate-400">
-          Browse {players.length} registered youth cricket players from around the world
-        </p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-white mb-2">Players</h1>
+        <p className="text-slate-400">Player workspace with unified tabs. No dropdowns.</p>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-          <div className="md:col-span-2">
-            <input
-              type="text"
-              placeholder="Search by name, city, country..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-2 mb-8">
+        <div className="flex flex-wrap gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                tab === t.id
+                  ? "bg-emerald-500 text-white border-emerald-400"
+                  : "bg-slate-900/50 text-slate-300 border-slate-700 hover:border-slate-600"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === "profile" && (
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <h2 className="text-xl font-semibold text-white mb-2">My Profile</h2>
+            <p className="text-slate-400 text-sm mb-4">Manage your profile, badges, and preferences.</p>
+            <Link href="/dashboard" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Open My Profile</Link>
           </div>
-          <select
-            value={ageGroup}
-            onChange={(e) => setAgeGroup(e.target.value as AgeGroup | "All")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="All">All Ages</option>
-            <option value="U15">U15</option>
-            <option value="U17">U17</option>
-            <option value="U19">U19</option>
-            <option value="U21">U21</option>
-          </select>
-          <select
-            value={region}
-            onChange={(e) => setRegion(e.target.value as Region | "All")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="All">All Regions</option>
-            <option value="South Asia">South Asia</option>
-            <option value="Oceania">Oceania</option>
-            <option value="Europe">Europe</option>
-            <option value="Caribbean">Caribbean</option>
-            <option value="Africa">Africa</option>
-            <option value="Americas">Americas</option>
-            <option value="Middle East">Middle East</option>
-          </select>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as PlayerRole | "All")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="All">All Roles</option>
-            <option value="Batsman">Batsman</option>
-            <option value="Bowler">Bowler</option>
-            <option value="All-Rounder">All-Rounder</option>
-            <option value="Wicket-Keeper">Wicket-Keeper</option>
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "runs" | "wickets" | "average" | "name")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="runs">Sort: Most Runs</option>
-            <option value="wickets">Sort: Most Wickets</option>
-            <option value="average">Sort: Best Average</option>
-            <option value="name">Sort: Name A-Z</option>
-          </select>
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <h2 className="text-xl font-semibold text-white mb-2">Performance Feed</h2>
+            <p className="text-slate-400 text-sm mb-4">Your highlights, rank moves, and milestones.</p>
+            <Link href="/performance-feed" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">View Feed</Link>
+          </div>
         </div>
-        <div className="flex items-center gap-4 mt-3">
-          <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
-              className="rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
-            />
-            Verified profiles only
-          </label>
-          <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={streetOnly}
-              onChange={(e) => setStreetOnly(e.target.checked)}
-              className="rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500"
-            />
-            Street cricketers only
-          </label>
-          <span className="text-sm text-slate-500">
-            Showing {filtered.length} of {players.length} players
-          </span>
+      )}
+
+      {tab === "mystats" && (
+        <div className="grid md:grid-cols-3 gap-4">
+          <Link href="/players" className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all">
+            <h3 className="text-lg font-semibold text-white mb-1">Cricinfo</h3>
+            <p className="text-slate-400 text-sm">Career stats, records, and splits.</p>
+          </Link>
+          <Link href="/rankings" className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all">
+            <h3 className="text-lg font-semibold text-white mb-1">CPI Metrics</h3>
+            <p className="text-slate-400 text-sm">Cricket Performance Index (CPI) details.</p>
+          </Link>
+          <Link href="/combine" className="block bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all">
+            <h3 className="text-lg font-semibold text-white mb-1">Combine Assessment</h3>
+            <p className="text-slate-400 text-sm">YoYo, sprint, bat/bowl speed, jump, fielding.</p>
+          </Link>
         </div>
-      </div>
+      )}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((player, i) => (
-          <PlayerCard key={player.id} player={player} rank={i + 1} />
-        ))}
-      </div>
+      {tab === "training" && (
+        <div className="space-y-4">
+          <div className="flex gap-2">
+            {([
+              { id: "idol", label: "Idol Capture" },
+              { id: "exercises", label: "Track Exercises" },
+              { id: "coach", label: "Connect with Coach" },
+            ] as const).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTrainingTab(t.id)}
+                className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+                  trainingTab === t.id
+                    ? "bg-blue-500 text-white border-blue-400"
+                    : "bg-slate-900/50 text-slate-300 border-slate-700 hover:border-slate-600"
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-slate-500 text-lg">No players match your filters</p>
-          <button
-            onClick={() => {
-              setSearch("");
-              setAgeGroup("All");
-              setRegion("All");
-              setStreetOnly(false);
-              setRole("All");
-              setVerifiedOnly(false);
-            }}
-            className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm"
-          >
-            Clear all filters
-          </button>
+          {trainingTab === "idol" && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-lg font-semibold text-white mb-2">Idol Capture</h3>
+              <p className="text-slate-400 text-sm mb-4">Save your idol’s routines and mirror them.</p>
+              <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Set Routine</Link>
+            </div>
+          )}
+
+          {trainingTab === "exercises" && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-lg font-semibold text-white mb-2">Track Exercises</h3>
+              <p className="text-slate-400 text-sm mb-4">Follow coach plans and your own workouts.</p>
+              <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Open Planner</Link>
+            </div>
+          )}
+
+          {trainingTab === "coach" && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-lg font-semibold text-white mb-2">Connect with Coach</h3>
+              <p className="text-slate-400 text-sm mb-4">Find world-class coaches to level up.</p>
+              <Link href="/coaches" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Find Coaches</Link>
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "ai" && (
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <h2 className="text-xl font-semibold text-white mb-2">Full Track AI</h2>
+          <p className="text-slate-400 text-sm mb-4">Upload a batting/bowling/fielding video and get instant AI feedback.</p>
+          <Link href="/analyze" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Start Analysis</Link>
+        </div>
+      )}
+
+      {tab === "store" && (
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <h2 className="text-xl font-semibold text-white mb-2">Merchandise Store</h2>
+          <p className="text-slate-400 text-sm mb-4">Shop bats, balls, pads, gloves, helmets, kits, and more.</p>
+          <Link href="/store" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Open Store</Link>
         </div>
       )}
     </div>
