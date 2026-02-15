@@ -1,11 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function PlayersPage() {
   const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
   const [trainingTab, setTrainingTab] = useState<"idol" | "exercises" | "coach">("idol");
+  const search = useSearchParams();
+
+  useEffect(() => {
+    const t = search.get("tab");
+    const sub = search.get("sub");
+    if (t === "profile" || t === "mystats" || t === "training" || t === "ai" || t === "store") setTab(t);
+    if (sub === "idol" || sub === "exercises" || sub === "coach") setTrainingTab(sub);
+  }, [search]);
 
   const tabs = [
     { id: "profile", label: "My Profile & Feed" },

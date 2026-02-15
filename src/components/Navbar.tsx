@@ -148,7 +148,6 @@ export default function Navbar() {
   const [role, setRole] = useState<UserRole>("player");
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   // load + persist persona
   useEffect(() => {
@@ -160,6 +159,16 @@ export default function Navbar() {
   }, [role]);
 
   const groups = personaGroups[role];
+  const flatLinks: { href: string; label: string }[] =
+    role === "player"
+      ? [
+          { href: "/players?tab=profile", label: "My Profile & Feed" },
+          { href: "/players?tab=mystats", label: "My Stats" },
+          { href: "/players?tab=training", label: "Training" },
+          { href: "/players?tab=ai", label: "Full Track AI" },
+          { href: "/players?tab=store", label: "Store" },
+        ]
+      : groups.flatMap((g) => g.links.map(({ href, label }) => ({ href, label })));
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -172,9 +181,11 @@ export default function Navbar() {
             <span className="font-bold text-lg hidden sm:block">Cricket Verse</span>
           </Link>
 
-                    <div className="hidden md:flex items-center gap-6">
-                      {groups.map((g) => (
-                        <NavDropdown key={g.id} id={g.id} label={g.title} links={g.links} open={openDropdown} setOpen={setOpenDropdown} />
+                    <div className="hidden md:flex items-center gap-4">
+                      {flatLinks.map((l) => (
+                        <Link key={l.href} href={l.href} className="text-sm text-slate-300 hover:text-white transition-colors">
+                          {l.label}
+                        </Link>
                       ))}
                     </div>
 
@@ -183,7 +194,7 @@ export default function Navbar() {
               <span className="text-xs text-slate-400">View as:</span>
               <select
                 value={role}
-                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setOpenDropdown(null); setMobileOpen(false); router.push("/"); }}
+                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
                 className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[role]}`}
               >
                 {(Object.keys(roleLabels) as UserRole[]).map((r) => (
@@ -218,28 +229,23 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-4">
-            {groups.map((group) => (
-              <div key={group.title}>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{group.title}</p>
-                <div className="space-y-1">
-                  {group.links.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileOpen(false)}
-                      className="block py-1.5 text-sm text-slate-300 hover:text-white pl-2 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            ))}
+            <div className="space-y-1">
+              {flatLinks.map((l) => (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-1.5 text-sm text-slate-300 hover:text-white pl-2 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
             <div className="pt-2 border-t border-slate-700">
               <span className="text-xs text-slate-400">View as:</span>
               <select
                 value={role}
-                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setOpenDropdown(null); setMobileOpen(false); router.push("/"); }}
+                onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
                 className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[role]}`}
               >
                 {(Object.keys(roleLabels) as UserRole[]).map((r) => (
