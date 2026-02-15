@@ -44,9 +44,9 @@ function PlayersContent() {
   ] as const;
 
   const player = players[0];
-  const recentFeed = [...performanceFeedItems]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 6);
+  const playerFeed = [...performanceFeedItems]
+    .filter((item) => item.playerId === player.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -104,7 +104,7 @@ function PlayersContent() {
               <Link href="/performance-feed" className="text-xs text-cyan-400 hover:text-cyan-300">View All &rarr;</Link>
             </div>
             <div className="space-y-2">
-              {recentFeed.map((item) => {
+              {playerFeed.map((item) => {
                 const config = feedTypeConfig[item.type];
                 return (
                   <Link key={item.id} href={`/players/${item.playerId}`}>

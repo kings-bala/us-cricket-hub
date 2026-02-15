@@ -26,8 +26,8 @@ const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }
 function PlayerDashboard() {
   const player = players[0];
   const recentFeed = [...performanceFeedItems]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 6);
+    .filter((item) => item.playerId === player.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="space-y-6">
