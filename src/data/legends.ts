@@ -14,11 +14,12 @@ export interface Legend {
   era: string;
   skills: Skill[];
   highlights: string;
+  photo: string;
   routines: Record<string, Routine[]>;
 }
 
 export const legends: Legend[] = [
-  { id: "l1", name: "Sachin Tendulkar", country: "India", era: "1989–2013", skills: ["Batting"], highlights: "100 international centuries, 34,357 runs across formats", routines: {
+  { id: "l1", name: "Sachin Tendulkar", country: "India", era: "1989–2013", skills: ["Batting"], highlights: "100 international centuries, 34,357 runs across formats", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/The_cricket_legend_Sachin_Tendulkar_at_the_Oval_Maidan_in_Mumbai_During_the_Duke_and_Duchess_of_Cambridge_Visit%2826271019082%29.jpg/200px-The_cricket_legend_Sachin_Tendulkar_at_the_Oval_Maidan_in_Mumbai_During_the_Duke_and_Duchess_of_Cambridge_Visit%2826271019082%29.jpg", routines: {
     Batting: [
       { name: "Shadow Batting Drills", duration: "30 min", frequency: "Daily", description: "Practice straight drive, cover drive, and pull shot footwork without a ball to build muscle memory" },
       { name: "Throwdown Sessions", duration: "45 min", frequency: "5x/week", description: "Face 200+ throwdowns focusing on playing late and keeping the ball along the ground" },
@@ -27,7 +28,7 @@ export const legends: Legend[] = [
       { name: "Batting Technique Review", duration: "2 hrs", frequency: "Monthly", description: "Full video analysis session reviewing recent innings, identifying technical flaws, and setting corrective goals" },
     ],
   }},
-  { id: "l2", name: "Brian Lara", country: "West Indies", era: "1990–2007", skills: ["Batting"], highlights: "400* in Tests, 501* in first-class cricket", routines: {
+  { id: "l2", name: "Brian Lara", country: "West Indies", era: "1990–2007", skills: ["Batting"], highlights: "400* in Tests, 501* in first-class cricket", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Brian_Lara_at_2012_Mumbai_Marathon_pre_bash.jpg/200px-Brian_Lara_at_2012_Mumbai_Marathon_pre_bash.jpg", routines: {
     Batting: [
       { name: "High Backlift Practice", duration: "30 min", frequency: "Daily", description: "Practice the signature high backlift with emphasis on timing and bat flow through the ball" },
       { name: "Concentration Drills", duration: "60 min", frequency: "4x/week", description: "Extended net sessions (300+ balls) to build stamina for long innings and deep concentration" },
@@ -35,14 +36,14 @@ export const legends: Legend[] = [
       { name: "Match Simulation Day", duration: "3 hrs", frequency: "Monthly", description: "Full match simulation with scoreboard pressure, field settings, and bowling changes to test concentration" },
     ],
   }},
-  { id: "l3", name: "Sir Don Bradman", country: "Australia", era: "1928–1948", skills: ["Batting"], highlights: "Test average of 99.94, greatest batsman ever", routines: {
+  { id: "l3", name: "Sir Don Bradman", country: "Australia", era: "1928–1948", skills: ["Batting"], highlights: "Test average of 99.94, greatest batsman ever", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Don_Bradman_1930.jpg/200px-Don_Bradman_1930.jpg", routines: {
     Batting: [
       { name: "Golf Ball & Stump Drill", duration: "20 min", frequency: "Daily", description: "Hit a golf ball against a wall with a stump to sharpen hand-eye coordination and reflexes" },
       { name: "Run Scoring Simulation", duration: "45 min", frequency: "5x/week", description: "Practice rotating strike with singles and twos, converting starts into big scores" },
       { name: "Back-foot Play", duration: "30 min", frequency: "4x/week", description: "Drill cuts, pulls, and back-foot punches against short-pitched deliveries" },
     ],
   }},
-  { id: "l4", name: "Vivian Richards", country: "West Indies", era: "1974–1991", skills: ["Batting", "Fielding"], highlights: "8,540 Test runs, fastest century in ODIs (56 balls)", routines: {
+  { id: "l4", name: "Vivian Richards", country: "West Indies", era: "1974–1991", skills: ["Batting", "Fielding"], highlights: "8,540 Test runs, fastest century in ODIs (56 balls)", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Sir_Vivian_Richards_2022.jpg/200px-Sir_Vivian_Richards_2022.jpg", routines: {
     Batting: [
       { name: "Power Hitting Drills", duration: "40 min", frequency: "5x/week", description: "Practice clearing the front leg and hitting through the line with maximum bat speed" },
       { name: "Intimidation Batting", duration: "30 min", frequency: "3x/week", description: "Face bouncers and pace bowling without helmet to build mental toughness and confidence" },
@@ -52,7 +53,7 @@ export const legends: Legend[] = [
       { name: "Ground Fielding Sprints", duration: "25 min", frequency: "4x/week", description: "Sprint to collect and throw from various angles to build arm strength and accuracy" },
     ],
   }},
-  { id: "l5", name: "Shane Warne", country: "Australia", era: "1992–2007", skills: ["Bowling"], highlights: "708 Test wickets, legendary leg-spinner", routines: {
+  { id: "l5", name: "Shane Warne", country: "Australia", era: "1992–2007", skills: ["Bowling"], highlights: "708 Test wickets, legendary leg-spinner", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Shane_Warne_February_2015.jpg/200px-Shane_Warne_February_2015.jpg", routines: {
     Bowling: [
       { name: "Wrist Spin Drills", duration: "45 min", frequency: "Daily", description: "Practice leg-break, googly, flipper, and slider with focus on wrist position and revolutions" },
       { name: "Target Bowling", duration: "30 min", frequency: "5x/week", description: "Bowl at cones placed on good length and outside off stump to develop accuracy and drift" },
@@ -61,14 +62,14 @@ export const legends: Legend[] = [
       { name: "Variation Assessment", duration: "2 hrs", frequency: "Monthly", description: "Test all spin variations against quality batsmen under match conditions and measure effectiveness" },
     ],
   }},
-  { id: "l6", name: "Muttiah Muralitharan", country: "Sri Lanka", era: "1992–2011", skills: ["Bowling"], highlights: "800 Test wickets, all-time leading wicket-taker", routines: {
+  { id: "l6", name: "Muttiah Muralitharan", country: "Sri Lanka", era: "1992–2011", skills: ["Bowling"], highlights: "800 Test wickets, all-time leading wicket-taker", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Photograph_of_Muttiah_Muralitharan.jpg/200px-Photograph_of_Muttiah_Muralitharan.jpg", routines: {
     Bowling: [
       { name: "Off-spin Variations", duration: "45 min", frequency: "Daily", description: "Practice doosra, carrom ball, and top-spinner with maximum revolutions and flight control" },
       { name: "Endurance Bowling", duration: "60 min", frequency: "4x/week", description: "Bowl 20-over spells in nets to build stamina for long spells in match conditions" },
       { name: "Shoulder Flexibility", duration: "20 min", frequency: "Daily", description: "Stretching and rotation exercises to maintain the unique bowling action and prevent injury" },
     ],
   }},
-  { id: "l7", name: "Wasim Akram", country: "Pakistan", era: "1984–2003", skills: ["Bowling"], highlights: "916 international wickets, king of reverse swing", routines: {
+  { id: "l7", name: "Wasim Akram", country: "Pakistan", era: "1984–2003", skills: ["Bowling"], highlights: "916 international wickets, king of reverse swing", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Wasim-akram-gesf-2018-7878.jpg/200px-Wasim-akram-gesf-2018-7878.jpg", routines: {
     Bowling: [
       { name: "Reverse Swing Mastery", duration: "40 min", frequency: "5x/week", description: "Practice wrist position for conventional and reverse swing with old and new balls" },
       { name: "Yorker Precision", duration: "30 min", frequency: "Daily", description: "Target the base of stumps consistently — aim for 8/10 yorker accuracy in death overs" },
@@ -76,14 +77,14 @@ export const legends: Legend[] = [
       { name: "Swing Clinic", duration: "2 hrs", frequency: "Monthly", description: "Comprehensive review of swing bowling mechanics with video analysis and corrective drills" },
     ],
   }},
-  { id: "l8", name: "Glenn McGrath", country: "Australia", era: "1993–2007", skills: ["Bowling"], highlights: "563 Test wickets, relentless line and length", routines: {
+  { id: "l8", name: "Glenn McGrath", country: "Australia", era: "1993–2007", skills: ["Bowling"], highlights: "563 Test wickets, relentless line and length", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Glenn_McGrath_Portrait%2C_2011%2C_jjron.jpg/200px-Glenn_McGrath_Portrait%2C_2011%2C_jjron.jpg", routines: {
     Bowling: [
       { name: "Line & Length Drills", duration: "45 min", frequency: "Daily", description: "Bowl on a coin placed on a good length outside off stump — aim for 9/10 accuracy" },
       { name: "Seam Position Control", duration: "30 min", frequency: "5x/week", description: "Practice upright seam position for both away and in-swing movement off the pitch" },
       { name: "Mental Toughness", duration: "15 min", frequency: "Daily", description: "Visualize bowling dry spells, maintaining pressure, and executing plans under stress" },
     ],
   }},
-  { id: "l9", name: "MS Dhoni", country: "India", era: "2004–2020", skills: ["Wicket-Keeping", "Batting"], highlights: "World Cup-winning captain, lightning-fast stumping", routines: {
+  { id: "l9", name: "MS Dhoni", country: "India", era: "2004–2020", skills: ["Wicket-Keeping", "Batting"], highlights: "World Cup-winning captain, lightning-fast stumping", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/MS_Dhoni_%28Prabhav_%2723_-_RiGI_2023%29.jpg/200px-MS_Dhoni_%28Prabhav_%2723_-_RiGI_2023%29.jpg", routines: {
     "Wicket-Keeping": [
       { name: "Lightning Stumping Drill", duration: "30 min", frequency: "Daily", description: "Practice collecting the ball and breaking the stumps in one motion — target sub-0.2s stumping time" },
       { name: "Standing Up to Pace", duration: "25 min", frequency: "4x/week", description: "Practice keeping up to medium pacers to improve reflexes and reduce reaction time" },
@@ -95,7 +96,7 @@ export const legends: Legend[] = [
       { name: "Death Overs Finishing", duration: "40 min", frequency: "5x/week", description: "Simulate match scenarios: 15 needed off 12, 8 off 6 — practice calculated hitting" },
     ],
   }},
-  { id: "l10", name: "Adam Gilchrist", country: "Australia", era: "1996–2008", skills: ["Wicket-Keeping", "Batting"], highlights: "Explosive keeper-batsman, 379 dismissals", routines: {
+  { id: "l10", name: "Adam Gilchrist", country: "Australia", era: "1996–2008", skills: ["Wicket-Keeping", "Batting"], highlights: "Explosive keeper-batsman, 379 dismissals", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Adam_Gilchrist_of_Australia_%28cropped%29.jpg/200px-Adam_Gilchrist_of_Australia_%28cropped%29.jpg", routines: {
     "Wicket-Keeping": [
       { name: "Edge Catching Drills", duration: "30 min", frequency: "Daily", description: "Face rapid deflections off bat edges from pace bowling — build reflexes for fast catches" },
       { name: "Footwork Behind Stumps", duration: "20 min", frequency: "5x/week", description: "Lateral movement drills to cover both sides of the wicket smoothly and quickly" },
@@ -105,7 +106,7 @@ export const legends: Legend[] = [
       { name: "Power Clean Hitting", duration: "25 min", frequency: "4x/week", description: "Hit through the line with a straight bat, focusing on timing over brute force for clean striking" },
     ],
   }},
-  { id: "l11", name: "Kumar Sangakkara", country: "Sri Lanka", era: "2000–2015", skills: ["Wicket-Keeping", "Batting"], highlights: "12,400 Test runs, elegant stroke-maker", routines: {
+  { id: "l11", name: "Kumar Sangakkara", country: "Sri Lanka", era: "2000–2015", skills: ["Wicket-Keeping", "Batting"], highlights: "12,400 Test runs, elegant stroke-maker", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Kumar_Sangakkara_bat_in_hand.JPG/200px-Kumar_Sangakkara_bat_in_hand.JPG", routines: {
     "Wicket-Keeping": [
       { name: "Spin Keeping", duration: "30 min", frequency: "Daily", description: "Keep to spinners on turning pitches — practice reading turn and adjusting gloves accordingly" },
       { name: "Communication Drills", duration: "15 min", frequency: "3x/week", description: "Practice field placement calls and bowler feedback to improve captaincy from behind the stumps" },
@@ -115,7 +116,7 @@ export const legends: Legend[] = [
       { name: "Innings Building", duration: "60 min", frequency: "3x/week", description: "Extended net sessions simulating match situations — build patience and shot selection discipline" },
     ],
   }},
-  { id: "l12", name: "Jonty Rhodes", country: "South Africa", era: "1992–2003", skills: ["Fielding"], highlights: "Greatest fielder ever, iconic run-out of Inzamam", routines: {
+  { id: "l12", name: "Jonty Rhodes", country: "South Africa", era: "1992–2003", skills: ["Fielding"], highlights: "Greatest fielder ever, iconic run-out of Inzamam", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/JONTY_RHODES.jpg/200px-JONTY_RHODES.jpg", routines: {
     Fielding: [
       { name: "Diving Catch Drills", duration: "30 min", frequency: "Daily", description: "Full-stretch diving catches from both sides — practice landing technique to prevent injury" },
       { name: "Direct Hit Practice", duration: "25 min", frequency: "Daily", description: "Pick up and throw at a single stump from 20-30 meters while sprinting — aim for 7/10 direct hits" },
@@ -124,7 +125,7 @@ export const legends: Legend[] = [
       { name: "Fielding Masterclass", duration: "3 hrs", frequency: "Monthly", description: "Full-day fielding camp covering all positions with video review of technique and movement patterns" },
     ],
   }},
-  { id: "l13", name: "AB de Villiers", country: "South Africa", era: "2004–2018", skills: ["Batting", "Fielding"], highlights: "360-degree batsman, 176 international catches", routines: {
+  { id: "l13", name: "AB de Villiers", country: "South Africa", era: "2004–2018", skills: ["Batting", "Fielding"], highlights: "360-degree batsman, 176 international catches", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/AB_de_villiers_%28cropped%29.jpg/200px-AB_de_villiers_%28cropped%29.jpg", routines: {
     Batting: [
       { name: "360-Degree Hitting", duration: "40 min", frequency: "5x/week", description: "Practice switch hits, reverse sweeps, and scoops to develop 360-degree scoring ability" },
       { name: "Innovation Drills", duration: "30 min", frequency: "4x/week", description: "Face random deliveries and improvise shots — build the ability to manufacture runs under pressure" },
@@ -134,7 +135,7 @@ export const legends: Legend[] = [
       { name: "High Catch Practice", duration: "20 min", frequency: "Daily", description: "Practice taking high catches with the sun/lights in eyes — build confidence under pressure" },
     ],
   }},
-  { id: "l14", name: "Jacques Kallis", country: "South Africa", era: "1995–2014", skills: ["Batting", "Bowling", "Fielding"], highlights: "13,289 Test runs + 292 wickets, ultimate all-rounder", routines: {
+  { id: "l14", name: "Jacques Kallis", country: "South Africa", era: "1995–2014", skills: ["Batting", "Bowling", "Fielding"], highlights: "13,289 Test runs + 292 wickets, ultimate all-rounder", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Jacques_Kallis_6.jpg/200px-Jacques_Kallis_6.jpg", routines: {
     Batting: [
       { name: "Defensive Technique", duration: "30 min", frequency: "Daily", description: "Practice forward and back defense with soft hands and a still head for rock-solid technique" },
       { name: "Run Accumulation", duration: "40 min", frequency: "4x/week", description: "Rotate strike with singles, convert 1s into 2s, and punish loose deliveries" },
@@ -147,7 +148,7 @@ export const legends: Legend[] = [
       { name: "Slip Catching Reflex", duration: "20 min", frequency: "Daily", description: "React to edges off pace bowling in the slip cordon with soft hands and quick reflexes" },
     ],
   }},
-  { id: "l15", name: "Sir Garfield Sobers", country: "West Indies", era: "1954–1974", skills: ["Batting", "Bowling", "Fielding"], highlights: "8,032 Test runs + 235 wickets, greatest all-rounder", routines: {
+  { id: "l15", name: "Sir Garfield Sobers", country: "West Indies", era: "1954–1974", skills: ["Batting", "Bowling", "Fielding"], highlights: "8,032 Test runs + 235 wickets, greatest all-rounder", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Sir_Garry_Sobers_2012.jpg/200px-Sir_Garry_Sobers_2012.jpg", routines: {
     Batting: [
       { name: "Elegant Stroke Making", duration: "40 min", frequency: "Daily", description: "Practice flowing drives and wristy flicks with emphasis on balance and grace" },
     ],
@@ -158,7 +159,7 @@ export const legends: Legend[] = [
       { name: "Close-In Catching", duration: "20 min", frequency: "Daily", description: "Short leg and silly point catching drills with protective gear" },
     ],
   }},
-  { id: "l16", name: "Imran Khan", country: "Pakistan", era: "1971–1992", skills: ["Batting", "Bowling"], highlights: "3,807 Test runs + 362 wickets, 1992 World Cup winner", routines: {
+  { id: "l16", name: "Imran Khan", country: "Pakistan", era: "1971–1992", skills: ["Batting", "Bowling"], highlights: "3,807 Test runs + 362 wickets, 1992 World Cup winner", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Prime_Minister_Imran_Khan_Adresses_the_Forum_01.jpg/200px-Prime_Minister_Imran_Khan_Adresses_the_Forum_01.jpg", routines: {
     Batting: [
       { name: "Lower-Order Resilience", duration: "30 min", frequency: "3x/week", description: "Practice batting with the tail — protecting partners and scoring at crucial moments" },
     ],
@@ -167,7 +168,7 @@ export const legends: Legend[] = [
       { name: "Reverse Swing Setup", duration: "30 min", frequency: "4x/week", description: "Practice maintaining the ball for reverse swing and executing late movement at pace" },
     ],
   }},
-  { id: "l17", name: "Ricky Ponting", country: "Australia", era: "1995–2012", skills: ["Batting", "Fielding"], highlights: "13,378 Test runs, 196 catches, 2 World Cups as captain", routines: {
+  { id: "l17", name: "Ricky Ponting", country: "Australia", era: "1995–2012", skills: ["Batting", "Fielding"], highlights: "13,378 Test runs, 196 catches, 2 World Cups as captain", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Ricky_Ponting_2015.jpg/200px-Ricky_Ponting_2015.jpg", routines: {
     Batting: [
       { name: "Pull Shot Mastery", duration: "30 min", frequency: "Daily", description: "Face short-pitched bowling and practice the pull and hook with precise placement" },
       { name: "Front-Foot Attack", duration: "35 min", frequency: "5x/week", description: "Drive through cover and mid-on with aggressive front-foot movement and head over the ball" },
@@ -176,7 +177,7 @@ export const legends: Legend[] = [
       { name: "In-field Excellence", duration: "25 min", frequency: "Daily", description: "Ground fielding, pick-up, and direct-hit throws from mid-wicket and cover positions" },
     ],
   }},
-  { id: "l18", name: "Rahul Dravid", country: "India", era: "1996–2012", skills: ["Batting"], highlights: "13,288 Test runs, The Wall, 210 catches", routines: {
+  { id: "l18", name: "Rahul Dravid", country: "India", era: "1996–2012", skills: ["Batting"], highlights: "13,288 Test runs, The Wall, 210 catches", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Rahul_Dravid_in_2024.jpg/200px-Rahul_Dravid_in_2024.jpg", routines: {
     Batting: [
       { name: "Leave Drill", duration: "20 min", frequency: "Daily", description: "Practice leaving deliveries outside off — build patience and judgment of line and length" },
       { name: "Extended Net Sessions", duration: "90 min", frequency: "5x/week", description: "Face 500+ balls in a session to build concentration, endurance, and shot selection" },
@@ -184,14 +185,14 @@ export const legends: Legend[] = [
       { name: "Technical Audit", duration: "2 hrs", frequency: "Monthly", description: "Comprehensive batting technique review with coach — analyze footage, identify patterns, set monthly targets" },
     ],
   }},
-  { id: "l19", name: "Dale Steyn", country: "South Africa", era: "2004–2021", skills: ["Bowling"], highlights: "439 Test wickets, fastest to 400 Test wickets", routines: {
+  { id: "l19", name: "Dale Steyn", country: "South Africa", era: "2004–2021", skills: ["Bowling"], highlights: "439 Test wickets, fastest to 400 Test wickets", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/Dale_Steyn_YM.jpg/200px-Dale_Steyn_YM.jpg", routines: {
     Bowling: [
       { name: "Express Pace Drills", duration: "40 min", frequency: "5x/week", description: "Full-effort bowling focusing on run-up rhythm, explosive delivery stride, and pace above 145 km/h" },
       { name: "Outswing Mastery", duration: "30 min", frequency: "Daily", description: "Practice late outswing with upright seam — aim to move the ball after it passes the batsman" },
       { name: "Injury Prevention", duration: "25 min", frequency: "Daily", description: "Core stability, hamstring flexibility, and shoulder mobility exercises to stay injury-free" },
     ],
   }},
-  { id: "l20", name: "Jeff Thomson", country: "Australia", era: "1972–1985", skills: ["Bowling"], highlights: "Fastest bowler in history, 200 Test wickets", routines: {
+  { id: "l20", name: "Jeff Thomson", country: "Australia", era: "1972–1985", skills: ["Bowling"], highlights: "Fastest bowler in history, 200 Test wickets", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/LILLEE_AND_THOMSON_%282877049442%29.jpg/200px-LILLEE_AND_THOMSON_%282877049442%29.jpg", routines: {
     Bowling: [
       { name: "Slingshot Action Drill", duration: "30 min", frequency: "5x/week", description: "Practice the unique slingshot bowling action for maximum pace generation" },
       { name: "Bouncer Control", duration: "25 min", frequency: "4x/week", description: "Bowl bouncers at different heights targeting the batsman's body, throat, and above head" },

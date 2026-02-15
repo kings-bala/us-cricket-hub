@@ -167,7 +167,7 @@ function NavbarInner() {
           { href: "/players?tab=profile", label: "My Profile" },
           { href: "/players?tab=mystats", label: "My Stats" },
           { href: "/players?tab=training", label: "Training" },
-          { href: "/players?tab=ai", label: "Full Track AI" },
+          { href: "/analyze", label: "Full Track AI" },
           { href: "/players?tab=store", label: "Store" },
         ]
       : groups.flatMap((g) => g.links.map(({ href, label }) => ({ href, label })));
