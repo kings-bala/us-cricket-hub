@@ -109,7 +109,7 @@ export default function Home() {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
           {t20Leagues.map((league) => (
             <div key={league.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 text-center hover:border-emerald-500/50 transition-all">
-              <div className="mx-auto w-12 h-12 rounded-full bg-slate-700/70 flex items-center justify-center text-white font-bold text-sm mb-2">{league.id}</div>
+              <img src={league.logo} alt={league.name} className="mx-auto w-14 h-14 rounded-lg mb-2 object-contain" />
               <p className="text-sm font-bold text-white">{league.name}</p>
               <p className="text-xs text-slate-400 mt-1">{league.country}</p>
               <p className="text-xs text-emerald-400 mt-1">{league.teams} teams</p>
