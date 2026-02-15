@@ -214,6 +214,8 @@ export default function IdolCapturePage() {
     Fielding: null,
     "Wicket-Keeping": null,
   });
+  const [savedIds, setSavedIds] = useState<string>("");
+  const [saveFlash, setSaveFlash] = useState(false);
 
   useEffect(() => {
     try {
@@ -226,6 +228,7 @@ export default function IdolCapturePage() {
           if (legend) restored[skill as Skill] = legend;
         }
         setSelected(restored);
+        setSavedIds(saved);
       }
     } catch {}
   }, []);
@@ -240,28 +243,29 @@ export default function IdolCapturePage() {
     return result;
   }, [search, skillFilter]);
 
-  const persist = (next: Record<Skill, Legend | null>) => {
+  const currentIds = useMemo(() => {
     const ids: Record<string, string> = {};
-    for (const [skill, legend] of Object.entries(next)) {
+    for (const [skill, legend] of Object.entries(selected)) {
       if (legend) ids[skill] = legend.id;
     }
-    try { localStorage.setItem("idol-selections", JSON.stringify(ids)); } catch {}
+    return JSON.stringify(ids);
+  }, [selected]);
+
+  const hasUnsaved = currentIds !== savedIds;
+
+  const saveSelections = () => {
+    try { localStorage.setItem("idol-selections", currentIds); } catch {}
+    setSavedIds(currentIds);
+    setSaveFlash(true);
+    setTimeout(() => setSaveFlash(false), 2000);
   };
 
   const selectIdol = (legend: Legend, skill: Skill) => {
-    setSelected((prev) => {
-      const next = { ...prev, [skill]: legend };
-      persist(next);
-      return next;
-    });
+    setSelected((prev) => ({ ...prev, [skill]: legend }));
   };
 
   const removeIdol = (skill: Skill) => {
-    setSelected((prev) => {
-      const next = { ...prev, [skill]: null };
-      persist(next);
-      return next;
-    });
+    setSelected((prev) => ({ ...prev, [skill]: null }));
   };
 
   const selectedCount = Object.values(selected).filter(Boolean).length;
@@ -298,6 +302,25 @@ export default function IdolCapturePage() {
           );
         })}
       </div>
+
+      {selectedCount > 0 && (
+        <div className="flex items-center gap-4 mb-6">
+          <button
+            onClick={saveSelections}
+            disabled={!hasUnsaved}
+            className={`px-6 py-2.5 rounded-lg font-semibold text-sm transition-all ${
+              saveFlash
+                ? "bg-emerald-500 text-white"
+                : hasUnsaved
+                  ? "bg-amber-500 hover:bg-amber-400 text-black"
+                  : "bg-slate-700 text-slate-400 cursor-default"
+            }`}
+          >
+            {saveFlash ? "Saved!" : hasUnsaved ? "Save Selections" : "Selections Saved"}
+          </button>
+          {hasUnsaved && <span className="text-xs text-amber-400">You have unsaved changes</span>}
+        </div>
+      )}
 
       {selectedCount === 4 && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6 text-center">
