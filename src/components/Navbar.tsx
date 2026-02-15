@@ -177,7 +177,7 @@ function NavbarInner() {
   const pathname = usePathname();
   const search = useSearchParams();
   const currentPlayerTab = pathname && pathname.startsWith("/players") ? (search.get("tab") || "profile") : null;
-  const showTabs = true;
+  const showTabs = !!user;
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -190,7 +190,7 @@ function NavbarInner() {
             <span className="font-bold text-lg hidden sm:block">CricVerse</span>
           </Link>
 
-                    {showTabs && (
+                    {showTabs && user && (
                       <div className="hidden md:flex items-center gap-4">
                         {flatLinks.map((l) => {
                           const isActive = role === "player"
@@ -259,7 +259,7 @@ function NavbarInner() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-4">
-            {showTabs && (
+            {showTabs && user && (
               <div className="space-y-1">
                 {flatLinks.map((l) => (
                   <Link
