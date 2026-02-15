@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { players, agents, t20Teams, tournaments, sponsors, coaches } from "@/data/mock";
+import { players, agents, t20Teams, tournaments, sponsors, coaches, performanceFeedItems } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 import { UserRole } from "@/types";
 
@@ -14,8 +14,21 @@ const roleLabels: Record<UserRole, string> = {
   coach: "Coach Dashboard",
 };
 
+const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
+  "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
+  "best-bowling": { icon: "W", color: "text-blue-400", bg: "bg-blue-500/20" },
+  "fastest-innings": { icon: "F", color: "text-amber-400", bg: "bg-amber-500/20" },
+  "form-spike": { icon: "S", color: "text-purple-400", bg: "bg-purple-500/20" },
+  "hot-prospect": { icon: "H", color: "text-red-400", bg: "bg-red-500/20" },
+  "rank-movement": { icon: "R", color: "text-cyan-400", bg: "bg-cyan-500/20" },
+};
+
 function PlayerDashboard() {
   const player = players[0];
+  const recentFeed = [...performanceFeedItems]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 6);
+
   return (
     <div className="space-y-6">
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
@@ -57,6 +70,35 @@ function PlayerDashboard() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Performance Feed</h3>
+            <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/30">Live</span>
+          </div>
+          <Link href="/performance-feed" className="text-xs text-cyan-400 hover:text-cyan-300">View All &rarr;</Link>
+        </div>
+        <div className="space-y-2">
+          {recentFeed.map((item) => {
+            const config = feedTypeConfig[item.type];
+            return (
+              <Link key={item.id} href={`/players/${item.playerId}`}>
+                <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
+                  <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
+                    {config.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                    <p className="text-xs text-slate-500">{item.playerName} &middot; {new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                  </div>
+                  <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
