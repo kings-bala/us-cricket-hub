@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
 export default function PlayersPage() {
+  return (
+    <Suspense fallback={<div className="py-8 text-slate-400">Loading...</div>}>
+      <PlayersContent />
+    </Suspense>
+  );
+}
+
+function PlayersContent() {
   const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
   const [trainingTab, setTrainingTab] = useState<"idol" | "exercises" | "coach">("idol");
   const search = useSearchParams();
