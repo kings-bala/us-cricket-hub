@@ -77,7 +77,7 @@ function PlayersContent() {
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
             <h3 className="text-lg font-semibold text-white mb-2">Idol Capture</h3>
             <p className="text-slate-400 text-sm mb-4">Save your idol’s routines and mirror them.</p>
-            <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Set Routine</Link>
+            <Link href="/idol-capture" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Set Routine</Link>
           </div>
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
             <h3 className="text-lg font-semibold text-white mb-2">Track Exercises</h3>
