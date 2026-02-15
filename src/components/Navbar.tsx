@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
@@ -162,13 +162,17 @@ export default function Navbar() {
   const flatLinks: { href: string; label: string }[] =
     role === "player"
       ? [
-          { href: "/players?tab=profile", label: "My Profile & Feed" },
+          { href: "/players?tab=profile", label: "Home" },
           { href: "/players?tab=mystats", label: "My Stats" },
           { href: "/players?tab=training", label: "Training" },
           { href: "/players?tab=ai", label: "Full Track AI" },
           { href: "/players?tab=store", label: "Store" },
         ]
       : groups.flatMap((g) => g.links.map(({ href, label }) => ({ href, label })));
+  const pathname = usePathname();
+  const search = useSearchParams();
+  const currentPlayerTab = pathname === "/players" ? (search.get("tab") || "profile") : null;
+  const showTabs = role === "player" ? pathname === "/players" : pathname === "/";
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -181,13 +185,26 @@ export default function Navbar() {
             <span className="font-bold text-lg hidden sm:block">Cricket Verse</span>
           </Link>
 
-                    <div className="hidden md:flex items-center gap-4">
-                      {flatLinks.map((l) => (
-                        <Link key={l.href} href={l.href} className="text-sm text-slate-300 hover:text-white transition-colors">
-                          {l.label}
-                        </Link>
-                      ))}
-                    </div>
+                    {showTabs && (
+                      <div className="hidden md:flex items-center gap-4">
+                        {flatLinks.map((l) => {
+                          const isActive = role === "player"
+                            ? !!currentPlayerTab && l.href.includes(`tab=${currentPlayerTab}`)
+                            : pathname === l.href || pathname.startsWith(l.href + "/");
+                          return (
+                            <Link
+                              key={l.href}
+                              href={l.href}
+                              className={`text-sm px-1.5 pb-0.5 border-b-2 transition-colors ${
+                                isActive ? "text-white border-emerald-500" : "text-slate-300 border-transparent hover:text-white"
+                              }`}
+                            >
+                              {l.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    )}
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2">
@@ -229,18 +246,20 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-4">
-            <div className="space-y-1">
-              {flatLinks.map((l) => (
-                <Link
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-1.5 text-sm text-slate-300 hover:text-white pl-2 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
-                >
-                  {l.label}
-                </Link>
-              ))}
-            </div>
+            {showTabs && (
+              <div className="space-y-1">
+                {flatLinks.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-1.5 text-sm text-slate-300 hover:text-white pl-2 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </div>
+            )}
             <div className="pt-2 border-t border-slate-700">
               <span className="text-xs text-slate-400">View as:</span>
               <select

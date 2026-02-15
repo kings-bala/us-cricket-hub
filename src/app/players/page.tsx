@@ -25,7 +25,7 @@ function PlayersContent() {
   }, [search]);
 
   const tabs = [
-    { id: "profile", label: "My Profile & Feed" },
+    { id: "profile", label: "Home" },
     { id: "mystats", label: "My Stats" },
     { id: "training", label: "Training" },
     { id: "ai", label: "Full Track AI" },
@@ -90,50 +90,22 @@ function PlayersContent() {
       )}
 
       {tab === "training" && (
-        <div className="space-y-4">
-          <div className="flex gap-2">
-            {([
-              { id: "idol", label: "Idol Capture" },
-              { id: "exercises", label: "Track Exercises" },
-              { id: "coach", label: "Connect with Coach" },
-            ] as const).map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setTrainingTab(t.id)}
-                className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
-                  trainingTab === t.id
-                    ? "bg-blue-500 text-white border-blue-400"
-                    : "bg-slate-900/50 text-slate-300 border-slate-700 hover:border-slate-600"
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <h3 className="text-lg font-semibold text-white mb-2">Idol Capture</h3>
+            <p className="text-slate-400 text-sm mb-4">Save your idol’s routines and mirror them.</p>
+            <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Set Routine</Link>
           </div>
-
-          {trainingTab === "idol" && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-2">Idol Capture</h3>
-              <p className="text-slate-400 text-sm mb-4">Save your idol’s routines and mirror them.</p>
-              <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Set Routine</Link>
-            </div>
-          )}
-
-          {trainingTab === "exercises" && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-2">Track Exercises</h3>
-              <p className="text-slate-400 text-sm mb-4">Follow coach plans and your own workouts.</p>
-              <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Open Planner</Link>
-            </div>
-          )}
-
-          {trainingTab === "coach" && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-              <h3 className="text-lg font-semibold text-white mb-2">Connect with Coach</h3>
-              <p className="text-slate-400 text-sm mb-4">Find world-class coaches to level up.</p>
-              <Link href="/coaches" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Find Coaches</Link>
-            </div>
-          )}
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <h3 className="text-lg font-semibold text-white mb-2">Track Exercises</h3>
+            <p className="text-slate-400 text-sm mb-4">Follow coach plans and your own workouts.</p>
+            <Link href="/dashboard" className="inline-block text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition-colors">Open Planner</Link>
+          </div>
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <h3 className="text-lg font-semibold text-white mb-2">Connect with Coach</h3>
+            <p className="text-slate-400 text-sm mb-4">Find world-class coaches to level up.</p>
+            <Link href="/coaches" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Find Coaches</Link>
+          </div>
         </div>
       )}
 
