@@ -13,8 +13,6 @@ export interface T20League {
   country: string;
   region: Region;
   logo: string;
-  bgImage: string;
-  brandColor: string;
   localQuota: number;
   localFilled: number;
   teams: number;
@@ -146,7 +144,6 @@ export interface Tournament {
 export interface Coach {
   id: string;
   name: string;
-  avatar: string;
   country: string;
   region: Region;
   specialization: string;

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { agents, players, regionColors } from "@/data/mock";
 import PlayerCard from "@/components/PlayerCard";
 import StatCard from "@/components/StatCard";
@@ -33,13 +32,9 @@ export default async function AgentProfilePage({ params }: PageProps) {
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
             <div className="text-center">
-              {agent.avatar ? (
-                <Image src={agent.avatar} alt={agent.name} width={80} height={80} className="w-20 h-20 rounded-full object-cover mx-auto mb-4" />
-              ) : (
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
-                  {agent.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-              )}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-2xl mx-auto mb-4">
+                {agent.name.split(" ").map((n) => n[0]).join("")}
+              </div>
               <div className="flex items-center justify-center gap-2 mb-1">
                 <h1 className="text-2xl font-bold text-white">{agent.name}</h1>
                 {agent.verified && (
