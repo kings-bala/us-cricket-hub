@@ -30,6 +30,23 @@ export interface AnalysisSummary {
   drills: string[];
 }
 
+export type BowlingHand = "right" | "left";
+
+export function detectBowlingHand(allFrames: NormalizedLandmark[][]): BowlingHand {
+  let leftHighest = Infinity;
+  let rightHighest = Infinity;
+
+  for (const landmarks of allFrames) {
+    const lw = landmarks[LANDMARK.LEFT_WRIST];
+    const rw = landmarks[LANDMARK.RIGHT_WRIST];
+    if (!lw || !rw) continue;
+    if (lw.y < leftHighest) leftHighest = lw.y;
+    if (rw.y < rightHighest) rightHighest = rw.y;
+  }
+
+  return leftHighest < rightHighest ? "left" : "right";
+}
+
 const LANDMARK = {
   NOSE: 0,
   LEFT_EYE: 1,
@@ -211,7 +228,7 @@ export function analyzeBatting(landmarks: NormalizedLandmark[]): TechniqueCheck[
   ];
 }
 
-export function analyzeBowling(landmarks: NormalizedLandmark[]): TechniqueCheck[] {
+export function analyzeBowling(landmarks: NormalizedLandmark[], hand: BowlingHand = "right"): TechniqueCheck[] {
   const ls = landmarks[LANDMARK.LEFT_SHOULDER];
   const rs = landmarks[LANDMARK.RIGHT_SHOULDER];
   const le = landmarks[LANDMARK.LEFT_ELBOW];
@@ -221,9 +238,21 @@ export function analyzeBowling(landmarks: NormalizedLandmark[]): TechniqueCheck[
   const lh = landmarks[LANDMARK.LEFT_HIP];
   const rh = landmarks[LANDMARK.RIGHT_HIP];
   const lk = landmarks[LANDMARK.LEFT_KNEE];
+  const rk = landmarks[LANDMARK.RIGHT_KNEE];
   const la = landmarks[LANDMARK.LEFT_ANKLE];
+  const ra = landmarks[LANDMARK.RIGHT_ANKLE];
 
-  const bowlingArmAngle = calcAngle(rs, re, rw);
+  const bowlShoulder = hand === "right" ? rs : ls;
+  const bowlElbow = hand === "right" ? re : le;
+  const bowlWrist = hand === "right" ? rw : lw;
+  const frontShoulder = hand === "right" ? ls : rs;
+  const frontElbow = hand === "right" ? le : re;
+  const frontWrist = hand === "right" ? lw : rw;
+  const frontHip = hand === "right" ? lh : rh;
+  const frontKneeJoint = hand === "right" ? lk : rk;
+  const frontAnkle = hand === "right" ? la : ra;
+
+  const bowlingArmAngle = calcAngle(bowlShoulder, bowlElbow, bowlWrist);
   const armAngle: JointAngle = {
     name: "Bowling Arm Angle",
     angle: bowlingArmAngle,
@@ -233,7 +262,7 @@ export function analyzeBowling(landmarks: NormalizedLandmark[]): TechniqueCheck[
   const armScore = scoreFromAngle(bowlingArmAngle, 175, 15);
   const isIllegalAction = bowlingArmAngle < 165;
 
-  const frontArmAngle = calcAngle(ls, le, lw);
+  const frontArmAngle = calcAngle(frontShoulder, frontElbow, frontWrist);
   const frontArm: JointAngle = {
     name: "Front Arm Position",
     angle: frontArmAngle,
@@ -257,7 +286,7 @@ export function analyzeBowling(landmarks: NormalizedLandmark[]): TechniqueCheck[
   };
   const trunkScore = scoreFromAngle(trunkAngle, 30, 15);
 
-  const frontKneeAngle = calcAngle(lh, lk, la);
+  const frontKneeAngle = calcAngle(frontHip, frontKneeJoint, frontAnkle);
   const frontKnee: JointAngle = {
     name: "Front Knee Brace",
     angle: frontKneeAngle,
@@ -440,7 +469,8 @@ export function analyzeFielding(landmarks: NormalizedLandmark[]): TechniqueCheck
 export function analyzeFrame(
   landmarks: NormalizedLandmark[],
   type: "batting" | "bowling" | "fielding",
-  timestamp: number
+  timestamp: number,
+  bowlingHand?: BowlingHand
 ): FrameAnalysis {
   let checks: TechniqueCheck[];
   switch (type) {
@@ -448,7 +478,7 @@ export function analyzeFrame(
       checks = analyzeBatting(landmarks);
       break;
     case "bowling":
-      checks = analyzeBowling(landmarks);
+      checks = analyzeBowling(landmarks, bowlingHand);
       break;
     case "fielding":
       checks = analyzeFielding(landmarks);

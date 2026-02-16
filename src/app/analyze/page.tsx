@@ -6,8 +6,10 @@ import { usePoseDetection } from "@/hooks/usePoseDetection";
 import {
   analyzeFrame,
   summarizeAnalysis,
+  detectBowlingHand,
   type AnalysisSummary,
   type FrameAnalysis,
+  type BowlingHand,
 } from "@/lib/cricket-analysis";
 import {
   saveAnalysis,
@@ -45,6 +47,9 @@ export default function AnalyzePage() {
   const [activeTab, setActiveTab] = useState<"results" | "history">("results");
   const [history, setHistory] = useState<SavedAnalysis[]>([]);
   const [selectedKeyFrame, setSelectedKeyFrame] = useState<number | null>(null);
+  const [bowlingHand, setBowlingHand] = useState<BowlingHand>("right");
+  const [detectedHand, setDetectedHand] = useState<BowlingHand | null>(null);
+  const [handOverridden, setHandOverridden] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,8 +106,18 @@ export default function AnalyzePage() {
 
     if (poseFrames.length === 0) return;
 
+    let hand = bowlingHand;
+    if (analysisType === "bowling") {
+      const detected = detectBowlingHand(poseFrames.map((f) => f.landmarks));
+      setDetectedHand(detected);
+      if (!handOverridden) {
+        hand = detected;
+        setBowlingHand(detected);
+      }
+    }
+
     const analyzed = poseFrames.map((f) =>
-      analyzeFrame(f.landmarks, analysisType, f.timestamp)
+      analyzeFrame(f.landmarks, analysisType, f.timestamp, hand)
     );
     setFrameResults(analyzed);
 
@@ -112,7 +127,7 @@ export default function AnalyzePage() {
     const saved = saveAnalysis(videoFile.name, result);
     setHistory((prev) => [saved, ...prev]);
     setActiveTab("results");
-  }, [videoFile, analysisType, processVideo]);
+  }, [videoFile, analysisType, processVideo, bowlingHand]);
 
   const handleSeekToFrame = useCallback((timestamp: number) => {
     if (!videoRef.current) return;
@@ -288,6 +303,37 @@ export default function AnalyzePage() {
               ))}
             </div>
           </div>
+
+          {analysisType === "bowling" && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+              <h2 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">
+                Bowling Hand
+              </h2>
+              <div className="flex gap-2">
+                {(["right", "left"] as BowlingHand[]).map((h) => (
+                  <button
+                    key={h}
+                    onClick={() => { setBowlingHand(h); setHandOverridden(true); if (summary) { setSummary(null); setFrameResults([]); } }}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                      bowlingHand === h
+                        ? "border-emerald-500 bg-emerald-500/10 text-white"
+                        : "border-slate-700 text-slate-400 hover:border-slate-600"
+                    }`}
+                  >
+                    {h === "right" ? "Right Arm" : "Left Arm"}
+                  </button>
+                ))}
+              </div>
+              {detectedHand && (
+                <p className="text-xs text-slate-500 mt-2">
+                  AI detected: <span className="text-emerald-400">{detectedHand === "right" ? "Right" : "Left"} arm</span> bowler
+                </p>
+              )}
+              <p className="text-xs text-slate-600 mt-1">
+                Auto-detected when you analyze. Override if incorrect.
+              </p>
+            </div>
+          )}
 
           <button
             onClick={handleAnalyze}
