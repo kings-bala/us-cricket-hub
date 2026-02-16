@@ -69,7 +69,9 @@ export default function AnalyzePage() {
 
   if (!historyLoaded) {
     if (typeof window !== "undefined") {
-      setHistory(getHistory());
+      const h = getHistory();
+      setHistory(h);
+      if (h.length > 0 && !summary) setActiveTab("history");
     }
     setHistoryLoaded(true);
   }
@@ -409,19 +411,21 @@ export default function AnalyzePage() {
             </div>
           )}
 
-          {summary && (
+          {(summary || history.length > 0) && (
             <>
               <div className="flex gap-2 border-b border-slate-700/50">
-                <button
-                  onClick={() => setActiveTab("results")}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === "results"
-                      ? "border-emerald-500 text-emerald-400"
-                      : "border-transparent text-slate-400 hover:text-white"
-                  }`}
-                >
-                  Analysis Results
-                </button>
+                {summary && (
+                  <button
+                    onClick={() => setActiveTab("results")}
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                      activeTab === "results"
+                        ? "border-emerald-500 text-emerald-400"
+                        : "border-transparent text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    Analysis Results
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab("history")}
                   className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
@@ -434,7 +438,7 @@ export default function AnalyzePage() {
                 </button>
               </div>
 
-              {activeTab === "results" && (
+              {activeTab === "results" && summary && (
                 <>
                   <div className="bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border border-emerald-500/20 rounded-xl p-6">
                     <div className="flex items-center justify-between">
@@ -561,7 +565,7 @@ export default function AnalyzePage() {
                 <div className="space-y-4">
                   {history.length === 0 ? (
                     <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
-                      <p className="text-slate-400">No analysis history yet</p>
+                      <p className="text-slate-400">No analysis history yet. Analyze a video to see results here.</p>
                     </div>
                   ) : (
                     <>
