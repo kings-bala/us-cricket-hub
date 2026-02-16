@@ -1,25 +1,25 @@
-import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach } from "@/types";
+import { Player, Agent, T20Team, T20League, Sponsor, SponsoredAsset, Tournament, Coach, MatchPerformance, CPIScore, CombineData, FormStatus, PerformanceFeedItem } from "@/types";
 
 export const t20Leagues: T20League[] = [
-  { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/84/Indian_Premier_League_Official_Logo.svg/120px-Indian_Premier_League_Official_Logo.svg.png", bgImage: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=600&h=400&fit=crop", brandColor: "from-blue-600 to-indigo-900", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
-  { id: "BBL", name: "Big Bash League", country: "Australia", region: "Oceania", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/c0/Big_Bash_League_%28logo%29.png/120px-Big_Bash_League_%28logo%29.png", bgImage: "https://images.unsplash.com/photo-1512719994953-d1e8429dbcf2?w=600&h=400&fit=crop", brandColor: "from-teal-500 to-green-800", localQuota: 6, localFilled: 4, teams: 8, season: "Dec-Feb" },
-  { id: "PSL", name: "Pakistan Super League", country: "Pakistan", region: "South Asia", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/2/24/Official_logo_of_Pakistan_Super_League.png/120px-Official_logo_of_Pakistan_Super_League.png", bgImage: "https://images.unsplash.com/photo-1607734834519-d5e0a5a23e60?w=600&h=400&fit=crop", brandColor: "from-green-600 to-emerald-900", localQuota: 7, localFilled: 5, teams: 6, season: "Feb-Mar" },
-  { id: "CPL", name: "Caribbean Premier League", country: "West Indies", region: "Caribbean", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/CPL.svg/120px-CPL.svg.png", bgImage: "https://images.unsplash.com/photo-1594470117722-de4b9a02ebed?w=600&h=400&fit=crop", brandColor: "from-yellow-500 to-amber-800", localQuota: 6, localFilled: 3, teams: 6, season: "Aug-Oct" },
-  { id: "SA20", name: "SA20", country: "South Africa", region: "Africa", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/SA20Logo.png/120px-SA20Logo.png", bgImage: "https://images.unsplash.com/photo-1624526267942-ab0ff8a3e972?w=600&h=400&fit=crop", brandColor: "from-orange-500 to-red-800", localQuota: 7, localFilled: 4, teams: 6, season: "Jan-Feb" },
-  { id: "THE100", name: "The Hundred", country: "England", region: "Europe", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/3/3a/The_Hundred_%28cricket%29_logo.svg/120px-The_Hundred_%28cricket%29_logo.svg.png", bgImage: "https://images.unsplash.com/photo-1625401586060-1e3312e7de11?w=600&h=400&fit=crop", brandColor: "from-purple-500 to-violet-900", localQuota: 5, localFilled: 3, teams: 8, season: "Jul-Aug" },
-  { id: "MLC", name: "Major League Cricket", country: "USA", region: "Americas", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Major_League_Cricket_logo.svg/120px-Major_League_Cricket_logo.svg.png", bgImage: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=600&h=400&fit=crop", brandColor: "from-red-600 to-blue-800", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
-  { id: "BPL", name: "Bangladesh Premier League", country: "Bangladesh", region: "South Asia", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/1/1a/Logo_of_Bangladesh_Premier_League.svg/120px-Logo_of_Bangladesh_Premier_League.svg.png", bgImage: "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&h=400&fit=crop", brandColor: "from-lime-500 to-green-800", localQuota: 7, localFilled: 5, teams: 7, season: "Jan-Feb" },
-  { id: "LPL", name: "Lanka Premier League", country: "Sri Lanka", region: "South Asia", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/LPL_T20.svg/120px-LPL_T20.svg.png", bgImage: "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?w=600&h=400&fit=crop", brandColor: "from-red-500 to-yellow-700", localQuota: 7, localFilled: 4, teams: 5, season: "Jul-Aug" },
-  { id: "ILT20", name: "International League T20", country: "UAE", region: "Middle East", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/International_League_T20_logo.svg/120px-International_League_T20_logo.svg.png", bgImage: "https://images.unsplash.com/photo-1675693303492-516d62feab1a?w=600&h=400&fit=crop", brandColor: "from-amber-500 to-rose-900", localQuota: 2, localFilled: 1, teams: 6, season: "Jan-Feb" },
-  { id: "SSA", name: "Super Smash", country: "New Zealand", region: "Oceania", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/45/Super_Smash_cricket_logo.svg/120px-Super_Smash_cricket_logo.svg.png", bgImage: "https://images.unsplash.com/photo-1622225074638-94b0e0f53a04?w=600&h=400&fit=crop", brandColor: "from-orange-500 to-gray-900", localQuota: 6, localFilled: 5, teams: 6, season: "Nov-Feb" },
-  { id: "GT20", name: "Global T20 Canada", country: "Canada", region: "Americas", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/de/Global_T20_Canada.png/120px-Global_T20_Canada.png", bgImage: "https://images.unsplash.com/photo-1663832952954-9a6a7ce8ac12?w=600&h=400&fit=crop", brandColor: "from-red-600 to-rose-900", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
+  { id: "IPL", name: "Indian Premier League", country: "India", region: "South Asia", logo: "/logos/ipl.png", localQuota: 7, localFilled: 5, teams: 10, season: "Mar-May" },
+  { id: "BBL", name: "Big Bash League", country: "Australia", region: "Oceania", logo: "/logos/bbl.png", localQuota: 6, localFilled: 4, teams: 8, season: "Dec-Feb" },
+  { id: "PSL", name: "Pakistan Super League", country: "Pakistan", region: "South Asia", logo: "/logos/psl.png", localQuota: 7, localFilled: 5, teams: 6, season: "Feb-Mar" },
+  { id: "CPL", name: "Caribbean Premier League", country: "West Indies", region: "Caribbean", logo: "/logos/cpl.png", localQuota: 6, localFilled: 3, teams: 6, season: "Aug-Oct" },
+  { id: "SA20", name: "SA20", country: "South Africa", region: "Africa", logo: "/logos/sa20.png", localQuota: 7, localFilled: 4, teams: 6, season: "Jan-Feb" },
+  { id: "THE100", name: "The Hundred", country: "England", region: "Europe", logo: "/logos/the100.png", localQuota: 5, localFilled: 3, teams: 8, season: "Jul-Aug" },
+  { id: "MLC", name: "Major League Cricket", country: "USA", region: "Americas", logo: "/logos/mlc.png", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
+  { id: "BPL", name: "Bangladesh Premier League", country: "Bangladesh", region: "South Asia", logo: "/logos/bpl.png", localQuota: 7, localFilled: 5, teams: 7, season: "Jan-Feb" },
+  { id: "LPL", name: "Lanka Premier League", country: "Sri Lanka", region: "South Asia", logo: "/logos/lpl.png", localQuota: 7, localFilled: 4, teams: 5, season: "Jul-Aug" },
+  { id: "ILT20", name: "International League T20", country: "UAE", region: "Middle East", logo: "/logos/ilt20.png", localQuota: 2, localFilled: 1, teams: 6, season: "Jan-Feb" },
+  { id: "SSA", name: "Super Smash", country: "New Zealand", region: "Oceania", logo: "/logos/ssa.png", localQuota: 6, localFilled: 5, teams: 6, season: "Nov-Feb" },
+  { id: "GT20", name: "Global T20 Canada", country: "Canada", region: "Americas", logo: "/logos/gt20.png", localQuota: 4, localFilled: 2, teams: 6, season: "Jul-Aug" },
 ];
 
 export const players: Player[] = [
   {
         id: "p1", name: "Arjun Patel", age: 17, ageGroup: "U17", country: "India", countryCode: "IN", region: "South Asia",
         state: "Gujarat", city: "Ahmedabad", role: "Batsman", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Off-spin",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081476744-95da9bc99008?w=200&h=200&fit=crop&crop=faces", agentId: "a1", verified: true, streetCricketer: true,
+        profileTier: "Premium", avatar: "/avatars/player1.jpg", agentId: "a1", verified: true, streetCricketer: true,
     targetLeagues: ["IPL", "BBL", "THE100"],
     stats: { matches: 45, innings: 42, runs: 1580, battingAverage: 42.7, strikeRate: 128.5, fifties: 12, hundreds: 3, wickets: 8, bowlingAverage: 34.2, economy: 7.1, bestBowling: "2/18", catches: 15, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.2, yoYoTest: 18.4, throwDistance: 62, beepTestLevel: 12.3 },
@@ -33,7 +33,7 @@ export const players: Player[] = [
   {
         id: "p2", name: "Jake Thompson", age: 19, ageGroup: "U19", country: "Australia", countryCode: "AU", region: "Oceania",
         state: "New South Wales", city: "Sydney", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Left-arm Fast",
-        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1595210382051-4d2c31fcc2f4?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "/avatars/player2.jpg", agentId: "a2", verified: true,
     targetLeagues: ["BBL", "IPL", "SA20"],
     stats: { matches: 52, innings: 48, runs: 320, battingAverage: 12.3, strikeRate: 95.2, fifties: 1, hundreds: 0, wickets: 78, bowlingAverage: 18.6, economy: 5.4, bestBowling: "5/22", catches: 12, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.8, yoYoTest: 19.2, bowlingSpeed: 145, throwDistance: 70, beepTestLevel: 13.1 },
@@ -47,7 +47,7 @@ export const players: Player[] = [
   {
         id: "p3", name: "Rashid Mohammed", age: 16, ageGroup: "U17", country: "Pakistan", countryCode: "PK", region: "South Asia",
         state: "Punjab", city: "Lahore", role: "All-Rounder", battingStyle: "Left-hand Bat", bowlingStyle: "Left-arm Orthodox",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081437099-ea6cef0f6c84?w=200&h=200&fit=crop&crop=faces", agentId: "a3", verified: true, streetCricketer: true,
+        profileTier: "Premium", avatar: "/avatars/player3.jpg", agentId: "a3", verified: true, streetCricketer: true,
     targetLeagues: ["PSL", "IPL", "BPL"],
     stats: { matches: 38, innings: 36, runs: 1120, battingAverage: 35.0, strikeRate: 118.7, fifties: 8, hundreds: 1, wickets: 42, bowlingAverage: 22.4, economy: 5.8, bestBowling: "4/28", catches: 18, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.5, yoYoTest: 17.8, bowlingSpeed: 82, throwDistance: 58, beepTestLevel: 11.8 },
@@ -60,7 +60,7 @@ export const players: Player[] = [
   {
         id: "p4", name: "Kieron Baptiste", age: 18, ageGroup: "U19", country: "West Indies", countryCode: "WI", region: "Caribbean",
         state: "Trinidad", city: "Port of Spain", role: "Wicket-Keeper", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1599982946086-eb42d9e14eb8?w=200&h=200&fit=crop&crop=faces", agentId: "a4", verified: true,
+        profileTier: "Premium", avatar: "/avatars/player4.jpg", agentId: "a4", verified: true,
     targetLeagues: ["CPL", "IPL", "BBL"],
     stats: { matches: 55, innings: 50, runs: 1450, battingAverage: 36.25, strikeRate: 132.1, fifties: 10, hundreds: 2, wickets: 0, bowlingAverage: 0, economy: 0, bestBowling: "-", catches: 42, stumpings: 18 },
     fitnessData: { sprintSpeed: 8.0, yoYoTest: 18.8, throwDistance: 55, beepTestLevel: 12.6 },
@@ -74,7 +74,7 @@ export const players: Player[] = [
   {
         id: "p5", name: "Sipho Ndlovu", age: 20, ageGroup: "U21", country: "South Africa", countryCode: "ZA", region: "Africa",
         state: "Gauteng", city: "Johannesburg", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Fast",
-        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1614683911823-609a503fc76e?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "/avatars/player5.jpg", agentId: "a2", verified: true,
     targetLeagues: ["SA20", "IPL", "BBL", "THE100"],
     stats: { matches: 62, innings: 58, runs: 280, battingAverage: 9.3, strikeRate: 88.6, fifties: 0, hundreds: 0, wickets: 95, bowlingAverage: 16.8, economy: 5.2, bestBowling: "6/31", catches: 8, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.5, yoYoTest: 20.1, bowlingSpeed: 148, throwDistance: 75, beepTestLevel: 13.8 },
@@ -88,7 +88,7 @@ export const players: Player[] = [
   {
         id: "p6", name: "Oliver Hughes", age: 15, ageGroup: "U15", country: "England", countryCode: "GB", region: "Europe",
         state: "Yorkshire", city: "Leeds", role: "Batsman", battingStyle: "Left-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1579714219145-7c6b90201508?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "/avatars/player6.jpg", verified: false, streetCricketer: true,
     targetLeagues: ["THE100", "IPL"],
     stats: { matches: 22, innings: 20, runs: 680, battingAverage: 38.8, strikeRate: 112.4, fifties: 5, hundreds: 1, wickets: 5, bowlingAverage: 28.0, economy: 6.5, bestBowling: "2/15", catches: 8, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.8, yoYoTest: 16.2, throwDistance: 48, beepTestLevel: 10.5 },
@@ -99,7 +99,7 @@ export const players: Player[] = [
   {
         id: "p7", name: "Sunil Perera", age: 17, ageGroup: "U17", country: "Sri Lanka", countryCode: "LK", region: "South Asia",
         state: "Western Province", city: "Colombo", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Leg-spin",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081427664-be2a556ea019?w=200&h=200&fit=crop&crop=faces", agentId: "a3", verified: true,
+        profileTier: "Premium", avatar: "/avatars/player7.jpg", agentId: "a3", verified: true,
     targetLeagues: ["LPL", "IPL", "BPL"],
     stats: { matches: 40, innings: 38, runs: 420, battingAverage: 14.0, strikeRate: 92.3, fifties: 1, hundreds: 0, wickets: 58, bowlingAverage: 20.1, economy: 5.9, bestBowling: "5/18", catches: 10, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.6, yoYoTest: 17.5, bowlingSpeed: 78, throwDistance: 52, beepTestLevel: 11.5 },
@@ -112,7 +112,7 @@ export const players: Player[] = [
   {
         id: "p8", name: "Rahul Desai", age: 19, ageGroup: "U19", country: "USA", countryCode: "US", region: "Americas",
         state: "Illinois", city: "Chicago", role: "Batsman", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Off-spin",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1593766821405-f605e0f9535f?w=200&h=200&fit=crop&crop=faces", agentId: "a1", verified: true,
+        profileTier: "Premium", avatar: "/avatars/player8.jpg", agentId: "a1", verified: true,
     targetLeagues: ["MLC", "GT20", "CPL"],
     stats: { matches: 48, innings: 46, runs: 1820, battingAverage: 45.5, strikeRate: 135.2, fifties: 14, hundreds: 4, wickets: 12, bowlingAverage: 30.5, economy: 6.8, bestBowling: "3/22", catches: 20, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.1, yoYoTest: 18.6, throwDistance: 60, beepTestLevel: 12.4 },
@@ -126,7 +126,7 @@ export const players: Player[] = [
   {
         id: "p9", name: "Priya Sharma", age: 16, ageGroup: "U17", country: "India", countryCode: "IN", region: "South Asia",
         state: "Maharashtra", city: "Mumbai", role: "All-Rounder", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Fast",
-        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1565787154274-c8d076ad34e7?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "/avatars/player9.jpg", verified: false, streetCricketer: true,
     targetLeagues: ["IPL"],
     stats: { matches: 25, innings: 24, runs: 720, battingAverage: 32.7, strikeRate: 110.8, fifties: 5, hundreds: 0, wickets: 28, bowlingAverage: 24.3, economy: 6.2, bestBowling: "3/19", catches: 12, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.4, yoYoTest: 17.0, bowlingSpeed: 118, throwDistance: 56, beepTestLevel: 11.2 },
@@ -137,7 +137,7 @@ export const players: Player[] = [
   {
         id: "p10", name: "Ryan van der Berg", age: 20, ageGroup: "U21", country: "South Africa", countryCode: "ZA", region: "Africa",
         state: "Western Cape", city: "Cape Town", role: "All-Rounder", battingStyle: "Left-hand Bat", bowlingStyle: "Left-arm Medium",
-        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1595210382266-2d0077c1f541?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "/avatars/player10.jpg", agentId: "a2", verified: true,
     targetLeagues: ["SA20", "IPL", "THE100", "BBL"],
     stats: { matches: 58, innings: 55, runs: 1650, battingAverage: 37.5, strikeRate: 125.0, fifties: 11, hundreds: 2, wickets: 52, bowlingAverage: 21.8, economy: 5.7, bestBowling: "4/25", catches: 22, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.9, yoYoTest: 19.0, bowlingSpeed: 125, throwDistance: 65, beepTestLevel: 12.8 },
@@ -151,7 +151,7 @@ export const players: Player[] = [
   {
         id: "p11", name: "Tamim Hossain", age: 18, ageGroup: "U19", country: "Bangladesh", countryCode: "BD", region: "South Asia",
         state: "Dhaka Division", city: "Dhaka", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Left-arm Chinaman",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1667839412541-f7cafaa94319?w=200&h=200&fit=crop&crop=faces", agentId: "a3", verified: true, streetCricketer: true,
+        profileTier: "Premium", avatar: "/avatars/player11.jpg", agentId: "a3", verified: true, streetCricketer: true,
     targetLeagues: ["BPL", "IPL", "CPL"],
     stats: { matches: 35, innings: 32, runs: 180, battingAverage: 8.6, strikeRate: 78.3, fifties: 0, hundreds: 0, wickets: 52, bowlingAverage: 19.8, economy: 5.6, bestBowling: "5/14", catches: 6, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.7, yoYoTest: 17.2, bowlingSpeed: 75, throwDistance: 50, beepTestLevel: 11.0 },
@@ -164,7 +164,7 @@ export const players: Player[] = [
   {
         id: "p12", name: "Aarav Gupta", age: 15, ageGroup: "U15", country: "India", countryCode: "IN", region: "South Asia",
         state: "Delhi", city: "New Delhi", role: "Batsman", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1596807996038-612df413be5e?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "/avatars/player12.jpg", verified: false, streetCricketer: true,
     targetLeagues: ["IPL"],
     stats: { matches: 18, innings: 17, runs: 590, battingAverage: 39.3, strikeRate: 105.4, fifties: 4, hundreds: 1, wickets: 3, bowlingAverage: 35.0, economy: 7.2, bestBowling: "1/12", catches: 6, stumpings: 0 },
     fitnessData: { sprintSpeed: 9.0, yoYoTest: 15.8, throwDistance: 45, beepTestLevel: 10.0 },
@@ -175,7 +175,7 @@ export const players: Player[] = [
   {
         id: "p13", name: "Navjot Gill", age: 19, ageGroup: "U19", country: "Canada", countryCode: "CA", region: "Americas",
         state: "Ontario", city: "Brampton", role: "All-Rounder", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Medium",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1593341646782-e0b495cff86d?w=200&h=200&fit=crop&crop=faces", agentId: "a4", verified: true,
+        profileTier: "Premium", avatar: "/avatars/player13.jpg", agentId: "a4", verified: true,
     targetLeagues: ["GT20", "MLC", "CPL"],
     stats: { matches: 40, innings: 38, runs: 1200, battingAverage: 34.3, strikeRate: 121.5, fifties: 9, hundreds: 1, wickets: 35, bowlingAverage: 25.1, economy: 6.3, bestBowling: "3/21", catches: 16, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.3, yoYoTest: 18.0, bowlingSpeed: 128, throwDistance: 58, beepTestLevel: 12.0 },
@@ -188,7 +188,7 @@ export const players: Player[] = [
   {
         id: "p14", name: "Mohammed Al-Rashid", age: 17, ageGroup: "U17", country: "UAE", countryCode: "AE", region: "Middle East",
         state: "Dubai", city: "Dubai", role: "Batsman", battingStyle: "Left-hand Bat", bowlingStyle: "Right-arm Off-spin",
-        profileTier: "Premium", avatar: "https://images.unsplash.com/photo-1659081431824-77f72421f32d?w=200&h=200&fit=crop&crop=faces", verified: true,
+        profileTier: "Premium", avatar: "/avatars/player14.jpg", verified: true,
     targetLeagues: ["ILT20", "IPL", "PSL"],
     stats: { matches: 30, innings: 28, runs: 980, battingAverage: 38.0, strikeRate: 126.3, fifties: 7, hundreds: 1, wickets: 10, bowlingAverage: 28.5, economy: 6.8, bestBowling: "2/20", catches: 12, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.3, yoYoTest: 17.5, throwDistance: 55, beepTestLevel: 11.8 },
@@ -201,7 +201,7 @@ export const players: Player[] = [
   {
         id: "p15", name: "Tom Mitchell", age: 21, ageGroup: "U21", country: "New Zealand", countryCode: "NZ", region: "Oceania",
         state: "Auckland", city: "Auckland", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Right-arm Fast",
-        profileTier: "Elite", avatar: "https://images.unsplash.com/photo-1595207732481-22cccd3480fe?w=200&h=200&fit=crop&crop=faces", agentId: "a2", verified: true,
+        profileTier: "Elite", avatar: "/avatars/player15.jpg", agentId: "a2", verified: true,
     targetLeagues: ["SSA", "BBL", "IPL", "THE100"],
     stats: { matches: 50, innings: 46, runs: 250, battingAverage: 10.0, strikeRate: 85.0, fifties: 0, hundreds: 0, wickets: 82, bowlingAverage: 17.5, economy: 5.3, bestBowling: "6/22", catches: 10, stumpings: 0 },
     fitnessData: { sprintSpeed: 7.6, yoYoTest: 19.5, bowlingSpeed: 143, throwDistance: 72, beepTestLevel: 13.5 },
@@ -214,7 +214,7 @@ export const players: Player[] = [
   {
         id: "p16", name: "Ravi Kumar", age: 14, ageGroup: "U15", country: "India", countryCode: "IN", region: "South Asia",
         state: "Tamil Nadu", city: "Chennai", role: "Bowler", battingStyle: "Right-hand Bat", bowlingStyle: "Left-arm Fast",
-        profileTier: "Free", avatar: "https://images.unsplash.com/photo-1593341646647-75b32930e4a1?w=200&h=200&fit=crop&crop=faces", verified: false, streetCricketer: true,
+        profileTier: "Free", avatar: "/avatars/player16.jpg", verified: false, streetCricketer: true,
     targetLeagues: ["IPL"],
     stats: { matches: 15, innings: 14, runs: 120, battingAverage: 10.0, strikeRate: 75.0, fifties: 0, hundreds: 0, wickets: 32, bowlingAverage: 15.5, economy: 4.8, bestBowling: "4/12", catches: 5, stumpings: 0 },
     fitnessData: { sprintSpeed: 8.9, yoYoTest: 15.5, bowlingSpeed: 122, throwDistance: 48, beepTestLevel: 10.2 },
@@ -226,7 +226,7 @@ export const players: Player[] = [
 
 export const agents: Agent[] = [
   {
-    id: "a1", name: "Raj Malhotra", agency: "Global Cricket Pathway", avatar: "https://images.unsplash.com/photo-1685541000562-a00dcf472343?w=200&h=200&fit=crop&crop=faces",
+    id: "a1", name: "Raj Malhotra", agency: "Global Cricket Pathway", avatar: "",
     bio: "Former first-class cricketer with 15+ years in player development. Connecting South Asian and American youth with T20 leagues worldwide.",
     specialization: "T20 League Placement & Contract Negotiation",
     playerIds: ["p1", "p8"], placements: 28, successRate: 85, rating: 4.8,
@@ -234,7 +234,7 @@ export const agents: Agent[] = [
     leagueConnections: ["IPL", "MLC", "BBL", "THE100"],
   },
   {
-    id: "a2", name: "Sarah Mitchell", agency: "NextGen Cricket International", avatar: "https://images.unsplash.com/photo-1599982917650-21da4d09c437?w=200&h=200&fit=crop&crop=faces",
+    id: "a2", name: "Sarah Mitchell", agency: "NextGen Cricket International", avatar: "",
     bio: "Sports management professional with deep connections across multiple T20 ecosystems globally.",
     specialization: "Youth Development & Academy Placement",
     playerIds: ["p2", "p5", "p10", "p15"], placements: 22, successRate: 82, rating: 4.6,
@@ -242,7 +242,7 @@ export const agents: Agent[] = [
     leagueConnections: ["BBL", "SA20", "IPL", "SSA", "THE100"],
   },
   {
-    id: "a3", name: "Imran Siddiqui", agency: "Cricket Stars Management", avatar: "https://images.unsplash.com/photo-1685541001104-91fe7ae1d8e1?w=200&h=200&fit=crop&crop=faces",
+    id: "a3", name: "Imran Siddiqui", agency: "Cricket Stars Management", avatar: "",
     bio: "Licensed sports agent with expertise in South Asian markets and emerging cricket nations.",
     specialization: "Sponsorship & Brand Deals",
     playerIds: ["p3", "p7", "p11"], placements: 35, successRate: 90, rating: 4.9,
@@ -250,7 +250,7 @@ export const agents: Agent[] = [
     leagueConnections: ["PSL", "IPL", "BPL", "LPL", "CPL"],
   },
   {
-    id: "a4", name: "Marcus Williams", agency: "Caribbean Cricket Connect", avatar: "https://images.unsplash.com/photo-1757396392470-ecb7959cf8bd?w=200&h=200&fit=crop&crop=faces",
+    id: "a4", name: "Marcus Williams", agency: "Caribbean Cricket Connect", avatar: "",
     bio: "Former West Indies player turned agent. Connecting Caribbean and Americas talent with global T20 opportunities.",
     specialization: "Caribbean & Americas Talent Pipeline",
     playerIds: ["p4", "p13"], placements: 18, successRate: 80, rating: 4.5,
@@ -260,25 +260,16 @@ export const agents: Agent[] = [
 ];
 
 export const t20Teams: T20Team[] = [
-  { id: "t1", name: "Chennai Super Kings", city: "Chennai", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/2/2b/Chennai_Super_Kings_Logo.svg/120px-Chennai_Super_Kings_Logo.svg.png", owner: "Chennai Super Kings Cricket Ltd.", rosterSize: 25, localQuota: 7, localFilled: 6 },
-  { id: "t2", name: "Mumbai Indians", city: "Mumbai", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/cd/Mumbai_Indians_Logo.svg/120px-Mumbai_Indians_Logo.svg.png", owner: "Reliance Industries", rosterSize: 25, localQuota: 7, localFilled: 5 },
-  { id: "t3", name: "Royal Challengers Bengaluru", city: "Bengaluru", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Royal_Challengers_Bengaluru_Logo.svg/120px-Royal_Challengers_Bengaluru_Logo.svg.png", owner: "United Spirits", rosterSize: 25, localQuota: 7, localFilled: 5 },
-  { id: "t4", name: "Kolkata Knight Riders", city: "Kolkata", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/Kolkata_Knight_Riders_Logo.svg/120px-Kolkata_Knight_Riders_Logo.svg.png", owner: "Red Chillies Entertainment", rosterSize: 25, localQuota: 7, localFilled: 6 },
-  { id: "t5", name: "Rajasthan Royals", city: "Jaipur", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/5c/This_is_the_logo_for_Rajasthan_Royals%2C_a_cricket_team_playing_in_the_Indian_Premier_League_%28IPL%29.svg/120px-This_is_the_logo_for_Rajasthan_Royals%2C_a_cricket_team_playing_in_the_Indian_Premier_League_%28IPL%29.svg.png", owner: "Manoj Badale", rosterSize: 25, localQuota: 7, localFilled: 5 },
-  { id: "t6", name: "Delhi Capitals", city: "Delhi", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/2/2f/Delhi_Capitals.svg/120px-Delhi_Capitals.svg.png", owner: "GMR Group & JSW Group", rosterSize: 25, localQuota: 7, localFilled: 5 },
-  { id: "t7", name: "Punjab Kings", city: "Mohali", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d4/Punjab_Kings_Logo.svg/120px-Punjab_Kings_Logo.svg.png", owner: "Mohit Burman", rosterSize: 25, localQuota: 7, localFilled: 4 },
-  { id: "t8", name: "Sunrisers Hyderabad", city: "Hyderabad", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/51/Sunrisers_Hyderabad_Logo.svg/120px-Sunrisers_Hyderabad_Logo.svg.png", owner: "SUN TV Network", rosterSize: 25, localQuota: 7, localFilled: 5 },
-  { id: "t9", name: "Lucknow Super Giants", city: "Lucknow", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a9/Lucknow_Super_Giants_IPL_Logo.svg/120px-Lucknow_Super_Giants_IPL_Logo.svg.png", owner: "RPSG Group", rosterSize: 25, localQuota: 7, localFilled: 5 },
-  { id: "t10", name: "Gujarat Titans", city: "Ahmedabad", country: "India", league: "IPL", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/09/Gujarat_Titans_Logo.svg/120px-Gujarat_Titans_Logo.svg.png", owner: "CVC Capital Partners", rosterSize: 25, localQuota: 7, localFilled: 6 },
-  { id: "t11", name: "Sydney Sixers", city: "Sydney", country: "Australia", league: "BBL", logo: "", owner: "Cricket NSW", rosterSize: 18, localQuota: 6, localFilled: 4 },
-  { id: "t12", name: "Lahore Qalandars", city: "Lahore", country: "Pakistan", league: "PSL", logo: "", owner: "Fawad Rana", rosterSize: 20, localQuota: 7, localFilled: 5 },
-  { id: "t13", name: "Trinbago Knight Riders", city: "Port of Spain", country: "West Indies", league: "CPL", logo: "", owner: "Shah Rukh Khan", rosterSize: 18, localQuota: 6, localFilled: 3 },
-  { id: "t14", name: "Joburg Super Kings", city: "Johannesburg", country: "South Africa", league: "SA20", logo: "", owner: "Chennai Super Kings", rosterSize: 20, localQuota: 7, localFilled: 4 },
-  { id: "t15", name: "Oval Invincibles", city: "London", country: "England", league: "THE100", logo: "", owner: "ECB", rosterSize: 15, localQuota: 5, localFilled: 3 },
-  { id: "t16", name: "MI New York", city: "New York", country: "USA", league: "MLC", logo: "", owner: "Mumbai Indians", rosterSize: 18, localQuota: 4, localFilled: 2 },
-  { id: "t17", name: "Dhaka Dynamites", city: "Dhaka", country: "Bangladesh", league: "BPL", logo: "", owner: "Beximco Group", rosterSize: 18, localQuota: 7, localFilled: 5 },
-  { id: "t18", name: "Colombo Stars", city: "Colombo", country: "Sri Lanka", league: "LPL", logo: "", owner: "SLC", rosterSize: 18, localQuota: 7, localFilled: 4 },
-  { id: "t19", name: "Dubai Capitals", city: "Dubai", country: "UAE", league: "ILT20", logo: "", owner: "GMR Group", rosterSize: 18, localQuota: 2, localFilled: 1 },
+  { id: "t1", name: "Mumbai Indians", city: "Mumbai", country: "India", league: "IPL", logo: "", owner: "Ambani Group", rosterSize: 25, localQuota: 7, localFilled: 5 },
+  { id: "t2", name: "Sydney Sixers", city: "Sydney", country: "Australia", league: "BBL", logo: "", owner: "Cricket NSW", rosterSize: 18, localQuota: 6, localFilled: 4 },
+  { id: "t3", name: "Lahore Qalandars", city: "Lahore", country: "Pakistan", league: "PSL", logo: "", owner: "Fawad Rana", rosterSize: 20, localQuota: 7, localFilled: 5 },
+  { id: "t4", name: "Trinbago Knight Riders", city: "Port of Spain", country: "West Indies", league: "CPL", logo: "", owner: "Shah Rukh Khan", rosterSize: 18, localQuota: 6, localFilled: 3 },
+  { id: "t5", name: "Joburg Super Kings", city: "Johannesburg", country: "South Africa", league: "SA20", logo: "", owner: "Chennai Super Kings", rosterSize: 20, localQuota: 7, localFilled: 4 },
+  { id: "t6", name: "Oval Invincibles", city: "London", country: "England", league: "THE100", logo: "", owner: "ECB", rosterSize: 15, localQuota: 5, localFilled: 3 },
+  { id: "t7", name: "MI New York", city: "New York", country: "USA", league: "MLC", logo: "", owner: "Mumbai Indians", rosterSize: 18, localQuota: 4, localFilled: 2 },
+  { id: "t8", name: "Dhaka Dynamites", city: "Dhaka", country: "Bangladesh", league: "BPL", logo: "", owner: "Beximco Group", rosterSize: 18, localQuota: 7, localFilled: 5 },
+  { id: "t9", name: "Colombo Stars", city: "Colombo", country: "Sri Lanka", league: "LPL", logo: "", owner: "SLC", rosterSize: 18, localQuota: 7, localFilled: 4 },
+  { id: "t10", name: "Dubai Capitals", city: "Dubai", country: "UAE", league: "ILT20", logo: "", owner: "GMR Group", rosterSize: 18, localQuota: 2, localFilled: 1 },
 ];
 
 export const sponsors: Sponsor[] = [
@@ -327,7 +318,7 @@ export const tournaments: Tournament[] = [
 
 export const coaches: Coach[] = [
   {
-    id: "c1", name: "Anil Kumble Academy", avatar: "https://images.unsplash.com/photo-1659081476962-df97acad7f1a?w=200&h=200&fit=crop&crop=faces", country: "India", region: "South Asia",
+    id: "c1", name: "Anil Kumble Academy", country: "India", region: "South Asia",
     specialization: "Spin Bowling", experience: 25, certifications: ["BCCI Level 3", "ICC Level 4"],
     bio: "World-class spin coaching from the legendary Anil Kumble's academy. Developing young spinners for international and T20 league cricket.",
     rating: 4.9, reviewCount: 342, hourlyRate: 150, currency: "USD",
@@ -335,7 +326,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 85, leagueExperience: ["IPL", "BBL", "THE100"], verified: true,
   },
   {
-    id: "c2", name: "Brett Lee Cricket Academy", avatar: "https://images.unsplash.com/photo-1706102005258-aa606694526a?w=200&h=200&fit=crop&crop=faces", country: "Australia", region: "Oceania",
+    id: "c2", name: "Brett Lee Cricket Academy", country: "Australia", region: "Oceania",
     specialization: "Fast Bowling", experience: 20, certifications: ["Cricket Australia Level 3", "ICC Level 4"],
     bio: "Fast bowling program led by former Australian pace legend. Focus on speed, technique, fitness, and injury prevention.",
     rating: 4.8, reviewCount: 256, hourlyRate: 200, currency: "USD",
@@ -343,7 +334,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 62, leagueExperience: ["BBL", "IPL", "SA20"], verified: true,
   },
   {
-    id: "c3", name: "Mahela Jayawardene", avatar: "https://images.unsplash.com/photo-1685541000847-f764510e2175?w=200&h=200&fit=crop&crop=faces", country: "Sri Lanka", region: "South Asia",
+    id: "c3", name: "Mahela Jayawardene", country: "Sri Lanka", region: "South Asia",
     specialization: "Batting Technique", experience: 22, certifications: ["SLC Level 3", "ICC Level 4"],
     bio: "Learn batting from one of cricket's finest. T20 batting strategies, mental conditioning, and match awareness.",
     rating: 4.9, reviewCount: 198, hourlyRate: 175, currency: "USD",
@@ -351,7 +342,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: false, playersDeveloped: 48, leagueExperience: ["IPL", "LPL", "CPL", "BBL"], verified: true,
   },
   {
-    id: "c4", name: "Wasim Akram Foundation", avatar: "https://images.unsplash.com/photo-1743241160261-d19e6d3663ca?w=200&h=200&fit=crop&crop=faces", country: "Pakistan", region: "South Asia",
+    id: "c4", name: "Wasim Akram Foundation", country: "Pakistan", region: "South Asia",
     specialization: "Pace & Swing Bowling", experience: 28, certifications: ["PCB Level 3", "ICC Level 4"],
     bio: "The Sultan of Swing's coaching academy. Discovering raw pace talent from streets and gullies.",
     rating: 4.9, reviewCount: 412, hourlyRate: 120, currency: "USD",
@@ -359,7 +350,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 110, leagueExperience: ["PSL", "IPL", "ILT20"], verified: true,
   },
   {
-    id: "c5", name: "AB de Villiers Performance Lab", avatar: "https://images.unsplash.com/photo-1769442872238-e1912656f940?w=200&h=200&fit=crop&crop=faces", country: "South Africa", region: "Africa",
+    id: "c5", name: "AB de Villiers Performance Lab", country: "South Africa", region: "Africa",
     specialization: "360-degree Batting & Fitness", experience: 15, certifications: ["CSA Level 3", "ICC Level 3"],
     bio: "Innovative batting coaching combining 360-degree stroke play with advanced fitness.",
     rating: 4.8, reviewCount: 185, hourlyRate: 180, currency: "USD",
@@ -367,7 +358,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 35, leagueExperience: ["SA20", "IPL", "BBL", "PSL"], verified: true,
   },
   {
-    id: "c6", name: "Mike Hesson Cricket Intelligence", avatar: "https://images.unsplash.com/photo-1624897174291-1bd715e371d5?w=200&h=200&fit=crop&crop=faces", country: "New Zealand", region: "Oceania",
+    id: "c6", name: "Mike Hesson Cricket Intelligence", country: "New Zealand", region: "Oceania",
     specialization: "Cricket Strategy & Analytics", experience: 18, certifications: ["NZC Level 3", "ICC Level 3"],
     bio: "Strategic cricket coaching combining modern analytics with traditional skills.",
     rating: 4.7, reviewCount: 128, hourlyRate: 140, currency: "USD",
@@ -375,7 +366,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: false, playersDeveloped: 42, leagueExperience: ["SSA", "IPL", "BBL"], verified: true,
   },
   {
-    id: "c7", name: "Brian Lara Batting Academy", avatar: "https://images.unsplash.com/photo-1689176796800-ab67fbf93329?w=200&h=200&fit=crop&crop=faces", country: "West Indies", region: "Caribbean",
+    id: "c7", name: "Brian Lara Batting Academy", country: "West Indies", region: "Caribbean",
     specialization: "Caribbean Flair Batting", experience: 20, certifications: ["CWI Level 3", "ICC Level 4"],
     bio: "Channel the spirit of Caribbean cricket. Developing fearless batsmen with flair, power, and creativity.",
     rating: 4.9, reviewCount: 290, hourlyRate: 160, currency: "USD",
@@ -383,7 +374,7 @@ export const coaches: Coach[] = [
     remote: true, inPerson: true, playersDeveloped: 72, leagueExperience: ["CPL", "IPL", "BBL", "THE100"], verified: true,
   },
   {
-    id: "c8", name: "Kumar Sangakkara MasterClass", avatar: "https://images.unsplash.com/photo-1652513842544-ca66b676757a?w=200&h=200&fit=crop&crop=faces", country: "Sri Lanka", region: "South Asia",
+    id: "c8", name: "Kumar Sangakkara MasterClass", country: "Sri Lanka", region: "South Asia",
     specialization: "Wicket-Keeping & Leadership", experience: 18, certifications: ["SLC Level 3", "ICC Level 3"],
     bio: "World-class wicket-keeping and batting instruction with leadership development.",
     rating: 4.8, reviewCount: 165, hourlyRate: 170, currency: "USD",
@@ -410,21 +401,6 @@ export const roleIcons: Record<string, string> = {
   "Wicket-Keeper": "WK",
 };
 
-export const leagueBrandColors: Record<string, { gradient: string; bg: string; text: string }> = {
-  IPL: { gradient: "from-blue-600 to-indigo-900", bg: "bg-blue-500/20", text: "text-blue-400" },
-  BBL: { gradient: "from-teal-500 to-green-800", bg: "bg-teal-500/20", text: "text-teal-400" },
-  PSL: { gradient: "from-green-600 to-emerald-900", bg: "bg-green-500/20", text: "text-green-400" },
-  CPL: { gradient: "from-yellow-500 to-amber-800", bg: "bg-yellow-500/20", text: "text-yellow-400" },
-  SA20: { gradient: "from-orange-500 to-red-800", bg: "bg-orange-500/20", text: "text-orange-400" },
-  THE100: { gradient: "from-purple-500 to-violet-900", bg: "bg-purple-500/20", text: "text-purple-400" },
-  MLC: { gradient: "from-red-600 to-blue-800", bg: "bg-red-500/20", text: "text-red-400" },
-  BPL: { gradient: "from-lime-500 to-green-800", bg: "bg-lime-500/20", text: "text-lime-400" },
-  LPL: { gradient: "from-red-500 to-yellow-700", bg: "bg-rose-500/20", text: "text-rose-400" },
-  ILT20: { gradient: "from-amber-500 to-rose-900", bg: "bg-amber-500/20", text: "text-amber-400" },
-  SSA: { gradient: "from-orange-500 to-gray-900", bg: "bg-orange-500/20", text: "text-orange-400" },
-  GT20: { gradient: "from-red-600 to-rose-900", bg: "bg-red-500/20", text: "text-red-400" },
-};
-
 export const countryFlags: Record<string, string> = {
   India: "IN",
   Australia: "AU",
@@ -439,3 +415,267 @@ export const countryFlags: Record<string, string> = {
   UAE: "AE",
   Canada: "CA",
 };
+
+export const playerMatchHistory: Record<string, MatchPerformance[]> = {
+  p1: [
+    { matchId: "m1", date: "2026-02-10", opponent: "Maharashtra U17", venue: "Ahmedabad", league: "State U17", runsScored: 87, ballsFaced: 62, wicketsTaken: 0, oversBowled: 2, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m2", date: "2026-02-05", opponent: "Rajasthan U17", venue: "Jaipur", league: "State U17", runsScored: 45, ballsFaced: 38, wicketsTaken: 1, oversBowled: 3, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m3", date: "2026-01-28", opponent: "Delhi U17", venue: "Delhi", league: "BCCI Youth", runsScored: 112, ballsFaced: 78, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 1, stumpings: 0, manOfMatch: true },
+    { matchId: "m4", date: "2026-01-20", opponent: "Karnataka U17", venue: "Bangalore", league: "BCCI Youth", runsScored: 23, ballsFaced: 20, wicketsTaken: 1, oversBowled: 2, runsConceded: 14, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m5", date: "2026-01-14", opponent: "Tamil Nadu U17", venue: "Chennai", league: "BCCI Youth", runsScored: 68, ballsFaced: 52, wicketsTaken: 0, oversBowled: 1, runsConceded: 12, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p2: [
+    { matchId: "m6", date: "2026-02-12", opponent: "Victoria U19", venue: "Melbourne", league: "Shield Colts", runsScored: 12, ballsFaced: 18, wicketsTaken: 4, oversBowled: 8, runsConceded: 28, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m7", date: "2026-02-06", opponent: "Queensland U19", venue: "Brisbane", league: "Shield Colts", runsScored: 5, ballsFaced: 10, wicketsTaken: 3, oversBowled: 7, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m8", date: "2026-01-30", opponent: "SA U19", venue: "Sydney", league: "U19 International", runsScored: 18, ballsFaced: 14, wicketsTaken: 5, oversBowled: 8, runsConceded: 31, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m9", date: "2026-01-22", opponent: "Tasmania U19", venue: "Hobart", league: "Shield Colts", runsScored: 2, ballsFaced: 8, wicketsTaken: 2, oversBowled: 6, runsConceded: 19, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m10", date: "2026-01-15", opponent: "WA U19", venue: "Perth", league: "Shield Colts", runsScored: 8, ballsFaced: 12, wicketsTaken: 3, oversBowled: 7, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p3: [
+    { matchId: "m11", date: "2026-02-08", opponent: "Sindh U17", venue: "Karachi", league: "PCB Youth", runsScored: 72, ballsFaced: 55, wicketsTaken: 3, oversBowled: 6, runsConceded: 28, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m12", date: "2026-02-02", opponent: "KPK U17", venue: "Peshawar", league: "PCB Youth", runsScored: 38, ballsFaced: 30, wicketsTaken: 2, oversBowled: 5, runsConceded: 24, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m13", date: "2026-01-25", opponent: "Balochistan U17", venue: "Lahore", league: "PCB Youth", runsScored: 55, ballsFaced: 42, wicketsTaken: 1, oversBowled: 4, runsConceded: 20, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m14", date: "2026-01-18", opponent: "Islamabad U17", venue: "Islamabad", league: "PCB Youth", runsScored: 15, ballsFaced: 18, wicketsTaken: 4, oversBowled: 7, runsConceded: 28, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m15", date: "2026-01-12", opponent: "Northern U17", venue: "Rawalpindi", league: "PCB Youth", runsScored: 41, ballsFaced: 35, wicketsTaken: 2, oversBowled: 5, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p4: [
+    { matchId: "m16", date: "2026-02-11", opponent: "Jamaica U19", venue: "Kingston", league: "CWI U19", runsScored: 95, ballsFaced: 68, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 3, runOuts: 0, stumpings: 2, manOfMatch: true },
+    { matchId: "m17", date: "2026-02-04", opponent: "Barbados U19", venue: "Bridgetown", league: "CWI U19", runsScored: 42, ballsFaced: 35, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 0, stumpings: 1, manOfMatch: false },
+    { matchId: "m18", date: "2026-01-28", opponent: "Guyana U19", venue: "Georgetown", league: "CWI U19", runsScored: 78, ballsFaced: 58, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 4, runOuts: 1, stumpings: 0, manOfMatch: true },
+    { matchId: "m19", date: "2026-01-20", opponent: "Leeward Islands U19", venue: "Port of Spain", league: "Regional U19", runsScored: 8, ballsFaced: 12, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 1, runOuts: 0, stumpings: 1, manOfMatch: false },
+    { matchId: "m20", date: "2026-01-14", opponent: "Windward Islands U19", venue: "St Lucia", league: "Regional U19", runsScored: 55, ballsFaced: 40, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 0, stumpings: 2, manOfMatch: false },
+  ],
+  p5: [
+    { matchId: "m21", date: "2026-02-13", opponent: "Western Cape", venue: "Cape Town", league: "CSA Youth", runsScored: 5, ballsFaced: 8, wicketsTaken: 6, oversBowled: 8, runsConceded: 31, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m22", date: "2026-02-07", opponent: "KwaZulu-Natal", venue: "Durban", league: "CSA Youth", runsScored: 12, ballsFaced: 15, wicketsTaken: 4, oversBowled: 7, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m23", date: "2026-01-31", opponent: "Free State", venue: "Johannesburg", league: "CSA Youth", runsScored: 0, ballsFaced: 3, wicketsTaken: 3, oversBowled: 6, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m24", date: "2026-01-23", opponent: "Northerns", venue: "Pretoria", league: "CSA Youth", runsScored: 8, ballsFaced: 12, wicketsTaken: 5, oversBowled: 8, runsConceded: 28, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m25", date: "2026-01-16", opponent: "Eastern Cape", venue: "Port Elizabeth", league: "CSA Youth", runsScored: 2, ballsFaced: 5, wicketsTaken: 2, oversBowled: 5, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p6: [
+    { matchId: "m26", date: "2026-02-09", opponent: "Lancashire U15", venue: "Leeds", league: "ECB U15", runsScored: 45, ballsFaced: 38, wicketsTaken: 0, oversBowled: 2, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m27", date: "2026-02-03", opponent: "Surrey U15", venue: "London", league: "ECB U15", runsScored: 22, ballsFaced: 25, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m28", date: "2026-01-26", opponent: "Hampshire U15", venue: "Southampton", league: "ECB U15", runsScored: 68, ballsFaced: 50, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m29", date: "2026-01-19", opponent: "Nottinghamshire U15", venue: "Nottingham", league: "ECB U15", runsScored: 12, ballsFaced: 15, wicketsTaken: 1, oversBowled: 2, runsConceded: 12, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m30", date: "2026-01-12", opponent: "Middlesex U15", venue: "Lords", league: "ECB U15", runsScored: 55, ballsFaced: 42, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p7: [
+    { matchId: "m31", date: "2026-02-10", opponent: "Southern Province U17", venue: "Galle", league: "SLC U17", runsScored: 8, ballsFaced: 12, wicketsTaken: 5, oversBowled: 8, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m32", date: "2026-02-04", opponent: "Central Province U17", venue: "Kandy", league: "SLC U17", runsScored: 15, ballsFaced: 18, wicketsTaken: 3, oversBowled: 6, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m33", date: "2026-01-28", opponent: "North Central U17", venue: "Colombo", league: "SLC U17", runsScored: 22, ballsFaced: 20, wicketsTaken: 4, oversBowled: 7, runsConceded: 25, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m34", date: "2026-01-20", opponent: "Eastern Province U17", venue: "Trincomalee", league: "SLC U17", runsScored: 5, ballsFaced: 8, wicketsTaken: 2, oversBowled: 5, runsConceded: 15, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m35", date: "2026-01-13", opponent: "North Western U17", venue: "Kurunegala", league: "SLC U17", runsScored: 10, ballsFaced: 14, wicketsTaken: 3, oversBowled: 6, runsConceded: 20, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p8: [
+    { matchId: "m36", date: "2026-02-12", opponent: "New York XI", venue: "New York", league: "MLC Dev", runsScored: 142, ballsFaced: 95, wicketsTaken: 1, oversBowled: 2, runsConceded: 15, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m37", date: "2026-02-06", opponent: "Texas XI", venue: "Dallas", league: "MLC Dev", runsScored: 78, ballsFaced: 55, wicketsTaken: 2, oversBowled: 4, runsConceded: 28, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m38", date: "2026-01-30", opponent: "California XI", venue: "Los Angeles", league: "MLC Dev", runsScored: 55, ballsFaced: 40, wicketsTaken: 0, oversBowled: 2, runsConceded: 18, catches: 1, runOuts: 1, stumpings: 0, manOfMatch: false },
+    { matchId: "m39", date: "2026-01-22", opponent: "Florida XI", venue: "Miami", league: "USA U19", runsScored: 92, ballsFaced: 68, wicketsTaken: 1, oversBowled: 3, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m40", date: "2026-01-15", opponent: "New Jersey XI", venue: "Newark", league: "USA U19", runsScored: 35, ballsFaced: 28, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p9: [
+    { matchId: "m41", date: "2026-02-08", opponent: "Pune XI", venue: "Mumbai", league: "MCA U17", runsScored: 35, ballsFaced: 30, wicketsTaken: 2, oversBowled: 4, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m42", date: "2026-02-01", opponent: "Nagpur XI", venue: "Nagpur", league: "MCA U17", runsScored: 48, ballsFaced: 38, wicketsTaken: 3, oversBowled: 5, runsConceded: 25, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m43", date: "2026-01-25", opponent: "Thane XI", venue: "Thane", league: "MCA U17", runsScored: 12, ballsFaced: 15, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m44", date: "2026-01-18", opponent: "Kolhapur XI", venue: "Kolhapur", league: "MCA U17", runsScored: 22, ballsFaced: 20, wicketsTaken: 2, oversBowled: 4, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m45", date: "2026-01-11", opponent: "Aurangabad XI", venue: "Aurangabad", league: "MCA U17", runsScored: 55, ballsFaced: 42, wicketsTaken: 1, oversBowled: 3, runsConceded: 15, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p10: [
+    { matchId: "m46", date: "2026-02-11", opponent: "Gauteng", venue: "Johannesburg", league: "CSA Provincial", runsScored: 88, ballsFaced: 65, wicketsTaken: 4, oversBowled: 8, runsConceded: 32, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m47", date: "2026-02-05", opponent: "North West", venue: "Potchefstroom", league: "CSA Provincial", runsScored: 45, ballsFaced: 38, wicketsTaken: 2, oversBowled: 6, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m48", date: "2026-01-29", opponent: "Limpopo", venue: "Cape Town", league: "CSA Provincial", runsScored: 62, ballsFaced: 48, wicketsTaken: 3, oversBowled: 7, runsConceded: 28, catches: 0, runOuts: 1, stumpings: 0, manOfMatch: true },
+    { matchId: "m49", date: "2026-01-21", opponent: "Mpumalanga", venue: "Nelspruit", league: "CSA Provincial", runsScored: 15, ballsFaced: 18, wicketsTaken: 1, oversBowled: 4, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m50", date: "2026-01-14", opponent: "Border", venue: "East London", league: "CSA Provincial", runsScored: 72, ballsFaced: 55, wicketsTaken: 2, oversBowled: 5, runsConceded: 22, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p11: [
+    { matchId: "m51", date: "2026-02-09", opponent: "Chittagong Div", venue: "Chittagong", league: "BCB Youth", runsScored: 5, ballsFaced: 8, wicketsTaken: 5, oversBowled: 8, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m52", date: "2026-02-03", opponent: "Sylhet Div", venue: "Sylhet", league: "BCB Youth", runsScored: 8, ballsFaced: 12, wicketsTaken: 3, oversBowled: 6, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m53", date: "2026-01-27", opponent: "Rajshahi Div", venue: "Rajshahi", league: "BCB Youth", runsScored: 2, ballsFaced: 5, wicketsTaken: 4, oversBowled: 7, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m54", date: "2026-01-19", opponent: "Khulna Div", venue: "Khulna", league: "BCB Youth", runsScored: 12, ballsFaced: 15, wicketsTaken: 2, oversBowled: 5, runsConceded: 22, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m55", date: "2026-01-12", opponent: "Rangpur Div", venue: "Rangpur", league: "BCB Youth", runsScored: 0, ballsFaced: 3, wicketsTaken: 3, oversBowled: 6, runsConceded: 15, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p12: [
+    { matchId: "m56", date: "2026-02-10", opponent: "UP U15", venue: "Delhi", league: "DDCA U15", runsScored: 78, ballsFaced: 58, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m57", date: "2026-02-04", opponent: "Haryana U15", venue: "Gurgaon", league: "DDCA U15", runsScored: 25, ballsFaced: 22, wicketsTaken: 1, oversBowled: 2, runsConceded: 12, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m58", date: "2026-01-28", opponent: "Punjab U15", venue: "Delhi", league: "DDCA U15", runsScored: 42, ballsFaced: 35, wicketsTaken: 0, oversBowled: 1, runsConceded: 10, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m59", date: "2026-01-20", opponent: "Rajasthan U15", venue: "Jaipur", league: "BCCI U15", runsScored: 55, ballsFaced: 40, wicketsTaken: 0, oversBowled: 0, runsConceded: 0, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m60", date: "2026-01-13", opponent: "MP U15", venue: "Indore", league: "BCCI U15", runsScored: 18, ballsFaced: 20, wicketsTaken: 1, oversBowled: 2, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p13: [
+    { matchId: "m61", date: "2026-02-12", opponent: "BC XI", venue: "Vancouver", league: "Cricket Canada", runsScored: 68, ballsFaced: 50, wicketsTaken: 2, oversBowled: 5, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m62", date: "2026-02-06", opponent: "Alberta XI", venue: "Calgary", league: "Cricket Canada", runsScored: 35, ballsFaced: 28, wicketsTaken: 3, oversBowled: 6, runsConceded: 28, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m63", date: "2026-01-30", opponent: "Quebec XI", venue: "Montreal", league: "Cricket Canada", runsScored: 82, ballsFaced: 60, wicketsTaken: 1, oversBowled: 4, runsConceded: 22, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m64", date: "2026-01-22", opponent: "Manitoba XI", venue: "Winnipeg", league: "Cricket Canada", runsScored: 15, ballsFaced: 18, wicketsTaken: 2, oversBowled: 5, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m65", date: "2026-01-15", opponent: "Saskatchewan XI", venue: "Brampton", league: "GT20 Dev", runsScored: 45, ballsFaced: 35, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+  p14: [
+    { matchId: "m66", date: "2026-02-08", opponent: "Abu Dhabi U17", venue: "Dubai", league: "Emirates Youth", runsScored: 92, ballsFaced: 65, wicketsTaken: 1, oversBowled: 3, runsConceded: 18, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m67", date: "2026-02-02", opponent: "Sharjah U17", venue: "Sharjah", league: "Emirates Youth", runsScored: 38, ballsFaced: 30, wicketsTaken: 0, oversBowled: 2, runsConceded: 14, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m68", date: "2026-01-26", opponent: "Ajman U17", venue: "Ajman", league: "Emirates Youth", runsScored: 55, ballsFaced: 42, wicketsTaken: 2, oversBowled: 4, runsConceded: 22, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m69", date: "2026-01-18", opponent: "RAK U17", venue: "Dubai", league: "Emirates Youth", runsScored: 18, ballsFaced: 20, wicketsTaken: 0, oversBowled: 1, runsConceded: 8, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m70", date: "2026-01-11", opponent: "Fujairah U17", venue: "Fujairah", league: "Emirates Youth", runsScored: 72, ballsFaced: 52, wicketsTaken: 1, oversBowled: 3, runsConceded: 16, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+  ],
+  p15: [
+    { matchId: "m71", date: "2026-02-13", opponent: "Canterbury", venue: "Christchurch", league: "NZC Youth", runsScored: 8, ballsFaced: 12, wicketsTaken: 6, oversBowled: 8, runsConceded: 22, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m72", date: "2026-02-07", opponent: "Wellington", venue: "Wellington", league: "NZC Youth", runsScored: 2, ballsFaced: 5, wicketsTaken: 4, oversBowled: 7, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m73", date: "2026-01-31", opponent: "Otago", venue: "Dunedin", league: "NZC Youth", runsScored: 15, ballsFaced: 18, wicketsTaken: 3, oversBowled: 6, runsConceded: 25, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m74", date: "2026-01-23", opponent: "Northern Districts", venue: "Hamilton", league: "NZC Youth", runsScored: 5, ballsFaced: 8, wicketsTaken: 2, oversBowled: 5, runsConceded: 20, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m75", date: "2026-01-16", opponent: "Central Districts", venue: "Auckland", league: "NZC Youth", runsScored: 12, ballsFaced: 14, wicketsTaken: 5, oversBowled: 8, runsConceded: 28, catches: 2, runOuts: 0, stumpings: 0, manOfMatch: true },
+  ],
+  p16: [
+    { matchId: "m76", date: "2026-02-09", opponent: "Coimbatore XI", venue: "Chennai", league: "TNCA U15", runsScored: 5, ballsFaced: 8, wicketsTaken: 4, oversBowled: 6, runsConceded: 12, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m77", date: "2026-02-03", opponent: "Madurai XI", venue: "Madurai", league: "TNCA U15", runsScored: 8, ballsFaced: 10, wicketsTaken: 3, oversBowled: 5, runsConceded: 15, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m78", date: "2026-01-27", opponent: "Salem XI", venue: "Salem", league: "TNCA U15", runsScored: 2, ballsFaced: 5, wicketsTaken: 2, oversBowled: 4, runsConceded: 18, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+    { matchId: "m79", date: "2026-01-19", opponent: "Trichy XI", venue: "Trichy", league: "TNCA U15", runsScored: 12, ballsFaced: 15, wicketsTaken: 4, oversBowled: 6, runsConceded: 14, catches: 1, runOuts: 0, stumpings: 0, manOfMatch: true },
+    { matchId: "m80", date: "2026-01-12", opponent: "Tirunelveli XI", venue: "Tirunelveli", league: "TNCA U15", runsScored: 0, ballsFaced: 2, wicketsTaken: 3, oversBowled: 5, runsConceded: 16, catches: 0, runOuts: 0, stumpings: 0, manOfMatch: false },
+  ],
+};
+
+export function calculateCPI(player: Player, matches: MatchPerformance[]): CPIScore {
+  const last5 = matches.slice(0, 5);
+
+  let matchPerfScore = 0;
+  if (player.role === "Bowler") {
+    const totalWickets = last5.reduce((s, m) => s + m.wicketsTaken, 0);
+    const avgEconomy = last5.reduce((s, m) => m.oversBowled > 0 ? s + (m.runsConceded / m.oversBowled) : s, 0) / Math.max(last5.filter(m => m.oversBowled > 0).length, 1);
+    matchPerfScore = Math.min(100, (totalWickets * 8) + Math.max(0, (6 - avgEconomy) * 10));
+  } else if (player.role === "Batsman" || player.role === "Wicket-Keeper") {
+    const totalRuns = last5.reduce((s, m) => s + m.runsScored, 0);
+    const avgSR = last5.reduce((s, m) => m.ballsFaced > 0 ? s + (m.runsScored / m.ballsFaced * 100) : s, 0) / Math.max(last5.filter(m => m.ballsFaced > 0).length, 1);
+    matchPerfScore = Math.min(100, (totalRuns / 3) + (avgSR > 100 ? (avgSR - 100) * 0.3 : 0));
+  } else {
+    const totalRuns = last5.reduce((s, m) => s + m.runsScored, 0);
+    const totalWickets = last5.reduce((s, m) => s + m.wicketsTaken, 0);
+    matchPerfScore = Math.min(100, (totalRuns / 4) + (totalWickets * 6));
+  }
+
+  const athleticScore = Math.min(100,
+    (player.fitnessData.yoYoTest / 20 * 30) +
+    (Math.max(0, 10 - player.fitnessData.sprintSpeed) * 8) +
+    (player.fitnessData.beepTestLevel / 14 * 20) +
+    ((player.fitnessData.bowlingSpeed || 0) / 150 * 20)
+  );
+
+  const recentScores = last5.map(m => {
+    if (player.role === "Bowler") return m.wicketsTaken * 15 + (m.oversBowled > 0 ? Math.max(0, 6 - m.runsConceded / m.oversBowled) * 5 : 0);
+    return m.runsScored + (m.wicketsTaken * 10);
+  });
+  const avgRecent = recentScores.reduce((s, v) => s + v, 0) / Math.max(recentScores.length, 1);
+  const formScore = Math.min(100, avgRecent * 1.2);
+
+  const variance = recentScores.length > 1 ? Math.sqrt(recentScores.reduce((s, v) => s + Math.pow(v - avgRecent, 2), 0) / recentScores.length) : 0;
+  const consistencyScore = Math.min(100, Math.max(0, 100 - variance * 1.5));
+
+  const overall = Math.round(
+    matchPerfScore * 0.4 +
+    athleticScore * 0.3 +
+    formScore * 0.2 +
+    consistencyScore * 0.1
+  );
+
+  return {
+    overall,
+    matchPerformance: Math.round(matchPerfScore),
+    athleticMetrics: Math.round(athleticScore),
+    formIndex: Math.round(formScore),
+    consistency: Math.round(consistencyScore),
+    nationalRank: 0,
+    stateRank: 0,
+    rankChange: 0,
+  };
+}
+
+export function getFormStatus(matches: MatchPerformance[], role: string): FormStatus {
+  if (matches.length === 0) return "Cold";
+  const last5 = matches.slice(0, 5);
+  const weights = [0.35, 0.25, 0.2, 0.12, 0.08];
+
+  const weightedScore = last5.reduce((sum, match, i) => {
+    let perf = 0;
+    if (role === "Bowler") {
+      perf = match.wicketsTaken * 20 + (match.oversBowled > 0 ? Math.max(0, 6 - match.runsConceded / match.oversBowled) * 8 : 0);
+    } else if (role === "Batsman" || role === "Wicket-Keeper") {
+      perf = match.runsScored * 1.2 + (match.ballsFaced > 0 && match.runsScored / match.ballsFaced > 1 ? 15 : 0);
+    } else {
+      perf = match.runsScored + match.wicketsTaken * 15;
+    }
+    if (match.manOfMatch) perf += 20;
+    return sum + perf * (weights[i] || 0.08);
+  }, 0);
+
+  if (weightedScore >= 60) return "Red Hot";
+  if (weightedScore >= 35) return "In Form";
+  if (weightedScore >= 15) return "Steady";
+  return "Cold";
+}
+
+export const playerCombineData: Record<string, CombineData> = {
+  p1: { yoYoScore: 18.4, sprint20m: 3.1, batSpeed: 112, verticalJump: 58, fieldingEfficiency: 82, throwAccuracy: 78, reactionTime: 0.28, assessmentDate: "2025-12-15", nextAssessmentDate: "2026-06-15", verifiedAthlete: true, history: [{ date: "2025-06-15", yoYoScore: 17.8, sprint20m: 3.2, verticalJump: 55, fieldingEfficiency: 78 }, { date: "2025-12-15", yoYoScore: 18.4, sprint20m: 3.1, verticalJump: 58, fieldingEfficiency: 82 }] },
+  p2: { yoYoScore: 19.2, sprint20m: 2.9, bowlingSpeed: 145, verticalJump: 62, fieldingEfficiency: 75, throwAccuracy: 85, reactionTime: 0.25, assessmentDate: "2025-11-20", nextAssessmentDate: "2026-05-20", verifiedAthlete: true, history: [{ date: "2025-05-20", yoYoScore: 18.6, sprint20m: 3.0, verticalJump: 59, fieldingEfficiency: 72 }, { date: "2025-11-20", yoYoScore: 19.2, sprint20m: 2.9, verticalJump: 62, fieldingEfficiency: 75 }] },
+  p3: { yoYoScore: 17.8, sprint20m: 3.2, bowlingSpeed: 82, batSpeed: 105, verticalJump: 55, fieldingEfficiency: 80, throwAccuracy: 76, reactionTime: 0.30, assessmentDate: "2025-12-01", nextAssessmentDate: "2026-06-01", verifiedAthlete: true, history: [{ date: "2025-06-01", yoYoScore: 17.2, sprint20m: 3.3, verticalJump: 52, fieldingEfficiency: 76 }, { date: "2025-12-01", yoYoScore: 17.8, sprint20m: 3.2, verticalJump: 55, fieldingEfficiency: 80 }] },
+  p4: { yoYoScore: 18.8, sprint20m: 3.0, batSpeed: 108, verticalJump: 60, fieldingEfficiency: 88, throwAccuracy: 82, reactionTime: 0.24, assessmentDate: "2025-11-10", nextAssessmentDate: "2026-05-10", verifiedAthlete: true, history: [{ date: "2025-05-10", yoYoScore: 18.2, sprint20m: 3.1, verticalJump: 57, fieldingEfficiency: 85 }, { date: "2025-11-10", yoYoScore: 18.8, sprint20m: 3.0, verticalJump: 60, fieldingEfficiency: 88 }] },
+  p5: { yoYoScore: 20.1, sprint20m: 2.8, bowlingSpeed: 148, verticalJump: 65, fieldingEfficiency: 72, throwAccuracy: 88, reactionTime: 0.23, assessmentDate: "2025-12-10", nextAssessmentDate: "2026-06-10", verifiedAthlete: true, history: [{ date: "2025-06-10", yoYoScore: 19.5, sprint20m: 2.9, verticalJump: 62, fieldingEfficiency: 68 }, { date: "2025-12-10", yoYoScore: 20.1, sprint20m: 2.8, verticalJump: 65, fieldingEfficiency: 72 }] },
+  p6: { yoYoScore: 16.2, sprint20m: 3.4, batSpeed: 95, verticalJump: 48, fieldingEfficiency: 70, throwAccuracy: 68, reactionTime: 0.32, assessmentDate: "2025-10-15", nextAssessmentDate: "2026-04-15", verifiedAthlete: false, history: [{ date: "2025-10-15", yoYoScore: 16.2, sprint20m: 3.4, verticalJump: 48, fieldingEfficiency: 70 }] },
+  p7: { yoYoScore: 17.5, sprint20m: 3.3, bowlingSpeed: 78, verticalJump: 52, fieldingEfficiency: 78, throwAccuracy: 74, reactionTime: 0.29, assessmentDate: "2025-11-25", nextAssessmentDate: "2026-05-25", verifiedAthlete: true, history: [{ date: "2025-05-25", yoYoScore: 17.0, sprint20m: 3.4, verticalJump: 50, fieldingEfficiency: 75 }, { date: "2025-11-25", yoYoScore: 17.5, sprint20m: 3.3, verticalJump: 52, fieldingEfficiency: 78 }] },
+  p8: { yoYoScore: 18.6, sprint20m: 3.0, batSpeed: 118, verticalJump: 60, fieldingEfficiency: 84, throwAccuracy: 80, reactionTime: 0.26, assessmentDate: "2025-12-05", nextAssessmentDate: "2026-06-05", verifiedAthlete: true, history: [{ date: "2025-06-05", yoYoScore: 18.0, sprint20m: 3.1, verticalJump: 57, fieldingEfficiency: 80 }, { date: "2025-12-05", yoYoScore: 18.6, sprint20m: 3.0, verticalJump: 60, fieldingEfficiency: 84 }] },
+  p9: { yoYoScore: 17.0, sprint20m: 3.2, bowlingSpeed: 118, batSpeed: 100, verticalJump: 50, fieldingEfficiency: 72, throwAccuracy: 70, reactionTime: 0.31, assessmentDate: "2025-10-20", nextAssessmentDate: "2026-04-20", verifiedAthlete: false, history: [{ date: "2025-10-20", yoYoScore: 17.0, sprint20m: 3.2, verticalJump: 50, fieldingEfficiency: 72 }] },
+  p10: { yoYoScore: 19.0, sprint20m: 2.9, bowlingSpeed: 125, batSpeed: 110, verticalJump: 63, fieldingEfficiency: 85, throwAccuracy: 82, reactionTime: 0.25, assessmentDate: "2025-12-08", nextAssessmentDate: "2026-06-08", verifiedAthlete: true, history: [{ date: "2025-06-08", yoYoScore: 18.4, sprint20m: 3.0, verticalJump: 60, fieldingEfficiency: 82 }, { date: "2025-12-08", yoYoScore: 19.0, sprint20m: 2.9, verticalJump: 63, fieldingEfficiency: 85 }] },
+  p11: { yoYoScore: 17.2, sprint20m: 3.3, bowlingSpeed: 75, verticalJump: 50, fieldingEfficiency: 68, throwAccuracy: 72, reactionTime: 0.30, assessmentDate: "2025-11-15", nextAssessmentDate: "2026-05-15", verifiedAthlete: true, history: [{ date: "2025-05-15", yoYoScore: 16.8, sprint20m: 3.4, verticalJump: 48, fieldingEfficiency: 65 }, { date: "2025-11-15", yoYoScore: 17.2, sprint20m: 3.3, verticalJump: 50, fieldingEfficiency: 68 }] },
+  p12: { yoYoScore: 15.8, sprint20m: 3.5, batSpeed: 88, verticalJump: 45, fieldingEfficiency: 65, throwAccuracy: 64, reactionTime: 0.34, assessmentDate: "2025-10-10", nextAssessmentDate: "2026-04-10", verifiedAthlete: false, history: [{ date: "2025-10-10", yoYoScore: 15.8, sprint20m: 3.5, verticalJump: 45, fieldingEfficiency: 65 }] },
+  p13: { yoYoScore: 18.0, sprint20m: 3.1, bowlingSpeed: 128, batSpeed: 106, verticalJump: 56, fieldingEfficiency: 78, throwAccuracy: 76, reactionTime: 0.28, assessmentDate: "2025-11-30", nextAssessmentDate: "2026-05-30", verifiedAthlete: true, history: [{ date: "2025-05-30", yoYoScore: 17.5, sprint20m: 3.2, verticalJump: 54, fieldingEfficiency: 75 }, { date: "2025-11-30", yoYoScore: 18.0, sprint20m: 3.1, verticalJump: 56, fieldingEfficiency: 78 }] },
+  p14: { yoYoScore: 17.5, sprint20m: 3.1, batSpeed: 108, verticalJump: 54, fieldingEfficiency: 76, throwAccuracy: 74, reactionTime: 0.29, assessmentDate: "2025-12-01", nextAssessmentDate: "2026-06-01", verifiedAthlete: true, history: [{ date: "2025-06-01", yoYoScore: 17.0, sprint20m: 3.2, verticalJump: 52, fieldingEfficiency: 73 }, { date: "2025-12-01", yoYoScore: 17.5, sprint20m: 3.1, verticalJump: 54, fieldingEfficiency: 76 }] },
+  p15: { yoYoScore: 19.5, sprint20m: 2.8, bowlingSpeed: 143, verticalJump: 64, fieldingEfficiency: 74, throwAccuracy: 86, reactionTime: 0.24, assessmentDate: "2025-12-12", nextAssessmentDate: "2026-06-12", verifiedAthlete: true, history: [{ date: "2025-06-12", yoYoScore: 19.0, sprint20m: 2.9, verticalJump: 61, fieldingEfficiency: 70 }, { date: "2025-12-12", yoYoScore: 19.5, sprint20m: 2.8, verticalJump: 64, fieldingEfficiency: 74 }] },
+  p16: { yoYoScore: 15.5, sprint20m: 3.4, bowlingSpeed: 122, verticalJump: 44, fieldingEfficiency: 62, throwAccuracy: 66, reactionTime: 0.32, assessmentDate: "2025-10-05", nextAssessmentDate: "2026-04-05", verifiedAthlete: false, history: [{ date: "2025-10-05", yoYoScore: 15.5, sprint20m: 3.4, verticalJump: 44, fieldingEfficiency: 62 }] },
+};
+
+export function generateCPIRankings(): (Player & { cpiScore: CPIScore; formStatus: FormStatus })[] {
+  const ranked = players.map((player) => {
+    const matches = playerMatchHistory[player.id] || [];
+    const cpiScore = calculateCPI(player, matches);
+    const formStatus = getFormStatus(matches, player.role);
+    return { ...player, cpiScore, formStatus };
+  });
+
+  ranked.sort((a, b) => b.cpiScore.overall - a.cpiScore.overall);
+
+  ranked.forEach((p, i) => {
+    p.cpiScore.nationalRank = i + 1;
+    p.cpiScore.rankChange = Math.floor(Math.random() * 7) - 3;
+  });
+
+  const stateGroups: Record<string, typeof ranked> = {};
+  ranked.forEach((p) => {
+    if (!stateGroups[p.state]) stateGroups[p.state] = [];
+    stateGroups[p.state].push(p);
+  });
+  Object.values(stateGroups).forEach((group) => {
+    group.forEach((p, i) => { p.cpiScore.stateRank = i + 1; });
+  });
+
+  return ranked;
+}
+
+export const performanceFeedItems: PerformanceFeedItem[] = [
+  { id: "pf1", playerId: "p8", playerName: "Rahul Desai", type: "top-score", title: "Massive Century!", description: "Rahul Desai smashed an unbeaten 142 off 95 balls against New York XI in the MLC Development League", value: "142*", date: "2026-02-12", state: "Illinois", league: "MLC Dev" },
+  { id: "pf2", playerId: "p5", playerName: "Sipho Ndlovu", type: "best-bowling", title: "6-Wicket Haul!", description: "Sipho Ndlovu took 6/31 with devastating pace bowling against Western Cape", value: "6/31", date: "2026-02-13", state: "Gauteng", league: "CSA Youth" },
+  { id: "pf3", playerId: "p15", playerName: "Tom Mitchell", type: "best-bowling", title: "Devastating Spell", description: "Tom Mitchell ripped through Canterbury with 6/22 in the NZC Youth T20", value: "6/22", date: "2026-02-13", state: "Auckland", league: "NZC Youth" },
+  { id: "pf4", playerId: "p4", playerName: "Kieron Baptiste", type: "fastest-innings", title: "Blitz Knock!", description: "Kieron Baptiste blasted 95 off just 68 balls with 8 sixes against Jamaica U19", value: "95 (68)", date: "2026-02-11", state: "Trinidad", league: "CWI U19" },
+  { id: "pf5", playerId: "p1", playerName: "Arjun Patel", type: "form-spike", title: "Form Spike Alert", description: "Arjun Patel has scored 87, 45, and 112 in his last 3 matches - now rated Red Hot", value: "Red Hot", date: "2026-02-10", state: "Gujarat", league: "State U17" },
+  { id: "pf17", playerId: "p1", playerName: "Arjun Patel", type: "top-score", title: "Match-Winning Century", description: "Arjun Patel scored a brilliant 112 off 78 balls to lead Gujarat U17 to victory against Maharashtra", value: "112", date: "2026-02-09", state: "Gujarat", league: "State U17" },
+  { id: "pf18", playerId: "p1", playerName: "Arjun Patel", type: "rank-movement", title: "Rank Up!", description: "Arjun Patel jumped 5 places in the U17 national CPI rankings after consistent performances", value: "+5", date: "2026-02-08", state: "Gujarat", league: "State U17" },
+  { id: "pf19", playerId: "p1", playerName: "Arjun Patel", type: "hot-prospect", title: "IPL Scouts Notice", description: "Arjun Patel's CPI of 82 and Red Hot form has attracted interest from 3 IPL franchises", value: "CPI 82", date: "2026-02-07", state: "Gujarat", league: "State U17" },
+  { id: "pf20", playerId: "p1", playerName: "Arjun Patel", type: "top-score", title: "Back-to-Back Fifties", description: "Arjun Patel continued his run with 87 off 62 balls against Rajasthan U17 in the zonal tournament", value: "87", date: "2026-02-05", state: "Gujarat", league: "State U17" },
+  { id: "pf21", playerId: "p1", playerName: "Arjun Patel", type: "fastest-innings", title: "Quick-Fire Knock", description: "Arjun Patel blasted 45 off just 22 balls in the powerplay against Karnataka U17", value: "45 (22)", date: "2026-02-03", state: "Gujarat", league: "State U17" },
+  { id: "pf22", playerId: "p1", playerName: "Arjun Patel", type: "rank-movement", title: "Into Top 10!", description: "Arjun Patel entered the national U17 top 10 CPI rankings for the first time", value: "+8", date: "2026-01-28", state: "Gujarat", league: "State U17" },
+  { id: "pf6", playerId: "p11", playerName: "Tamim Hossain", type: "best-bowling", title: "Chinaman Magic", description: "Tamim Hossain bamboozled Chittagong Division with unplayable 5/14", value: "5/14", date: "2026-02-09", state: "Dhaka Division", league: "BCB Youth" },
+  { id: "pf7", playerId: "p7", playerName: "Sunil Perera", type: "best-bowling", title: "Spin Masterclass", description: "Sunil Perera spun a web with 5/18 against Southern Province U17 in Galle", value: "5/18", date: "2026-02-10", state: "Western Province", league: "SLC U17" },
+  { id: "pf8", playerId: "p8", playerName: "Rahul Desai", type: "hot-prospect", title: "Hot Prospect Alert", description: "Rahul Desai averaging 80.4 in last 5 matches with 2 centuries. MLC franchise scouts taking notice", value: "CPI 88", date: "2026-02-12", state: "Illinois", league: "MLC Dev" },
+  { id: "pf9", playerId: "p2", playerName: "Jake Thompson", type: "rank-movement", title: "Rank Up!", description: "Jake Thompson moved up 3 spots in the national bowling rankings after 17 wickets in 5 matches", value: "+3", date: "2026-02-12", state: "New South Wales", league: "Shield Colts" },
+  { id: "pf10", playerId: "p10", playerName: "Ryan van der Berg", type: "form-spike", title: "All-Round Brilliance", description: "Ryan van der Berg scored 282 runs and took 12 wickets in his last 5 matches", value: "In Form", date: "2026-02-11", state: "Western Cape", league: "CSA Provincial" },
+  { id: "pf11", playerId: "p3", playerName: "Rashid Mohammed", type: "hot-prospect", title: "Hot Prospect", description: "Rashid Mohammed's all-round ability (221 runs + 12 wickets in 5 matches) catching PSL attention", value: "CPI 75", date: "2026-02-08", state: "Punjab", league: "PCB Youth" },
+  { id: "pf12", playerId: "p13", playerName: "Navjot Gill", type: "top-score", title: "Canadian Record!", description: "Navjot Gill hit 82 off 60 balls against Quebec XI in Cricket Canada League", value: "82", date: "2026-01-30", state: "Ontario", league: "Cricket Canada" },
+  { id: "pf13", playerId: "p14", playerName: "Mohammed Al-Rashid", type: "top-score", title: "UAE Star Shines", description: "Mohammed Al-Rashid scored a brilliant 92 off 65 balls against Abu Dhabi U17", value: "92", date: "2026-02-08", state: "Dubai", league: "Emirates Youth" },
+  { id: "pf14", playerId: "p16", playerName: "Ravi Kumar", type: "form-spike", title: "Chennai Express", description: "Left-arm quick Ravi Kumar took 4/12 in latest match, now with 16 wickets in last 5 games", value: "Steady", date: "2026-02-09", state: "Tamil Nadu", league: "TNCA U15" },
+  { id: "pf15", playerId: "p12", playerName: "Aarav Gupta", type: "top-score", title: "Delhi Delight", description: "Aarav Gupta hit 78 off 58 balls against UP U15 in the DDCA Championship", value: "78", date: "2026-02-10", state: "Delhi", league: "DDCA U15" },
+  { id: "pf16", playerId: "p6", playerName: "Oliver Hughes", type: "rank-movement", title: "Rising Through Ranks", description: "Oliver Hughes climbed 2 positions in the U15 national rankings after consistent performances", value: "+2", date: "2026-02-09", state: "Yorkshire", league: "ECB U15" },
+];
