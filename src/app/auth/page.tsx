@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 
 export default function AuthPage() {
@@ -80,6 +81,12 @@ export default function AuthPage() {
           </div>
         </form>
 
+        <p className="text-center text-sm text-slate-400 mt-4">
+          Don&apos;t have an account?{" "}
+          <Link href="/auth/register" className="text-emerald-400 hover:text-emerald-300 font-medium">
+            Create one
+          </Link>
+        </p>
       </div>
     </div>
   );
