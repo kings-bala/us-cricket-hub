@@ -1,131 +1,288 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { usePoseDetection } from "@/hooks/usePoseDetection";
+import {
+  analyzeFrame,
+  summarizeAnalysis,
+  type AnalysisSummary,
+  type FrameAnalysis,
+} from "@/lib/cricket-analysis";
+import {
+  saveAnalysis,
+  getHistory,
+  clearHistory,
+  type SavedAnalysis,
+} from "@/lib/analysis-history";
 
-type AnalysisType = "batting" | "bowling" | "fielding" | "general";
+type AnalysisType = "batting" | "bowling" | "fielding";
 
-interface AnalysisResult {
-  category: string;
-  score: number;
-  comment: string;
-  suggestion: string;
+function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const mockResults: Record<AnalysisType, AnalysisResult[]> = {
-  batting: [
-    { category: "Stance & Setup", score: 78, comment: "Good base position with balanced weight distribution.", suggestion: "Widen stance slightly for better stability against pace." },
-    { category: "Backlift", score: 72, comment: "Backlift is slightly angled towards gully region.", suggestion: "Try to bring the bat straighter to improve timing on drives." },
-    { category: "Footwork", score: 65, comment: "Limited front foot movement detected.", suggestion: "Practice getting to the pitch of the ball with longer strides." },
-    { category: "Follow Through", score: 81, comment: "Excellent follow-through on attacking shots.", suggestion: "Maintain this technique consistently across all shot types." },
-    { category: "Shot Selection", score: 70, comment: "Good range of shots but tendency to play across the line.", suggestion: "Work on playing straighter to balls on off-stump." },
-  ],
-  bowling: [
-    { category: "Run-up", score: 75, comment: "Consistent run-up rhythm detected.", suggestion: "Consider adding 2 steps for extra momentum." },
-    { category: "Bowling Action", score: 82, comment: "Clean action with good arm speed.", suggestion: "Focus on maintaining front arm position longer for accuracy." },
-    { category: "Release Point", score: 68, comment: "Release point varies slightly between deliveries.", suggestion: "Practice releasing at the same point to improve consistency." },
-    { category: "Follow Through", score: 77, comment: "Good follow-through direction.", suggestion: "Ensure complete follow-through to prevent injury." },
-    { category: "Seam Position", score: 71, comment: "Seam wobble detected on some deliveries.", suggestion: "Focus on wrist position at release for better seam presentation." },
-  ],
-  fielding: [
-    { category: "Ground Fielding", score: 80, comment: "Quick pickup and clean collection.", suggestion: "Get lower to the ball for better handling on rough surfaces." },
-    { category: "Throwing Accuracy", score: 73, comment: "Good arm strength but accuracy varies.", suggestion: "Practice target throws from different angles and distances." },
-    { category: "Catching", score: 76, comment: "Soft hands technique detected.", suggestion: "Work on high catches with the sun in your eyes." },
-    { category: "Agility", score: 69, comment: "Lateral movement could be improved.", suggestion: "Add ladder drills and cone exercises to training." },
-  ],
-  general: [
-    { category: "Overall Technique", score: 74, comment: "Solid fundamentals across disciplines.", suggestion: "Focus on your strongest area to specialize further." },
-    { category: "Fitness Level", score: 70, comment: "Good base fitness detected from movement patterns.", suggestion: "Increase cardio and core strength training." },
-    { category: "Game Awareness", score: 72, comment: "Shows good decision-making in clips.", suggestion: "Study match situations to improve tactical awareness." },
-  ],
-};
+function scoreFromAngleDisplay(
+  actual: number,
+  ideal: number,
+  tolerance: number
+): number {
+  const diff = Math.abs(actual - ideal);
+  if (diff <= tolerance) return 90;
+  if (diff <= tolerance * 2) return 70;
+  return 50;
+}
 
 export default function AnalyzePage() {
   const [analysisType, setAnalysisType] = useState<AnalysisType>("batting");
-  const [uploaded, setUploaded] = useState(false);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [results, setResults] = useState<AnalysisResult[] | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [summary, setSummary] = useState<AnalysisSummary | null>(null);
+  const [frameResults, setFrameResults] = useState<FrameAnalysis[]>([]);
+  const [showOverlay, setShowOverlay] = useState(true);
+  const [activeTab, setActiveTab] = useState<"results" | "history">("results");
+  const [history, setHistory] = useState<SavedAnalysis[]>([]);
+  const [selectedKeyFrame, setSelectedKeyFrame] = useState<number | null>(null);
 
-  const handleAnalyze = () => {
-    setAnalyzing(true);
-    setResults(null);
-    setTimeout(() => {
-      setAnalyzing(false);
-      setResults(mockResults[analysisType]);
-    }, 2000);
-  };
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = () => {
-    setUploaded(true);
-    setResults(null);
-  };
+  const {
+    isLoading: modelLoading,
+    isProcessing,
+    progress,
+    error: poseError,
+    processVideo,
+    drawLandmarks,
+  } = usePoseDetection();
 
-  const overallScore = results ? Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length) : 0;
+  const [historyLoaded, setHistoryLoaded] = useState(false);
+
+  if (!historyLoaded) {
+    if (typeof window !== "undefined") {
+      setHistory(getHistory());
+    }
+    setHistoryLoaded(true);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+    };
+  }, [videoUrl]);
+
+  const handleFileSelect = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+
+      setVideoFile(file);
+      setVideoUrl(URL.createObjectURL(file));
+      setSummary(null);
+      setFrameResults([]);
+      setSelectedKeyFrame(null);
+    },
+    [videoUrl]
+  );
+
+  const handleAnalyze = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current || !videoFile) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+
+    const poseFrames = await processVideo(video, canvas, 3);
+
+    if (poseFrames.length === 0) return;
+
+    const analyzed = poseFrames.map((f) =>
+      analyzeFrame(f.landmarks, analysisType, f.timestamp)
+    );
+    setFrameResults(analyzed);
+
+    const result = summarizeAnalysis(analyzed, analysisType);
+    setSummary(result);
+
+    const saved = saveAnalysis(videoFile.name, result);
+    setHistory((prev) => [saved, ...prev]);
+    setActiveTab("results");
+  }, [videoFile, analysisType, processVideo]);
+
+  const handleSeekToFrame = useCallback((timestamp: number) => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = timestamp;
+    setSelectedKeyFrame(timestamp);
+  }, []);
+
+  const handleVideoTimeUpdate = useCallback(() => {
+    if (!showOverlay || !overlayCanvasRef.current || !videoRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = overlayCanvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = video.clientWidth;
+    canvas.height = video.clientHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (frameResults.length === 0) return;
+
+    const currentTime = video.currentTime;
+    let closest = frameResults[0];
+    let minDiff = Math.abs(currentTime - closest.timestamp);
+
+    for (const frame of frameResults) {
+      const diff = Math.abs(currentTime - frame.timestamp);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = frame;
+      }
+    }
+
+    if (minDiff < 0.5) {
+      drawLandmarks(ctx, closest.landmarks, canvas.width, canvas.height);
+    }
+  }, [showOverlay, frameResults, drawLandmarks]);
+
+  const handleClearHistory = useCallback(() => {
+    clearHistory();
+    setHistory([]);
+  }, []);
+
+  const scoreColor = (score: number) =>
+    score >= 75
+      ? "text-emerald-400"
+      : score >= 60
+        ? "text-amber-400"
+        : "text-red-400";
+
+  const scoreBg = (score: number) =>
+    score >= 75
+      ? "bg-emerald-500"
+      : score >= 60
+        ? "bg-amber-500"
+        : "bg-red-500";
+
+  const scoreBgLight = (score: number) =>
+    score >= 75
+      ? "bg-emerald-500/20 border-emerald-500/30"
+      : score >= 60
+        ? "bg-amber-500/20 border-amber-500/30"
+        : "bg-red-500/20 border-red-500/30";
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">AI Video Analysis</h1>
-          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">AI-Powered</span>
+          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">
+            AI-Powered
+          </span>
+          <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">
+            In-Browser
+          </span>
         </div>
         <p className="text-slate-400">
-          Upload your cricket videos and get instant AI-powered technique analysis with personalized feedback
+          Upload your cricket videos and get instant AI-powered technique
+          analysis with personalized feedback. All processing runs in your
+          browser &mdash; no data leaves your device.
         </p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Upload Video</h2>
+            <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">
+              Upload Video
+            </h2>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/mp4,video/quicktime,video/webm,video/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
             <div
-              onClick={handleUpload}
+              onClick={() => fileInputRef.current?.click()}
               className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-500/50 transition-colors"
             >
-              {uploaded ? (
+              {videoFile ? (
                 <div>
                   <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-6 h-6 text-emerald-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   </div>
-                  <p className="text-sm text-emerald-400 font-medium">Video uploaded</p>
-                  <p className="text-xs text-slate-500 mt-1">cricket_practice.mp4 (24.5 MB)</p>
+                  <p className="text-sm text-emerald-400 font-medium">
+                    Video selected
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {videoFile.name} ({(videoFile.size / (1024 * 1024)).toFixed(1)} MB)
+                  </p>
+                  <p className="text-xs text-slate-600 mt-1">Click to change</p>
                 </div>
               ) : (
                 <div>
                   <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    <svg
+                      className="w-6 h-6 text-slate-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                      />
                     </svg>
                   </div>
                   <p className="text-sm text-slate-300">Click to upload video</p>
-                  <p className="text-xs text-slate-500 mt-1">MP4, MOV up to 500MB</p>
+                  <p className="text-xs text-slate-500 mt-1">MP4, MOV, WebM supported</p>
                 </div>
               )}
             </div>
           </div>
 
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Analysis Type</h2>
+            <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">
+              Analysis Type
+            </h2>
             <div className="space-y-2">
               {([
-                { value: "batting" as AnalysisType, label: "Batting Technique", icon: "🏏" },
-                { value: "bowling" as AnalysisType, label: "Bowling Action", icon: "🎯" },
-                { value: "fielding" as AnalysisType, label: "Fielding Skills", icon: "🧤" },
-                { value: "general" as AnalysisType, label: "General Assessment", icon: "📊" },
+                { value: "batting" as AnalysisType, label: "Batting Technique", desc: "Stance, backlift, head position, footwork" },
+                { value: "bowling" as AnalysisType, label: "Bowling Action", desc: "Arm action, front arm, hip rotation, brace" },
+                { value: "fielding" as AnalysisType, label: "Fielding Skills", desc: "Ground fielding, throwing, agility" },
               ]).map((type) => (
                 <button
                   key={type.value}
-                  onClick={() => { setAnalysisType(type.value); setResults(null); }}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                  onClick={() => { setAnalysisType(type.value); setSummary(null); setFrameResults([]); }}
+                  className={`w-full flex flex-col p-3 rounded-lg border text-left transition-all ${
                     analysisType === type.value
                       ? "border-emerald-500 bg-emerald-500/10"
                       : "border-slate-700 hover:border-slate-600"
                   }`}
                 >
-                  <span className="text-lg">{type.icon}</span>
                   <span className="text-sm text-white font-medium">{type.label}</span>
+                  <span className="text-xs text-slate-500 mt-0.5">{type.desc}</span>
                 </button>
               ))}
             </div>
@@ -133,84 +290,275 @@ export default function AnalyzePage() {
 
           <button
             onClick={handleAnalyze}
-            disabled={!uploaded || analyzing}
+            disabled={!videoFile || isProcessing || modelLoading}
             className={`w-full py-3 rounded-xl font-semibold transition-colors ${
-              uploaded && !analyzing
+              videoFile && !isProcessing && !modelLoading
                 ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                 : "bg-slate-700 text-slate-500 cursor-not-allowed"
             }`}
           >
-            {analyzing ? "Analyzing..." : "Analyze Video"}
+            {modelLoading
+              ? "Loading AI Model..."
+              : isProcessing
+                ? `Analyzing... ${progress}%`
+                : "Analyze Video"}
           </button>
-        </div>
 
-        <div className="lg:col-span-2 space-y-6">
-          {analyzing && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
-              <div className="w-16 h-16 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
-              <p className="text-white font-medium">Analyzing your {analysisType} video...</p>
-              <p className="text-sm text-slate-400 mt-1">Our AI is reviewing frame by frame</p>
+          {poseError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+              <p className="text-xs text-red-400">{poseError}</p>
             </div>
           )}
 
-          {results && (
+          {summary && frameResults.length > 0 && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showOverlay}
+                  onChange={(e) => setShowOverlay(e.target.checked)}
+                  className="rounded border-slate-600 bg-slate-700 text-emerald-500"
+                />
+                <span className="text-sm text-slate-300">Show pose skeleton overlay</span>
+              </label>
+            </div>
+          )}
+        </div>
+
+        <div className="lg:col-span-2 space-y-6">
+          {videoUrl && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+              <div className="relative">
+                <video
+                  ref={videoRef}
+                  src={videoUrl}
+                  controls
+                  onTimeUpdate={handleVideoTimeUpdate}
+                  className="w-full"
+                  playsInline
+                />
+                <canvas
+                  ref={overlayCanvasRef}
+                  className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                />
+              </div>
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
+          )}
+
+          {isProcessing && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+              <div className="w-16 h-16 relative mx-auto mb-4">
+                <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#334155" strokeWidth="4" />
+                  <circle cx="32" cy="32" r="28" fill="none" stroke="#10B981" strokeWidth="4" strokeDasharray={`${progress * 1.76} 176`} strokeLinecap="round" />
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-emerald-400">
+                  {progress}%
+                </span>
+              </div>
+              <p className="text-white font-medium">Analyzing your {analysisType} technique...</p>
+              <p className="text-sm text-slate-400 mt-1">AI is detecting body pose frame by frame</p>
+            </div>
+          )}
+
+          {summary && (
             <>
-              <div className="bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border border-emerald-500/20 rounded-xl p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">Overall Score</h2>
-                    <p className="text-sm text-slate-400">Based on AI analysis of your {analysisType} technique</p>
-                  </div>
-                  <div className="text-center">
-                    <p className={`text-4xl font-bold ${overallScore >= 75 ? "text-emerald-400" : overallScore >= 60 ? "text-amber-400" : "text-red-400"}`}>
-                      {overallScore}
-                    </p>
-                    <p className="text-xs text-slate-400">/ 100</p>
-                  </div>
-                </div>
+              <div className="flex gap-2 border-b border-slate-700/50">
+                <button
+                  onClick={() => setActiveTab("results")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === "results"
+                      ? "border-emerald-500 text-emerald-400"
+                      : "border-transparent text-slate-400 hover:text-white"
+                  }`}
+                >
+                  Analysis Results
+                </button>
+                <button
+                  onClick={() => setActiveTab("history")}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === "history"
+                      ? "border-emerald-500 text-emerald-400"
+                      : "border-transparent text-slate-400 hover:text-white"
+                  }`}
+                >
+                  History ({history.length})
+                </button>
               </div>
 
-              <div className="space-y-4">
-                {results.map((result, i) => (
-                  <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-white">{result.category}</h3>
-                      <span className={`text-sm font-bold ${result.score >= 75 ? "text-emerald-400" : result.score >= 60 ? "text-amber-400" : "text-red-400"}`}>
-                        {result.score}/100
-                      </span>
-                    </div>
-                    <div className="w-full bg-slate-700 rounded-full h-2 mb-3">
-                      <div
-                        className={`h-2 rounded-full ${result.score >= 75 ? "bg-emerald-500" : result.score >= 60 ? "bg-amber-500" : "bg-red-500"}`}
-                        style={{ width: `${result.score}%` }}
-                      />
-                    </div>
-                    <p className="text-sm text-slate-300 mb-2">{result.comment}</p>
-                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                      <p className="text-xs text-blue-400 font-medium mb-1">AI Suggestion</p>
-                      <p className="text-sm text-slate-300">{result.suggestion}</p>
+              {activeTab === "results" && (
+                <>
+                  <div className="bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border border-emerald-500/20 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-lg font-semibold text-white">Overall Score</h2>
+                        <p className="text-sm text-slate-400">
+                          Based on AI pose analysis of {frameResults.length} frames from your {analysisType} video
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-4xl font-bold ${scoreColor(summary.overallScore)}`}>
+                          {summary.overallScore}
+                        </p>
+                        <p className="text-xs text-slate-400">/ 100</p>
+                      </div>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-                <h3 className="text-sm font-semibold text-white mb-3">Next Steps</h3>
-                <div className="grid md:grid-cols-2 gap-3">
-                  <Link href="/coaches" className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 hover:border-emerald-500/40 transition-colors">
-                    <p className="text-sm font-medium text-emerald-400">Find a Coach</p>
-                    <p className="text-xs text-slate-400 mt-1">Connect with coaches who specialize in {analysisType}</p>
-                  </Link>
-                  <Link href="/players" className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 hover:border-blue-500/40 transition-colors">
-                    <p className="text-sm font-medium text-blue-400">Create Player Profile</p>
-                    <p className="text-xs text-slate-400 mt-1">Add this analysis to your scouting profile</p>
-                  </Link>
+                  <div className="space-y-4">
+                    {summary.categories.map((result, i) => (
+                      <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-white">{result.category}</h3>
+                          <span className={`text-sm font-bold ${scoreColor(result.score)}`}>
+                            {result.score}/100
+                          </span>
+                        </div>
+                        <div className="w-full bg-slate-700 rounded-full h-2 mb-3">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 ${scoreBg(result.score)}`}
+                            style={{ width: `${result.score}%` }}
+                          />
+                        </div>
+                        <p className="text-sm text-slate-300 mb-2">{result.comment}</p>
+
+                        {result.angles.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-3">
+                            {result.angles.map((angle, j) => (
+                              <span
+                                key={j}
+                                className={`text-xs px-2 py-1 rounded-full border ${scoreBgLight(scoreFromAngleDisplay(angle.angle, angle.ideal, angle.tolerance))}`}
+                              >
+                                {angle.name}: {angle.angle}
+                                {typeof angle.ideal === "number" && angle.ideal > 10 ? "\u00B0" : ""}{" "}
+                                (ideal: {angle.ideal}
+                                {typeof angle.ideal === "number" && angle.ideal > 10 ? "\u00B0" : ""})
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                          <p className="text-xs text-blue-400 font-medium mb-1">AI Suggestion</p>
+                          <p className="text-sm text-slate-300">{result.suggestion}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {summary.keyFrames.length > 0 && (
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-white mb-3">Key Moments to Review</h3>
+                      <div className="space-y-2">
+                        {summary.keyFrames.map((kf, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleSeekToFrame(kf.timestamp)}
+                            className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                              selectedKeyFrame === kf.timestamp
+                                ? "border-emerald-500 bg-emerald-500/10"
+                                : "border-slate-700 hover:border-slate-600"
+                            }`}
+                          >
+                            <span className="text-xs text-slate-400 font-mono w-12 shrink-0">
+                              {formatTime(kf.timestamp)}
+                            </span>
+                            <span className="text-sm text-slate-300 flex-1">{kf.issue}</span>
+                            <span className={`text-xs font-bold ${scoreColor(kf.score)}`}>
+                              {kf.score}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-3">
+                        Click a moment to jump to that point in the video
+                      </p>
+                    </div>
+                  )}
+
+                  {summary.drills.length > 0 && (
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-white mb-3">Recommended Drills</h3>
+                      <div className="space-y-2">
+                        {summary.drills.map((drill, i) => (
+                          <div
+                            key={i}
+                            className="flex items-start gap-3 p-3 bg-amber-500/5 border border-amber-500/10 rounded-lg"
+                          >
+                            <span className="text-amber-400 text-sm mt-0.5">{i + 1}.</span>
+                            <p className="text-sm text-slate-300">{drill}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-white mb-3">Next Steps</h3>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <Link href="/coaches" className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 hover:border-emerald-500/40 transition-colors">
+                        <p className="text-sm font-medium text-emerald-400">Find a Coach</p>
+                        <p className="text-xs text-slate-400 mt-1">Connect with coaches who specialize in {analysisType}</p>
+                      </Link>
+                      <Link href="/players" className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 hover:border-blue-500/40 transition-colors">
+                        <p className="text-sm font-medium text-blue-400">Create Player Profile</p>
+                        <p className="text-xs text-slate-400 mt-1">Add this analysis to your scouting profile</p>
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeTab === "history" && (
+                <div className="space-y-4">
+                  {history.length === 0 ? (
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                      <p className="text-slate-400">No analysis history yet</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-end">
+                        <button
+                          onClick={handleClearHistory}
+                          className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          Clear History
+                        </button>
+                      </div>
+                      {history.map((entry) => (
+                        <div key={entry.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <p className="text-sm font-medium text-white">{entry.fileName}</p>
+                              <p className="text-xs text-slate-500">
+                                {new Date(entry.date).toLocaleDateString()} &mdash; {entry.summary.type} analysis
+                              </p>
+                            </div>
+                            <span className={`text-2xl font-bold ${scoreColor(entry.summary.overallScore)}`}>
+                              {entry.summary.overallScore}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {entry.summary.categories.map((cat, i) => (
+                              <span
+                                key={i}
+                                className={`text-xs px-2 py-1 rounded-full border ${scoreBgLight(cat.score)}`}
+                              >
+                                {cat.category}: {cat.score}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
                 </div>
-              </div>
+              )}
             </>
           )}
 
-          {!analyzing && !results && (
+          {!isProcessing && !summary && !videoUrl && (
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
               <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -218,13 +566,33 @@ export default function AnalyzePage() {
                 </svg>
               </div>
               <p className="text-slate-400 font-medium">Upload a video to get started</p>
-              <p className="text-sm text-slate-500 mt-1">Our AI will analyze your cricket technique and provide detailed feedback</p>
+              <p className="text-sm text-slate-500 mt-1">
+                Our AI will detect your body pose and analyze your cricket technique
+              </p>
               <div className="flex flex-wrap gap-2 justify-center mt-4">
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Batting stance</span>
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Bowling action</span>
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Fielding skills</span>
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Shot selection</span>
+                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Pose detection</span>
+                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Joint angle analysis</span>
+                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Technique scoring</span>
+                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Drill recommendations</span>
               </div>
+              <div className="mt-6 p-4 bg-blue-500/5 border border-blue-500/10 rounded-lg max-w-md mx-auto">
+                <p className="text-xs text-blue-400 font-medium mb-1">How it works</p>
+                <p className="text-xs text-slate-400">
+                  1. Upload a video of batting, bowling, or fielding<br />
+                  2. AI detects 33 body landmarks using MediaPipe Pose<br />
+                  3. Joint angles are measured and compared to ideal technique<br />
+                  4. Get scores, specific feedback, and drill recommendations
+                </p>
+              </div>
+            </div>
+          )}
+
+          {!isProcessing && !summary && videoUrl && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+              <p className="text-slate-400 font-medium">
+                Video loaded! Select analysis type and click &quot;Analyze Video&quot;
+              </p>
+              <p className="text-sm text-slate-500 mt-1">The AI will process your video frame by frame</p>
             </div>
           )}
         </div>
