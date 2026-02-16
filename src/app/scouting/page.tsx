@@ -2,12 +2,11 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { players, t20Teams, t20Leagues, regionColors, roleIcons, leagueBrandColors } from "@/data/mock";
-import { AgeGroup, PlayerRole, BowlingStyle } from "@/types";
+import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
+import { AgeGroup, Region, PlayerRole, BowlingStyle } from "@/types";
 
 export default function ScoutingPage() {
-  const [country, setCountry] = useState<string>("All");
+  const [region, setRegion] = useState<Region | "All">("All");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [bowlingStyle, setBowlingStyle] = useState<BowlingStyle | "All">("All");
@@ -20,7 +19,7 @@ export default function ScoutingPage() {
   const filtered = useMemo(() => {
     let result = players.filter((p) => p.verified);
 
-    if (country !== "All") result = result.filter((p) => p.country === country);
+    if (region !== "All") result = result.filter((p) => p.region === region);
     if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
     if (role !== "All") result = result.filter((p) => p.role === role);
     if (bowlingStyle !== "All") result = result.filter((p) => p.bowlingStyle === bowlingStyle);
@@ -31,12 +30,7 @@ export default function ScoutingPage() {
     if (draftReady) result = result.filter((p) => p.ageGroup === "U19" || p.ageGroup === "U21");
 
     return result;
-  }, [country, ageGroup, role, bowlingStyle, maxEconomy, minRuns, minWickets, minBowlingSpeed, draftReady]);
-
-  const countries = useMemo(() => {
-    const set = new Set(players.filter((p) => p.verified).map((p) => p.country));
-    return Array.from(set).sort();
-  }, []);
+  }, [region, ageGroup, role, bowlingStyle, maxEconomy, minRuns, minWickets, minBowlingSpeed, draftReady]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -51,72 +45,48 @@ export default function ScoutingPage() {
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto pb-3 mb-6 scrollbar-hide">
-        {t20Leagues.map((league) => {
-          return (
-            <div key={league.id} className="flex-shrink-0">
-              <div className={`relative rounded-xl overflow-hidden h-20 w-32 cursor-pointer group`}>
-                <Image src={league.bgImage} alt={league.name} fill className="object-cover transition-transform duration-300 group-hover:scale-110" sizes="128px" />
-                <div className={`absolute inset-0 bg-gradient-to-t ${league.brandColor} opacity-80`} />
-                <div className="absolute inset-0 flex flex-col justify-center items-center p-2 text-center">
-                  {league.logo ? (
-                    <Image src={league.logo} alt={league.name} width={36} height={36} className="object-contain drop-shadow-lg mb-1" unoptimized />
-                  ) : (
-                    <p className="text-sm font-extrabold text-white drop-shadow-lg">{league.id}</p>
-                  )}
-                  <p className="text-[10px] text-white/70">{league.teams} teams</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
       <div className="grid lg:grid-cols-4 gap-4 mb-6">
-        {t20Teams.slice(0, 4).map((team) => {
-          const colors = leagueBrandColors[team.league] || { gradient: "from-purple-500 to-blue-500", bg: "bg-slate-500/20", text: "text-slate-400" };
-          return (
-            <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
-              <div className="flex items-center gap-3 mb-2">
-                {team.logo ? (
-                  <Image src={team.logo} alt={team.name} width={40} height={40} className="w-10 h-10 object-contain" unoptimized />
-                ) : (
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-white font-bold text-sm`}>
-                    {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm font-semibold text-white">{team.name}</p>
-                  <p className="text-xs text-slate-400">{team.city} <span className={`${colors.text} font-medium`}>{team.league}</span></p>
-                </div>
+        {t20Teams.slice(0, 4).map((team) => (
+          <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
               </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-400">Local Quota</span>
-                <span className={`font-semibold ${team.localFilled >= team.localQuota ? "text-emerald-400" : "text-amber-400"}`}>
-                  {team.localFilled}/{team.localQuota}
-                </span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-1.5 mt-1">
-                <div
-                  className={`h-1.5 rounded-full ${team.localFilled >= team.localQuota ? "bg-emerald-500" : "bg-amber-500"}`}
-                  style={{ width: `${(team.localFilled / team.localQuota) * 100}%` }}
-                />
+              <div>
+                <p className="text-sm font-semibold text-white">{team.name}</p>
+                <p className="text-xs text-slate-400">{team.city} &middot; {team.league}</p>
               </div>
             </div>
-          );
-        })}
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Local Quota</span>
+              <span className={`font-semibold ${team.localFilled >= team.localQuota ? "text-emerald-400" : "text-amber-400"}`}>
+                {team.localFilled}/{team.localQuota}
+              </span>
+            </div>
+            <div className="w-full bg-slate-700 rounded-full h-1.5 mt-1">
+              <div
+                className={`h-1.5 rounded-full ${team.localFilled >= team.localQuota ? "bg-emerald-500" : "bg-amber-500"}`}
+                style={{ width: `${(team.localFilled / team.localQuota) * 100}%` }}
+              />
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 mb-6">
         <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Advanced Filters</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           <div>
-            <label className="text-xs text-slate-400 block mb-1">Country</label>
-            <select value={country} onChange={(e) => setCountry(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
-              <option value="All">All Countries</option>
-              {countries.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
+            <label className="text-xs text-slate-400 block mb-1">Region</label>
+            <select value={region} onChange={(e) => setRegion(e.target.value as Region | "All")} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="All">All Regions</option>
+              <option value="South Asia">South Asia</option>
+              <option value="Oceania">Oceania</option>
+              <option value="Europe">Europe</option>
+              <option value="Caribbean">Caribbean</option>
+              <option value="Africa">Africa</option>
+              <option value="Americas">Americas</option>
+              <option value="Middle East">Middle East</option>
             </select>
           </div>
           <div>
@@ -178,7 +148,7 @@ export default function ScoutingPage() {
         </div>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-sm text-slate-500">{filtered.length} players match your criteria</span>
-          <button onClick={() => { setCountry("All"); setAgeGroup("All"); setRole("All"); setBowlingStyle("All"); setMaxEconomy(10); setMinRuns(0); setMinWickets(0); setMinBowlingSpeed(0); setDraftReady(false); }} className="text-xs text-emerald-400 hover:text-emerald-300">
+          <button onClick={() => { setRegion("All"); setAgeGroup("All"); setRole("All"); setBowlingStyle("All"); setMaxEconomy(10); setMinRuns(0); setMinWickets(0); setMinBowlingSpeed(0); setDraftReady(false); }} className="text-xs text-emerald-400 hover:text-emerald-300">
             Reset Filters
           </button>
         </div>
@@ -210,13 +180,9 @@ export default function ScoutingPage() {
                   <td className="px-4 py-3 text-slate-500">{i + 1}</td>
                   <td className="px-4 py-3">
                     <Link href={`/players/${p.id}`} className="flex items-center gap-2 hover:text-emerald-400 transition-colors">
-                      {p.avatar ? (
-                        <Image src={p.avatar} alt={p.name} width={32} height={32} className="w-8 h-8 rounded-full object-cover shrink-0" />
-                      ) : (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                          {p.name.split(" ").map((n) => n[0]).join("")}
-                        </div>
-                      )}
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                        {p.name.split(" ").map((n) => n[0]).join("")}
+                      </div>
                       <div>
                         <p className="font-medium text-white">{p.name}</p>
                         <p className="text-xs text-slate-500">{p.city}, {p.country}</p>
