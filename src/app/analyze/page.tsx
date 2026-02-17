@@ -196,7 +196,13 @@ export default function AnalyzePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-3"><Link href="/players?tab=ai" className="text-sm text-slate-400 hover:text-white">&larr; Back to Full Track AI</Link></div>
+      <div className="mb-3 flex items-center justify-between">
+        <Link href="/players?tab=ai" className="text-sm text-slate-400 hover:text-white">&larr; Back to Full Track AI</Link>
+        <Link href="/analyze/live" className="flex items-center gap-2 text-sm bg-red-500/10 text-red-400 px-4 py-2 rounded-full border border-red-500/30 hover:bg-red-500/20 transition-colors">
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+          Live Camera Analysis
+        </Link>
+      </div>
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">AI Video Analysis</h1>
