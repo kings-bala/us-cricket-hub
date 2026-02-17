@@ -143,6 +143,10 @@ export default function RegisterPage() {
   const [showPasteModal, setShowPasteModal] = useState(false);
   const [pasteText, setPasteText] = useState("");
   const [statsImported, setStatsImported] = useState(false);
+  const [pasteSource, setPasteSource] = useState<"cricclubs" | "cricheroes">("cricclubs");
+  const [llmParsing, setLlmParsing] = useState(false);
+  const [heroesStatus, setHeroesStatus] = useState<"idle" | "success">("idle");
+  const [heroesMessage, setHeroesMessage] = useState("");
 
   const applyStats = (data: Record<string, string>) => {
     setCric((prev) => ({
@@ -197,8 +201,35 @@ export default function RegisterPage() {
     }
   };
 
-  const handlePasteImport = () => {
+  const handlePasteImport = async () => {
     if (!pasteText.trim()) return;
+    setLlmParsing(true);
+    try {
+      const res = await fetch("/api/parse-stats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: pasteText, source: pasteSource }),
+      });
+      const data = await res.json();
+      if (data.stats) {
+        applyStats(data.stats as Record<string, string>);
+        if (data.stats.playerName && !basic.fullName.trim()) {
+          setBasic((prev) => ({ ...prev, fullName: data.stats.playerName }));
+        }
+        setShowPasteModal(false);
+        setPasteText("");
+        if (pasteSource === "cricheroes") {
+          setHeroesStatus("success");
+          setHeroesMessage("Stats imported via AI!");
+        } else {
+          setFetchStatus("success");
+          setFetchMessage("Stats imported via AI!");
+        }
+        setLlmParsing(false);
+        return;
+      }
+    } catch { /* fall through to regex */ }
+
     const stats = parseCricClubsText(pasteText);
     const meta = parseUrlMeta(cric.cricClubsUrl);
     if (meta.league && !stats.league) {
@@ -207,8 +238,14 @@ export default function RegisterPage() {
     applyStats(stats as Record<string, string>);
     setShowPasteModal(false);
     setPasteText("");
-    setFetchStatus("success");
-    setFetchMessage("Stats imported from pasted data!");
+    if (pasteSource === "cricheroes") {
+      setHeroesStatus("success");
+      setHeroesMessage("Stats imported from pasted data!");
+    } else {
+      setFetchStatus("success");
+      setFetchMessage("Stats imported from pasted data!");
+    }
+    setLlmParsing(false);
   };
 
   const validateStep = (s: Step): string[] => {
@@ -618,7 +655,7 @@ export default function RegisterPage() {
                         )}
                         {fetchMessage}
                         {fetchStatus === "paste" && (
-                          <button type="button" onClick={() => setShowPasteModal(true)} className="underline ml-1 text-orange-400 hover:text-orange-300">
+                          <button type="button" onClick={() => { setPasteSource("cricclubs"); setShowPasteModal(true); }} className="underline ml-1 text-orange-400 hover:text-orange-300">
                             Paste Stats
                           </button>
                         )}
@@ -661,17 +698,37 @@ export default function RegisterPage() {
                   </span>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="md:col-span-2">
                     <label className={labelClass}>CricHeroes Profile URL</label>
-                    <input
-                      type="url"
-                      placeholder="https://cricheroes.com/player/..."
-                      value={cric.cricHeroesUrl}
-                      onChange={(e) =>
-                        setCric({ ...cric, cricHeroesUrl: e.target.value })
-                      }
-                      className={inputClass}
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://cricheroes.com/player/..."
+                        value={cric.cricHeroesUrl}
+                        onChange={(e) => {
+                          setCric({ ...cric, cricHeroesUrl: e.target.value });
+                          setHeroesStatus("idle");
+                        }}
+                        className={inputClass + " flex-1"}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setPasteSource("cricheroes"); setShowPasteModal(true); }}
+                        className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                      >
+                        Paste Stats
+                      </button>
+                    </div>
+                    {heroesMessage && (
+                      <div className={`mt-2 text-xs flex items-center gap-1.5 ${
+                        heroesStatus === "success" ? "text-emerald-400" : "text-slate-400"
+                      }`}>
+                        {heroesStatus === "success" && (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        )}
+                        {heroesMessage}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className={labelClass}>CricHeroes Player ID</label>
@@ -1200,7 +1257,7 @@ export default function RegisterPage() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Import Stats from CricClubs</h3>
+              <h3 className="text-lg font-semibold text-white">Import Stats from {pasteSource === "cricheroes" ? "CricHeroes" : "CricClubs"}</h3>
               <button
                 type="button"
                 onClick={() => { setShowPasteModal(false); setPasteText(""); }}
@@ -1213,7 +1270,7 @@ export default function RegisterPage() {
             <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
               <p className="text-xs text-amber-400 font-medium mb-1">How to import your stats:</p>
               <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
-                <li>Open your CricClubs profile page in a new tab</li>
+                <li>Open your {pasteSource === "cricheroes" ? "CricHeroes" : "CricClubs"} profile page in a new tab</li>
                 <li>Select all text on the page (Ctrl+A / Cmd+A)</li>
                 <li>Copy the text (Ctrl+C / Cmd+C)</li>
                 <li>Paste it in the box below (Ctrl+V / Cmd+V)</li>
@@ -1223,7 +1280,7 @@ export default function RegisterPage() {
             <textarea
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
-              placeholder={"Paste your CricClubs page text here...\n\nExample:\nBatting\nMat  Inn  NO  Runs  HS  Avg  SR  100  50\n18   16   2   342   78  24.43  122.14  0  3\n\nBowling\nMat  Inn  Ov  Runs  Wkts  Avg  Econ\n18   15   48  324   12    27.00  6.75"}
+              placeholder={pasteSource === "cricheroes" ? "Paste your CricHeroes page text here...\n\nThe AI will automatically extract your stats." : "Paste your CricClubs page text here...\n\nThe AI will automatically extract your stats."}
               className="w-full h-48 bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors resize-none font-mono"
             />
 
@@ -1238,10 +1295,10 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={handlePasteImport}
-                disabled={!pasteText.trim()}
+                disabled={!pasteText.trim() || llmParsing}
                 className="px-5 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors"
               >
-                Import Stats
+                {llmParsing ? "AI Parsing..." : "Import Stats"}
               </button>
             </div>
           </div>
