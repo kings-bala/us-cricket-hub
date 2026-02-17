@@ -43,10 +43,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (email: string, password: string): string | null => {
     const account = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
-    if (!account) return "Invalid email or password";
-    setUser(account.user);
-    localStorage.setItem(AUTH_KEY, JSON.stringify(account.user));
-    return null;
+    if (account) {
+      setUser(account.user);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(account.user));
+      return null;
+    }
+    try {
+      const profiles = JSON.parse(localStorage.getItem("cricverse_profiles") || "[]");
+      const registered = profiles.find(
+        (p: { basic: { email: string; password: string } }) =>
+          p.basic.email.toLowerCase() === email.toLowerCase() && p.basic.password === password
+      );
+      if (registered) {
+        const u: AuthUser = {
+          email: registered.basic.email,
+          name: registered.basic.fullName,
+          role: "player",
+          playerId: `reg_${Date.now()}`,
+        };
+        setUser(u);
+        localStorage.setItem(AUTH_KEY, JSON.stringify(u));
+        return null;
+      }
+    } catch {}
+    return "Invalid email or password";
   };
 
   const logout = () => {
