@@ -21,73 +21,99 @@ function clean(val: string): string {
   return val.replace(/[^0-9./\-*]/g, "").trim();
 }
 
-function isNumeric(s: string): boolean {
-  return /^[0-9]+(\.[0-9]+)?[*]?$/.test(s.trim());
-}
-
-function splitColumns(line: string): string[] {
-  const byTab = line.split(/\t/);
-  if (byTab.length >= 4) return byTab.map((s) => s.trim()).filter(Boolean);
-  const byMultiSpace = line.split(/\s{2,}/);
-  if (byMultiSpace.length >= 4) return byMultiSpace.map((s) => s.trim()).filter(Boolean);
-  return line.split(/\s+/).map((s) => s.trim()).filter(Boolean);
-}
-
-function mapHeaderToValues(
-  headerCols: string[],
-  valueCols: string[],
-  keys: string[]
-): string {
-  const lowerHeaders = headerCols.map((h) => h.toLowerCase().trim());
-  for (const k of keys) {
-    const idx = lowerHeaders.indexOf(k);
-    if (idx >= 0 && idx < valueCols.length) {
-      const val = clean(valueCols[idx]);
-      if (val && val !== "-") return val;
-    }
+function nextNumber(lines: string[], startIdx: number, maxLook: number = 3): string {
+  for (let j = startIdx; j < Math.min(startIdx + maxLook, lines.length); j++) {
+    if (/^\d+(\.\d+)?$/.test(lines[j].trim())) return lines[j].trim();
   }
   return "";
 }
 
-function findSectionData(
-  lines: string[],
-  sectionLabel: RegExp,
-  headerTest: (lower: string) => boolean
-): { header: string[]; values: string[] } | null {
+function extractSection(lines: string[], startMarker: RegExp, endMarker: RegExp): string[] {
+  let startIdx = -1;
+  let endIdx = lines.length;
   for (let i = 0; i < lines.length; i++) {
-    const lower = lines[i].toLowerCase();
-    if (!headerTest(lower)) continue;
+    if (startIdx === -1 && startMarker.test(lines[i])) {
+      startIdx = i;
+    } else if (startIdx >= 0 && endMarker.test(lines[i])) {
+      endIdx = i;
+      break;
+    }
+  }
+  if (startIdx === -1) return [];
+  return lines.slice(startIdx, endIdx);
+}
 
-    const headerCols = splitColumns(lines[i]);
-    if (headerCols.length < 3) continue;
+interface FormatRow {
+  format: string;
+  values: Record<string, string>;
+}
 
-    for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-      const valueCols = splitColumns(lines[j]);
-      if (valueCols.length >= 3 && isNumeric(valueCols[0])) {
-        return { header: headerCols, values: valueCols };
-      }
+function parseTableSection(
+  sectionLines: string[],
+  headerTest: (line: string) => boolean
+): { headers: string[]; rows: FormatRow[] } {
+  let headerIdx = -1;
+  for (let i = 0; i < sectionLines.length; i++) {
+    if (headerTest(sectionLines[i].toLowerCase())) {
+      headerIdx = i;
+      break;
+    }
+  }
+  if (headerIdx === -1) return { headers: [], rows: [] };
+
+  let headerLine = sectionLines[headerIdx];
+  if (headerIdx + 1 < sectionLines.length) {
+    const nextLine = sectionLines[headerIdx + 1];
+    const nextTrimmed = nextLine.trim();
+    if (nextTrimmed && !/^\d/.test(nextTrimmed) && !/^(one day|twenty20|t20|test|odi|t10|other|list a)/i.test(nextTrimmed)) {
+      headerLine += "\t" + nextTrimmed;
     }
   }
 
-  for (let i = 0; i < lines.length; i++) {
-    if (sectionLabel.test(lines[i].toLowerCase())) {
-      for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
-        const lower = lines[j].toLowerCase();
-        if (headerTest(lower)) {
-          const headerCols = splitColumns(lines[j]);
-          if (headerCols.length < 3) continue;
-          for (let k = j + 1; k < Math.min(j + 5, lines.length); k++) {
-            const valueCols = splitColumns(lines[k]);
-            if (valueCols.length >= 3 && isNumeric(valueCols[0])) {
-              return { header: headerCols, values: valueCols };
-            }
-          }
-        }
-      }
-    }
+  const headers = headerLine.split(/\t/).map((h) => h.trim()).filter(Boolean);
+
+  const formatNames = /^(one day|twenty20|t20|test|odi|t10|other|list a|first class|limited overs)/i;
+  const rows: FormatRow[] = [];
+  let dataStart = headerIdx + 1;
+  if (headerIdx + 1 < sectionLines.length && !formatNames.test(sectionLines[headerIdx + 1].trim()) && !/^\d/.test(sectionLines[headerIdx + 1].trim())) {
+    dataStart = headerIdx + 2;
   }
 
-  return null;
+  let currentFormat = "";
+  let currentValues: string[] = [];
+
+  const flushRow = () => {
+    if (currentFormat && currentValues.length > 0) {
+      const mapped: Record<string, string> = {};
+      for (let h = 0; h < headers.length && h < currentValues.length; h++) {
+        mapped[headers[h].toLowerCase()] = currentValues[h];
+      }
+      rows.push({ format: currentFormat, values: mapped });
+    }
+    currentValues = [];
+  };
+
+  for (let i = dataStart; i < sectionLines.length; i++) {
+    const line = sectionLines[i].trim();
+    if (!line) continue;
+
+    if (formatNames.test(line)) {
+      flushRow();
+      currentFormat = line;
+      continue;
+    }
+
+    const tabParts = line.split(/\t/).map((s) => s.trim()).filter(Boolean);
+
+    if (tabParts.length >= 3) {
+      currentValues.push(...tabParts);
+    } else if (/^[\d./\-*]+$/.test(line)) {
+      currentValues.push(line);
+    }
+  }
+  flushRow();
+
+  return { headers, rows };
 }
 
 export function parseUrlMeta(url: string): { league: string; playerId: string; clubId: string } {
@@ -109,117 +135,148 @@ export function parseCricClubsText(text: string): Partial<CricClubsStats> {
   const stats: Partial<CricClubsStats> = {};
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
 
-  const isBattingHeader = (lower: string): boolean => {
-    const hasMatOrInn = lower.includes("mat") || lower.includes("inn");
-    const hasRuns = lower.includes("run");
-    const hasAvgOrSR = lower.includes("avg") || lower.includes("sr") || lower.includes("strike");
-    return hasMatOrInn && hasRuns && hasAvgOrSR;
-  };
-
-  const isBowlingHeader = (lower: string): boolean => {
-    const hasMat = lower.includes("mat") || lower.includes("inn");
-    const hasWkt = lower.includes("wkt") || lower.includes("wicket");
-    const hasEconOrOv = lower.includes("econ") || lower.includes("over") || lower.includes("ov ");
-    return hasMat && hasWkt && hasEconOrOv;
-  };
-
-  const batting = findSectionData(lines, /^batting/i, isBattingHeader);
-  if (batting) {
-    const { header, values } = batting;
-    stats.totalMatches = mapHeaderToValues(header, values, ["mat", "matches", "m"]);
-    stats.innings = mapHeaderToValues(header, values, ["inn", "innings", "inns", "i"]);
-    stats.totalRuns = mapHeaderToValues(header, values, ["runs", "run", "r"]);
-    stats.highScore = mapHeaderToValues(header, values, ["hs", "high score", "highest"]);
-    stats.battingAverage = mapHeaderToValues(header, values, ["avg", "average", "bat avg"]);
-    stats.strikeRate = mapHeaderToValues(header, values, ["sr", "strike rate", "s/r"]);
-    stats.hundreds = mapHeaderToValues(header, values, ["100", "100s", "centuries"]);
-    stats.fifties = mapHeaderToValues(header, values, ["50", "50s", "fifties"]);
-
-    const noVal = mapHeaderToValues(header, values, ["no", "not out"]);
-    if (
-      !stats.battingAverage &&
-      stats.totalRuns &&
-      stats.innings
-    ) {
-      const runs = parseFloat(stats.totalRuns);
-      const inn = parseFloat(stats.innings);
-      const no = noVal ? parseFloat(noVal) : 0;
-      const denom = inn - no;
-      if (denom > 0) {
-        stats.battingAverage = (runs / denom).toFixed(2);
-      }
-    }
-  }
-
-  const bowling = findSectionData(lines, /^bowling/i, isBowlingHeader);
-  if (bowling) {
-    const { header, values } = bowling;
-    stats.totalWickets = mapHeaderToValues(header, values, ["wkts", "wickets", "wkt", "w"]);
-    stats.bowlingAverage = mapHeaderToValues(header, values, ["avg", "average", "bowl avg"]);
-    stats.economy = mapHeaderToValues(header, values, ["econ", "economy", "er"]);
-    stats.overs = mapHeaderToValues(header, values, ["ov", "overs", "o"]);
-    stats.bestBowling = mapHeaderToValues(header, values, ["bbi", "best", "bb"]);
-    if (!stats.totalMatches) {
-      stats.totalMatches = mapHeaderToValues(header, values, ["mat", "matches", "m"]);
-    }
-
-    if (!stats.bowlingAverage && stats.totalWickets) {
-      const runsConc = mapHeaderToValues(header, values, ["runs", "run"]);
-      const wkts = parseFloat(stats.totalWickets);
-      const rc = runsConc ? parseFloat(runsConc) : 0;
-      if (wkts > 0 && rc > 0) {
-        stats.bowlingAverage = (rc / wkts).toFixed(2);
-      }
-    }
-    if (!stats.economy && stats.overs) {
-      const runsConc = mapHeaderToValues(header, values, ["runs", "run"]);
-      const ov = parseFloat(stats.overs);
-      const rc = runsConc ? parseFloat(runsConc) : 0;
-      if (ov > 0 && rc > 0) {
-        stats.economy = (rc / ov).toFixed(2);
-      }
-    }
-  }
-
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const kvMatch = line.match(
-      /^(matches|mat|runs|wickets|wkts|batting average|bowling average|bat avg|bowl avg|strike rate|economy|econ|sr)\s*[:\-=]\s*([0-9]+\.?[0-9]*)/i
-    );
-    if (kvMatch) {
-      const key = kvMatch[1].toLowerCase();
-      const val = kvMatch[2];
-      if ((key === "matches" || key === "mat") && !stats.totalMatches) stats.totalMatches = val;
-      if (key === "runs" && !stats.totalRuns) stats.totalRuns = val;
-      if ((key === "wickets" || key === "wkts") && !stats.totalWickets) stats.totalWickets = val;
-      if ((key === "batting average" || key === "bat avg") && !stats.battingAverage) stats.battingAverage = val;
-      if ((key === "bowling average" || key === "bowl avg") && !stats.bowlingAverage) stats.bowlingAverage = val;
-      if ((key === "strike rate" || key === "sr") && !stats.strikeRate) stats.strikeRate = val;
-      if ((key === "economy" || key === "econ") && !stats.economy) stats.economy = val;
+    if (/^Matches$/i.test(lines[i])) {
+      const v = nextNumber(lines, i + 1);
+      if (v) stats.totalMatches = v;
+    }
+    if (/^Runs$/i.test(lines[i]) && !(lines[i - 1]?.toLowerCase().includes("conceded"))) {
+      const v = nextNumber(lines, i + 1);
+      if (v) stats.totalRuns = v;
+    }
+    if (/^Wickets$/i.test(lines[i])) {
+      const v = nextNumber(lines, i + 1);
+      if (v) stats.totalWickets = v;
     }
   }
 
-  const namePatterns = [
-    /(?:Player|Name)\s*[:\-]\s*(.+)/i,
-    /^([A-Z][a-z]+ [A-Z][a-z]+(?:\s[A-Z][a-z]+)?)\s*$/m,
-  ];
-  for (const pat of namePatterns) {
-    const m = text.match(pat);
-    if (m) {
-      stats.playerName = m[1].trim();
-      break;
+  const currentTeamMatch = text.match(/Current Team:\s*\n?\s*(.+)/i);
+  if (currentTeamMatch) {
+    const team = currentTeamMatch[1].trim();
+    if (team && team !== "-" && team !== "Teams:") stats.teamName = team;
+  }
+
+  const titleMatch = text.match(/^(.+?)\s*[-–—]\s*.+$/m);
+  if (titleMatch) {
+    const name = titleMatch[1].trim();
+    if (name.length > 2 && name.length < 60 && /[A-Z]/.test(name)) {
+      stats.playerName = name;
     }
   }
 
-  const teamPatterns = [
-    /(?:Team|Club)\s*[:\-]\s*(.+)/i,
-    /(?:Playing for|Plays for)\s*[:\-]?\s*(.+)/i,
-  ];
-  for (const pat of teamPatterns) {
-    const m = text.match(pat);
-    if (m) {
-      stats.teamName = m[1].trim();
-      break;
+  const battingSection = extractSection(
+    lines,
+    /^Batting Statistics$/i,
+    /^(Bowling Statistics|Fielding Statistics)$/i
+  );
+
+  if (battingSection.length > 0) {
+    const isBatHeader = (lower: string): boolean =>
+      (lower.includes("mat") || lower.includes("inn")) &&
+      (lower.includes("run") || lower.includes("ball")) &&
+      (lower.includes("avg") || lower.includes("sr"));
+
+    const { rows } = parseTableSection(battingSection, isBatHeader);
+
+    if (rows.length > 0) {
+      let totalInnings = 0;
+      let totalNO = 0;
+      let totalRuns = 0;
+      let totalBalls = 0;
+      let bestHS = "";
+      let totalHundreds = 0;
+      let totalFifties = 0;
+
+      for (const row of rows) {
+        const v = row.values;
+        const inn = parseFloat(v["inns"] || v["inn"] || v["innings"] || "0");
+        const no = parseFloat(v["no"] || "0");
+        const runs = parseFloat(v["runs"] || v["run"] || "0");
+        const balls = parseFloat(v["ball"] || v["balls"] || "0");
+        const hs = v["hs"] || v["high score"] || "";
+        const hundreds = parseFloat(v["100s"] || v["100"] || "0");
+        const fifties = parseFloat(v["50s"] || v["50"] || "0");
+
+        totalInnings += isNaN(inn) ? 0 : inn;
+        totalNO += isNaN(no) ? 0 : no;
+        totalRuns += isNaN(runs) ? 0 : runs;
+        totalBalls += isNaN(balls) ? 0 : balls;
+        totalHundreds += isNaN(hundreds) ? 0 : hundreds;
+        totalFifties += isNaN(fifties) ? 0 : fifties;
+
+        const hsNum = parseFloat(clean(hs));
+        const bestHSNum = parseFloat(clean(bestHS));
+        if (!isNaN(hsNum) && (isNaN(bestHSNum) || hsNum > bestHSNum)) {
+          bestHS = hs;
+        }
+      }
+
+      stats.innings = String(totalInnings);
+      stats.highScore = bestHS ? clean(bestHS) : undefined;
+      stats.hundreds = String(totalHundreds);
+      stats.fifties = String(totalFifties);
+
+      if (!stats.totalRuns && totalRuns > 0) {
+        stats.totalRuns = String(totalRuns);
+      }
+
+      const denom = totalInnings - totalNO;
+      if (denom > 0) {
+        stats.battingAverage = (totalRuns / denom).toFixed(2);
+      }
+      if (totalBalls > 0 && totalRuns > 0) {
+        stats.strikeRate = ((totalRuns / totalBalls) * 100).toFixed(2);
+      }
+    }
+  }
+
+  const bowlingSection = extractSection(
+    lines,
+    /^Bowling Statistics$/i,
+    /^(Fielding Statistics|Recent Matches|Batting Analytics)$/i
+  );
+
+  if (bowlingSection.length > 0) {
+    const isBowlHeader = (lower: string): boolean =>
+      (lower.includes("mat") || lower.includes("inn")) &&
+      (lower.includes("wkt") || lower.includes("wicket")) &&
+      (lower.includes("econ") || lower.includes("over"));
+
+    const { rows } = parseTableSection(bowlingSection, isBowlHeader);
+
+    if (rows.length > 0) {
+      let totalOvers = 0;
+      let totalRunsConceded = 0;
+      let totalWickets = 0;
+      let bestBBF = "";
+
+      for (const row of rows) {
+        const v = row.values;
+        const overs = parseFloat(v["overs"] || v["ov"] || "0");
+        const runs = parseFloat(v["runs"] || v["run"] || "0");
+        const wkts = parseFloat(v["wkts"] || v["wickets"] || v["wkt"] || "0");
+        const bbf = v["bbf"] || v["bbi"] || v["best"] || v["bb"] || "";
+
+        totalOvers += isNaN(overs) ? 0 : overs;
+        totalRunsConceded += isNaN(runs) ? 0 : runs;
+        totalWickets += isNaN(wkts) ? 0 : wkts;
+
+        if (bbf && !bestBBF) bestBBF = bbf;
+      }
+
+      if (!stats.totalWickets && totalWickets > 0) {
+        stats.totalWickets = String(totalWickets);
+      }
+
+      stats.overs = String(totalOvers);
+      stats.bestBowling = bestBBF ? clean(bestBBF) : undefined;
+
+      if (totalWickets > 0 && totalRunsConceded > 0) {
+        stats.bowlingAverage = (totalRunsConceded / totalWickets).toFixed(2);
+      }
+      if (totalOvers > 0 && totalRunsConceded > 0) {
+        stats.economy = (totalRunsConceded / totalOvers).toFixed(2);
+      }
     }
   }
 
