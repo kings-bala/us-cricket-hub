@@ -10,6 +10,7 @@ import type {
   AgeGroup,
   Region,
 } from "@/types";
+import { parseCricClubsText, parseUrlMeta } from "@/lib/cricclubs-parser";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -137,6 +138,78 @@ export default function RegisterPage() {
   });
 
   const [errors, setErrors] = useState<string[]>([]);
+  const [fetchStatus, setFetchStatus] = useState<"idle" | "fetching" | "success" | "paste">("idle");
+  const [fetchMessage, setFetchMessage] = useState("");
+  const [showPasteModal, setShowPasteModal] = useState(false);
+  const [pasteText, setPasteText] = useState("");
+  const [statsImported, setStatsImported] = useState(false);
+
+  const applyStats = (data: Record<string, string>) => {
+    setCric((prev) => ({
+      ...prev,
+      ...(data.totalMatches && { totalMatches: data.totalMatches }),
+      ...(data.totalRuns && { totalRuns: data.totalRuns }),
+      ...(data.totalWickets && { totalWickets: data.totalWickets }),
+      ...(data.battingAverage && { battingAverage: data.battingAverage }),
+      ...(data.bowlingAverage && { bowlingAverage: data.bowlingAverage }),
+      ...(data.strikeRate && { strikeRate: data.strikeRate }),
+      ...(data.economy && { economy: data.economy }),
+      ...(data.teamName && { cricClubsTeam: data.teamName }),
+      ...(data.league && { cricClubsLeague: data.league }),
+    }));
+    setStatsImported(true);
+  };
+
+  const handleFetchStats = async () => {
+    if (!cric.cricClubsUrl.trim()) return;
+    setFetchStatus("fetching");
+    setFetchMessage("");
+    try {
+      const res = await fetch("/api/cricclubs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: cric.cricClubsUrl }),
+      });
+      const data = await res.json();
+      if (data.error === "cloudflare") {
+        if (data.meta?.league) {
+          setCric((prev) => ({
+            ...prev,
+            cricClubsLeague: prev.cricClubsLeague || data.meta.league,
+          }));
+        }
+        setFetchStatus("paste");
+        setFetchMessage("CricClubs is protected. Copy your stats page text and paste below.");
+        setShowPasteModal(true);
+      } else if (data.stats) {
+        applyStats(data.stats);
+        setFetchStatus("success");
+        setFetchMessage("Stats imported successfully!");
+      } else {
+        setFetchStatus("paste");
+        setFetchMessage("Could not auto-fetch. Use paste method instead.");
+        setShowPasteModal(true);
+      }
+    } catch {
+      setFetchStatus("paste");
+      setFetchMessage("Could not connect. Use paste method instead.");
+      setShowPasteModal(true);
+    }
+  };
+
+  const handlePasteImport = () => {
+    if (!pasteText.trim()) return;
+    const stats = parseCricClubsText(pasteText);
+    const meta = parseUrlMeta(cric.cricClubsUrl);
+    if (meta.league && !stats.league) {
+      stats.league = meta.league;
+    }
+    applyStats(stats as Record<string, string>);
+    setShowPasteModal(false);
+    setPasteText("");
+    setFetchStatus("success");
+    setFetchMessage("Stats imported from pasted data!");
+  };
 
   const validateStep = (s: Step): string[] => {
     const errs: string[] = [];
@@ -513,15 +586,44 @@ export default function RegisterPage() {
                   </span>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="md:col-span-2">
                     <label className={labelClass}>CricClubs Profile URL</label>
-                    <input
-                      type="url"
-                      placeholder="https://cricclubs.com/player/..."
-                      value={cric.cricClubsUrl}
-                      onChange={(e) => setCric({ ...cric, cricClubsUrl: e.target.value })}
-                      className={inputClass}
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        placeholder="https://cricclubs.com/USYCA/viewPlayer.do?playerId=..."
+                        value={cric.cricClubsUrl}
+                        onChange={(e) => {
+                          setCric({ ...cric, cricClubsUrl: e.target.value });
+                          setFetchStatus("idle");
+                          setStatsImported(false);
+                        }}
+                        className={inputClass + " flex-1"}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleFetchStats}
+                        disabled={!cric.cricClubsUrl.trim() || fetchStatus === "fetching"}
+                        className="px-4 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
+                      >
+                        {fetchStatus === "fetching" ? "Fetching..." : "Fetch Stats"}
+                      </button>
+                    </div>
+                    {fetchMessage && (
+                      <div className={`mt-2 text-xs flex items-center gap-1.5 ${
+                        fetchStatus === "success" ? "text-emerald-400" : fetchStatus === "paste" ? "text-amber-400" : "text-slate-400"
+                      }`}>
+                        {fetchStatus === "success" && (
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        )}
+                        {fetchMessage}
+                        {fetchStatus === "paste" && (
+                          <button type="button" onClick={() => setShowPasteModal(true)} className="underline ml-1 text-orange-400 hover:text-orange-300">
+                            Paste Stats
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className={labelClass}>Team Name</label>
@@ -533,7 +635,7 @@ export default function RegisterPage() {
                       className={inputClass}
                     />
                   </div>
-                  <div className="md:col-span-2">
+                  <div>
                     <label className={labelClass}>League / Tournament</label>
                     <input
                       type="text"
@@ -587,10 +689,19 @@ export default function RegisterPage() {
               </div>
 
               <div className="border border-slate-700/50 rounded-xl p-5 space-y-4">
-                <h3 className="text-sm font-semibold text-white">Match Statistics</h3>
-                <p className="text-xs text-slate-500 -mt-3">
-                  Enter your career stats or they will be auto-imported from linked platforms
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-white">Match Statistics</h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Enter your career stats or import from CricClubs
+                    </p>
+                  </div>
+                  {statsImported && (
+                    <span className="text-xs bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/20">
+                      Imported
+                    </span>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <label className={labelClass}>Total Matches</label>
@@ -1084,6 +1195,58 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
+
+      {showPasteModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">Import Stats from CricClubs</h3>
+              <button
+                type="button"
+                onClick={() => { setShowPasteModal(false); setPasteText(""); }}
+                className="text-slate-400 hover:text-white text-xl leading-none"
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+              <p className="text-xs text-amber-400 font-medium mb-1">How to import your stats:</p>
+              <ol className="text-xs text-slate-400 space-y-1 list-decimal list-inside">
+                <li>Open your CricClubs profile page in a new tab</li>
+                <li>Select all text on the page (Ctrl+A / Cmd+A)</li>
+                <li>Copy the text (Ctrl+C / Cmd+C)</li>
+                <li>Paste it in the box below (Ctrl+V / Cmd+V)</li>
+              </ol>
+            </div>
+
+            <textarea
+              value={pasteText}
+              onChange={(e) => setPasteText(e.target.value)}
+              placeholder={"Paste your CricClubs page text here...\n\nExample:\nBatting\nMat  Inn  NO  Runs  HS  Avg  SR  100  50\n18   16   2   342   78  24.43  122.14  0  3\n\nBowling\nMat  Inn  Ov  Runs  Wkts  Avg  Econ\n18   15   48  324   12    27.00  6.75"}
+              className="w-full h-48 bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-orange-500 transition-colors resize-none font-mono"
+            />
+
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => { setShowPasteModal(false); setPasteText(""); }}
+                className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handlePasteImport}
+                disabled={!pasteText.trim()}
+                className="px-5 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 disabled:text-slate-500 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Import Stats
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
