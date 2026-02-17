@@ -184,7 +184,7 @@ export default function RegisterPage() {
       );
     } catch {}
     setTimeout(() => {
-      router.push("/players?tab=profile");
+      router.push("/auth");
     }, 500);
   };
 

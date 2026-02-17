@@ -9,7 +9,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const publicPaths = ["/", "/auth", "/auth/register"];
+  const publicPaths = ["/", "/auth", "/auth/register", "/analyze", "/analyze/live"];
   const isPublic = publicPaths.includes(pathname);
 
   useEffect(() => {

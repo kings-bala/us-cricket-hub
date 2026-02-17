@@ -32,6 +32,87 @@ export interface AnalysisSummary {
 
 export type BowlingHand = "right" | "left";
 
+export interface PoseValidation {
+  isValid: boolean;
+  reason: string;
+}
+
+export function validateCricketPose(
+  landmarks: NormalizedLandmark[],
+  type: "batting" | "bowling" | "fielding"
+): PoseValidation {
+  const ls = landmarks[LANDMARK.LEFT_SHOULDER];
+  const rs = landmarks[LANDMARK.RIGHT_SHOULDER];
+  const lh = landmarks[LANDMARK.LEFT_HIP];
+  const rh = landmarks[LANDMARK.RIGHT_HIP];
+  const lk = landmarks[LANDMARK.LEFT_KNEE];
+  const rk = landmarks[LANDMARK.RIGHT_KNEE];
+  const la = landmarks[LANDMARK.LEFT_ANKLE];
+  const ra = landmarks[LANDMARK.RIGHT_ANKLE];
+  const lw = landmarks[LANDMARK.LEFT_WRIST];
+  const rw = landmarks[LANDMARK.RIGHT_WRIST];
+  const nose = landmarks[LANDMARK.NOSE];
+
+  if (!ls || !rs || !lh || !rh || !lk || !rk || !la || !ra || !nose) {
+    return { isValid: false, reason: "Full body not visible. Please step back so the camera can see your entire body." };
+  }
+
+  const keyPoints = [ls, rs, lh, rh, lk, rk];
+  const lowVisCount = keyPoints.filter(p => p.visibility !== undefined && p.visibility < 0.4).length;
+  if (lowVisCount >= 3) {
+    return { isValid: false, reason: "Body not clearly visible. Ensure good lighting and stand facing the camera." };
+  }
+
+  const shoulderY = (ls.y + rs.y) / 2;
+  const hipY = (lh.y + rh.y) / 2;
+  const kneeY = (lk.y + rk.y) / 2;
+  const ankleY = (la.y + ra.y) / 2;
+
+  const torsoHeight = Math.abs(hipY - shoulderY);
+  const legHeight = Math.abs(ankleY - hipY);
+
+  if (legHeight < torsoHeight * 0.5) {
+    return { isValid: false, reason: "Person appears to be sitting. Please stand up to begin analysis." };
+  }
+
+  const hipToKnee = Math.abs(kneeY - hipY);
+  const kneeToAnkle = Math.abs(ankleY - kneeY);
+  if (hipToKnee < torsoHeight * 0.3 && kneeToAnkle < torsoHeight * 0.3) {
+    return { isValid: false, reason: "Person appears to be sitting or crouching. Please stand in a cricket position." };
+  }
+
+  if (nose.y > hipY) {
+    return { isValid: false, reason: "Person appears to be lying down or hunched over. Please stand upright." };
+  }
+
+  if (type === "batting") {
+    const handsAboveHip = (lw.y < hipY + torsoHeight * 0.3) || (rw.y < hipY + torsoHeight * 0.3);
+    const hasStance = Math.abs(la.x - ra.x) > Math.abs(ls.x - rs.x) * 0.4;
+    if (!handsAboveHip && !hasStance) {
+      return { isValid: false, reason: "No batting stance detected. Hold a bat and take your stance to begin analysis." };
+    }
+  }
+
+  if (type === "bowling") {
+    const eitherArmUp = (lw.y < shoulderY) || (rw.y < shoulderY);
+    const hasStride = Math.abs(la.y - ra.y) > torsoHeight * 0.1 || Math.abs(la.x - ra.x) > Math.abs(ls.x - rs.x) * 0.5;
+    if (!eitherArmUp && !hasStride) {
+      return { isValid: false, reason: "No bowling action detected. Start your run-up or raise your bowling arm to begin analysis." };
+    }
+  }
+
+  if (type === "fielding") {
+    const kneesBent = calcAngle(lh, lk, la) < 160 || calcAngle(rh, rk, ra) < 160;
+    const handsLow = lw.y > hipY || rw.y > hipY;
+    const hasStance = Math.abs(la.x - ra.x) > Math.abs(ls.x - rs.x) * 0.4;
+    if (!kneesBent && !handsLow && !hasStance) {
+      return { isValid: false, reason: "No fielding position detected. Get into a ready position with knees bent." };
+    }
+  }
+
+  return { isValid: true, reason: "" };
+}
+
 export function detectBowlingHand(allFrames: NormalizedLandmark[][]): BowlingHand {
   let leftHighest = Infinity;
   let rightHighest = Infinity;
@@ -472,6 +553,22 @@ export function analyzeFrame(
   timestamp: number,
   bowlingHand?: BowlingHand
 ): FrameAnalysis {
+  const validation = validateCricketPose(landmarks, type);
+  if (!validation.isValid) {
+    return {
+      timestamp,
+      landmarks,
+      checks: [{
+        category: "Pose Validation",
+        score: 0,
+        comment: validation.reason,
+        suggestion: "Position yourself correctly and try again.",
+        angles: [],
+      }],
+      overallScore: 0,
+    };
+  }
+
   let checks: TechniqueCheck[];
   switch (type) {
     case "batting":
