@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLivePoseDetection } from "@/hooks/useLivePoseDetection";
 import {
   analyzeFrame,
+  validateCricketPose,
   detectBowlingHand,
   type FrameAnalysis,
   type BowlingHand,
@@ -30,6 +31,7 @@ export default function LiveAnalyzePage() {
   const [historyLoaded, setHistoryLoaded] = useState(false);
   const [showFeedback, setShowFeedback] = useState(true);
   const [recentFrameLandmarks, setRecentFrameLandmarks] = useState<NormalizedLandmark[][]>([]);
+  const [poseWarning, setPoseWarning] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -70,27 +72,36 @@ export default function LiveAnalyzePage() {
     if (result) {
       drawLandmarks(ctx, result.landmarks, canvas.width, canvas.height);
 
-      if (showFeedback) {
-        const analysis = analyzeFrame(result.landmarks, analysisType, result.timestamp, bowlingHand);
-        setLiveAnalysis(analysis);
-      }
+      const validation = validateCricketPose(result.landmarks, analysisType);
 
-      setRecentFrameLandmarks(prev => {
-        const updated = [...prev, result.landmarks];
-        if (updated.length > 30) return updated.slice(-30);
-        return updated;
-      });
+      if (!validation.isValid) {
+        setPoseWarning(validation.reason);
+        setLiveAnalysis(null);
+      } else {
+        setPoseWarning(null);
 
-      if (analysisType === "bowling" && recentFrameLandmarks.length >= 10) {
-        const detected = detectBowlingHand(recentFrameLandmarks);
-        if (detected !== bowlingHand) {
-          setBowlingHand(detected);
+        if (showFeedback) {
+          const analysis = analyzeFrame(result.landmarks, analysisType, result.timestamp, bowlingHand);
+          setLiveAnalysis(analysis);
         }
-      }
 
-      if (isCapturing) {
-        const analysis = analyzeFrame(result.landmarks, analysisType, result.timestamp, bowlingHand);
-        setCapturedFrames(prev => [...prev, analysis]);
+        setRecentFrameLandmarks(prev => {
+          const updated = [...prev, result.landmarks];
+          if (updated.length > 30) return updated.slice(-30);
+          return updated;
+        });
+
+        if (analysisType === "bowling" && recentFrameLandmarks.length >= 10) {
+          const detected = detectBowlingHand(recentFrameLandmarks);
+          if (detected !== bowlingHand) {
+            setBowlingHand(detected);
+          }
+        }
+
+        if (isCapturing) {
+          const analysis = analyzeFrame(result.landmarks, analysisType, result.timestamp, bowlingHand);
+          setCapturedFrames(prev => [...prev, analysis]);
+        }
       }
     }
 
@@ -138,18 +149,19 @@ export default function LiveAnalyzePage() {
         setTimeout(() => {
           setIsCapturing(false);
           setCapturedFrames(frames => {
-            if (frames.length > 0) {
+            const validFrames = frames.filter(f => f.overallScore > 0);
+            if (validFrames.length > 0) {
               const avgScore = Math.round(
-                frames.reduce((sum, f) => sum + f.overallScore, 0) / frames.length
+                validFrames.reduce((sum, f) => sum + f.overallScore, 0) / validFrames.length
               );
-              const bestFrame = frames.reduce((best, f) =>
-                f.checks.length > best.checks.length ? f : best, frames[0]);
+              const bestFrame = validFrames.reduce((best, f) =>
+                f.checks.length > best.checks.length ? f : best, validFrames[0]);
 
               const summary = {
                 type: analysisType,
                 overallScore: avgScore,
                 categories: bestFrame.checks,
-                keyFrames: frames
+                keyFrames: validFrames
                   .filter(f => f.overallScore < 70)
                   .slice(0, 3)
                   .map(f => ({
@@ -164,7 +176,7 @@ export default function LiveAnalyzePage() {
               const saved = saveAnalysis("Live Camera Capture", summary);
               setHistory(prev => [saved, ...prev]);
             }
-            return frames;
+            return validFrames;
           });
         }, 5000);
       }
@@ -329,7 +341,19 @@ export default function LiveAnalyzePage() {
             </div>
           )}
 
-          {isStreaming && showFeedback && liveAnalysis && (
+          {isStreaming && showFeedback && poseWarning && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <svg className="w-5 h-5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <h3 className="text-sm font-semibold text-amber-400">No Cricket Activity</h3>
+              </div>
+              <p className="text-xs text-amber-300/80">{poseWarning}</p>
+            </div>
+          )}
+
+          {isStreaming && showFeedback && liveAnalysis && !poseWarning && (
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-white">Live Score</h3>
@@ -404,10 +428,16 @@ export default function LiveAnalyzePage() {
                 </div>
               )}
 
-              {isStreaming && !isCapturing && captureCountdown === null && (
+              {isStreaming && !isCapturing && captureCountdown === null && !poseWarning && (
                 <div className="absolute top-4 left-4 flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-sm font-medium text-emerald-400">Live</span>
+                </div>
+              )}
+
+              {isStreaming && poseWarning && (
+                <div className="absolute bottom-4 left-4 right-4 bg-amber-900/80 border border-amber-500/40 rounded-lg p-3 backdrop-blur-sm">
+                  <p className="text-xs text-amber-300 text-center">{poseWarning}</p>
                 </div>
               )}
             </div>
