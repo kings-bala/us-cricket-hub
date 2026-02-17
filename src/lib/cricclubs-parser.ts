@@ -21,18 +21,73 @@ function clean(val: string): string {
   return val.replace(/[^0-9./\-*]/g, "").trim();
 }
 
-function findNumber(text: string, ...labels: string[]): string {
-  for (const label of labels) {
-    const patterns = [
-      new RegExp(label + "\\s*[:\\-]?\\s*([0-9]+\\.?[0-9]*)", "i"),
-      new RegExp(label + "\\s+([0-9]+\\.?[0-9]*)", "i"),
-    ];
-    for (const pat of patterns) {
-      const m = text.match(pat);
-      if (m) return m[1];
+function isNumeric(s: string): boolean {
+  return /^[0-9]+(\.[0-9]+)?[*]?$/.test(s.trim());
+}
+
+function splitColumns(line: string): string[] {
+  const byTab = line.split(/\t/);
+  if (byTab.length >= 4) return byTab.map((s) => s.trim()).filter(Boolean);
+  const byMultiSpace = line.split(/\s{2,}/);
+  if (byMultiSpace.length >= 4) return byMultiSpace.map((s) => s.trim()).filter(Boolean);
+  return line.split(/\s+/).map((s) => s.trim()).filter(Boolean);
+}
+
+function mapHeaderToValues(
+  headerCols: string[],
+  valueCols: string[],
+  keys: string[]
+): string {
+  const lowerHeaders = headerCols.map((h) => h.toLowerCase().trim());
+  for (const k of keys) {
+    const idx = lowerHeaders.indexOf(k);
+    if (idx >= 0 && idx < valueCols.length) {
+      const val = clean(valueCols[idx]);
+      if (val && val !== "-") return val;
     }
   }
   return "";
+}
+
+function findSectionData(
+  lines: string[],
+  sectionLabel: RegExp,
+  headerTest: (lower: string) => boolean
+): { header: string[]; values: string[] } | null {
+  for (let i = 0; i < lines.length; i++) {
+    const lower = lines[i].toLowerCase();
+    if (!headerTest(lower)) continue;
+
+    const headerCols = splitColumns(lines[i]);
+    if (headerCols.length < 3) continue;
+
+    for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+      const valueCols = splitColumns(lines[j]);
+      if (valueCols.length >= 3 && isNumeric(valueCols[0])) {
+        return { header: headerCols, values: valueCols };
+      }
+    }
+  }
+
+  for (let i = 0; i < lines.length; i++) {
+    if (sectionLabel.test(lines[i].toLowerCase())) {
+      for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
+        const lower = lines[j].toLowerCase();
+        if (headerTest(lower)) {
+          const headerCols = splitColumns(lines[j]);
+          if (headerCols.length < 3) continue;
+          for (let k = j + 1; k < Math.min(j + 5, lines.length); k++) {
+            const valueCols = splitColumns(lines[k]);
+            if (valueCols.length >= 3 && isNumeric(valueCols[0])) {
+              return { header: headerCols, values: valueCols };
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null;
 }
 
 export function parseUrlMeta(url: string): { league: string; playerId: string; clubId: string } {
@@ -54,87 +109,95 @@ export function parseCricClubsText(text: string): Partial<CricClubsStats> {
   const stats: Partial<CricClubsStats> = {};
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
 
-  let battingHeaderIdx = -1;
-  let bowlingHeaderIdx = -1;
+  const isBattingHeader = (lower: string): boolean => {
+    const hasMatOrInn = lower.includes("mat") || lower.includes("inn");
+    const hasRuns = lower.includes("run");
+    const hasAvgOrSR = lower.includes("avg") || lower.includes("sr") || lower.includes("strike");
+    return hasMatOrInn && hasRuns && hasAvgOrSR;
+  };
+
+  const isBowlingHeader = (lower: string): boolean => {
+    const hasMat = lower.includes("mat") || lower.includes("inn");
+    const hasWkt = lower.includes("wkt") || lower.includes("wicket");
+    const hasEconOrOv = lower.includes("econ") || lower.includes("over") || lower.includes("ov ");
+    return hasMat && hasWkt && hasEconOrOv;
+  };
+
+  const batting = findSectionData(lines, /^batting/i, isBattingHeader);
+  if (batting) {
+    const { header, values } = batting;
+    stats.totalMatches = mapHeaderToValues(header, values, ["mat", "matches", "m"]);
+    stats.innings = mapHeaderToValues(header, values, ["inn", "innings", "inns", "i"]);
+    stats.totalRuns = mapHeaderToValues(header, values, ["runs", "run", "r"]);
+    stats.highScore = mapHeaderToValues(header, values, ["hs", "high score", "highest"]);
+    stats.battingAverage = mapHeaderToValues(header, values, ["avg", "average", "bat avg"]);
+    stats.strikeRate = mapHeaderToValues(header, values, ["sr", "strike rate", "s/r"]);
+    stats.hundreds = mapHeaderToValues(header, values, ["100", "100s", "centuries"]);
+    stats.fifties = mapHeaderToValues(header, values, ["50", "50s", "fifties"]);
+
+    const noVal = mapHeaderToValues(header, values, ["no", "not out"]);
+    if (
+      !stats.battingAverage &&
+      stats.totalRuns &&
+      stats.innings
+    ) {
+      const runs = parseFloat(stats.totalRuns);
+      const inn = parseFloat(stats.innings);
+      const no = noVal ? parseFloat(noVal) : 0;
+      const denom = inn - no;
+      if (denom > 0) {
+        stats.battingAverage = (runs / denom).toFixed(2);
+      }
+    }
+  }
+
+  const bowling = findSectionData(lines, /^bowling/i, isBowlingHeader);
+  if (bowling) {
+    const { header, values } = bowling;
+    stats.totalWickets = mapHeaderToValues(header, values, ["wkts", "wickets", "wkt", "w"]);
+    stats.bowlingAverage = mapHeaderToValues(header, values, ["avg", "average", "bowl avg"]);
+    stats.economy = mapHeaderToValues(header, values, ["econ", "economy", "er"]);
+    stats.overs = mapHeaderToValues(header, values, ["ov", "overs", "o"]);
+    stats.bestBowling = mapHeaderToValues(header, values, ["bbi", "best", "bb"]);
+    if (!stats.totalMatches) {
+      stats.totalMatches = mapHeaderToValues(header, values, ["mat", "matches", "m"]);
+    }
+
+    if (!stats.bowlingAverage && stats.totalWickets) {
+      const runsConc = mapHeaderToValues(header, values, ["runs", "run"]);
+      const wkts = parseFloat(stats.totalWickets);
+      const rc = runsConc ? parseFloat(runsConc) : 0;
+      if (wkts > 0 && rc > 0) {
+        stats.bowlingAverage = (rc / wkts).toFixed(2);
+      }
+    }
+    if (!stats.economy && stats.overs) {
+      const runsConc = mapHeaderToValues(header, values, ["runs", "run"]);
+      const ov = parseFloat(stats.overs);
+      const rc = runsConc ? parseFloat(runsConc) : 0;
+      if (ov > 0 && rc > 0) {
+        stats.economy = (rc / ov).toFixed(2);
+      }
+    }
+  }
 
   for (let i = 0; i < lines.length; i++) {
-    const lower = lines[i].toLowerCase();
-    if (
-      (lower.includes("mat") && lower.includes("inn") && lower.includes("run")) ||
-      (lower.includes("matches") && lower.includes("innings") && lower.includes("runs"))
-    ) {
-      if (battingHeaderIdx === -1 && !lower.includes("wkt") && !lower.includes("overs")) {
-        battingHeaderIdx = i;
-      }
-    }
-    if (
-      (lower.includes("mat") && (lower.includes("wkt") || lower.includes("wicket")) && (lower.includes("over") || lower.includes("econ"))) ||
-      (lower.includes("bowling") && i < lines.length - 1)
-    ) {
-      bowlingHeaderIdx = i;
-    }
-  }
-
-  if (battingHeaderIdx >= 0 && battingHeaderIdx + 1 < lines.length) {
-    const header = lines[battingHeaderIdx].split(/\s{2,}|\t/);
-    const values = lines[battingHeaderIdx + 1].split(/\s{2,}|\t/);
-    if (values.length >= 4) {
-      const headerMap: Record<string, number> = {};
-      header.forEach((h, idx) => {
-        headerMap[h.toLowerCase().trim()] = idx;
-      });
-      const get = (keys: string[]): string => {
-        for (const k of keys) {
-          const idx = headerMap[k];
-          if (idx !== undefined && values[idx]) return clean(values[idx]);
-        }
-        return "";
-      };
-      stats.totalMatches = get(["mat", "matches", "m"]) || stats.totalMatches;
-      stats.innings = get(["inn", "innings", "i"]) || stats.innings;
-      stats.totalRuns = get(["runs", "run", "r"]) || stats.totalRuns;
-      stats.highScore = get(["hs", "high score", "highest"]) || stats.highScore;
-      stats.battingAverage = get(["avg", "average", "bat avg"]) || stats.battingAverage;
-      stats.strikeRate = get(["sr", "strike rate", "s/r"]) || stats.strikeRate;
-      stats.hundreds = get(["100", "100s", "centuries"]) || stats.hundreds;
-      stats.fifties = get(["50", "50s", "fifties"]) || stats.fifties;
+    const line = lines[i];
+    const kvMatch = line.match(
+      /^(matches|mat|runs|wickets|wkts|batting average|bowling average|bat avg|bowl avg|strike rate|economy|econ|sr)\s*[:\-=]\s*([0-9]+\.?[0-9]*)/i
+    );
+    if (kvMatch) {
+      const key = kvMatch[1].toLowerCase();
+      const val = kvMatch[2];
+      if ((key === "matches" || key === "mat") && !stats.totalMatches) stats.totalMatches = val;
+      if (key === "runs" && !stats.totalRuns) stats.totalRuns = val;
+      if ((key === "wickets" || key === "wkts") && !stats.totalWickets) stats.totalWickets = val;
+      if ((key === "batting average" || key === "bat avg") && !stats.battingAverage) stats.battingAverage = val;
+      if ((key === "bowling average" || key === "bowl avg") && !stats.bowlingAverage) stats.bowlingAverage = val;
+      if ((key === "strike rate" || key === "sr") && !stats.strikeRate) stats.strikeRate = val;
+      if ((key === "economy" || key === "econ") && !stats.economy) stats.economy = val;
     }
   }
-
-  if (bowlingHeaderIdx >= 0 && bowlingHeaderIdx + 1 < lines.length) {
-    const nextLine = lines[bowlingHeaderIdx + 1];
-    if (nextLine && /\d/.test(nextLine)) {
-      const header = lines[bowlingHeaderIdx].split(/\s{2,}|\t/);
-      const values = nextLine.split(/\s{2,}|\t/);
-      const headerMap: Record<string, number> = {};
-      header.forEach((h, idx) => {
-        headerMap[h.toLowerCase().trim()] = idx;
-      });
-      const get = (keys: string[]): string => {
-        for (const k of keys) {
-          const idx = headerMap[k];
-          if (idx !== undefined && values[idx]) return clean(values[idx]);
-        }
-        return "";
-      };
-      stats.totalWickets = get(["wkts", "wickets", "wkt", "w"]) || stats.totalWickets;
-      stats.bowlingAverage = get(["avg", "average", "bowl avg"]) || stats.bowlingAverage;
-      stats.economy = get(["econ", "economy", "er"]) || stats.economy;
-      stats.overs = get(["ov", "overs", "o"]) || stats.overs;
-      stats.bestBowling = get(["bbi", "best", "bb"]) || stats.bestBowling;
-      if (!stats.totalMatches) {
-        stats.totalMatches = get(["mat", "matches", "m"]);
-      }
-    }
-  }
-
-  if (!stats.totalMatches) stats.totalMatches = findNumber(text, "Matches", "Mat", "Total Matches");
-  if (!stats.totalRuns) stats.totalRuns = findNumber(text, "Runs", "Total Runs");
-  if (!stats.totalWickets) stats.totalWickets = findNumber(text, "Wickets", "Wkts", "Total Wickets");
-  if (!stats.battingAverage) stats.battingAverage = findNumber(text, "Batting Average", "Bat Avg", "Average");
-  if (!stats.bowlingAverage) stats.bowlingAverage = findNumber(text, "Bowling Average", "Bowl Avg");
-  if (!stats.strikeRate) stats.strikeRate = findNumber(text, "Strike Rate", "SR");
-  if (!stats.economy) stats.economy = findNumber(text, "Economy", "Econ", "ER");
 
   const namePatterns = [
     /(?:Player|Name)\s*[:\-]\s*(.+)/i,
