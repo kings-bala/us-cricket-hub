@@ -26,9 +26,9 @@ export type ReinstatementRequest = {
   status: "pending" | "approved" | "denied";
 };
 
-const LOGIN_LOG_KEY = "cricverse_login_log";
-const BLOCKED_KEY = "cricverse_blocked_users";
-const REINSTATE_KEY = "cricverse_reinstatement_requests";
+const LOGIN_LOG_KEY = "cricverse360_login_log";
+const BLOCKED_KEY = "cricverse360_blocked_users";
+const REINSTATE_KEY = "cricverse360_reinstatement_requests";
 
 function getLoginLog(): LoginRecord[] {
   try {
@@ -82,15 +82,15 @@ type AuthContextType = {
   hasPendingRequest: (email: string) => boolean;
 };
 
-const AUTH_KEY = "cricverse_auth_user";
+const AUTH_KEY = "cricverse360_auth_user";
 
 const accounts: { email: string; password: string; user: AuthUser }[] = [
-  { email: "arjun@cricverse.com", password: "player123", user: { email: "arjun@cricverse.com", name: "Arjun Patel", role: "player", playerId: "p1", avatar: "/avatars/player1.jpg" } },
-  { email: "jake@cricverse.com", password: "player123", user: { email: "jake@cricverse.com", name: "Jake Thompson", role: "player", playerId: "p2", avatar: "/avatars/player2.jpg" } },
-  { email: "rashid@cricverse.com", password: "player123", user: { email: "rashid@cricverse.com", name: "Rashid Mohammed", role: "player", playerId: "p3", avatar: "/avatars/player3.jpg" } },
-  { email: "rahul@cricverse.com", password: "player123", user: { email: "rahul@cricverse.com", name: "Rahul Desai", role: "player", playerId: "p8", avatar: "/avatars/player8.jpg" } },
+  { email: "arjun@cricverse360.com", password: "player123", user: { email: "arjun@cricverse360.com", name: "Arjun Patel", role: "player", playerId: "p1", avatar: "/avatars/player1.jpg" } },
+  { email: "jake@cricverse360.com", password: "player123", user: { email: "jake@cricverse360.com", name: "Jake Thompson", role: "player", playerId: "p2", avatar: "/avatars/player2.jpg" } },
+  { email: "rashid@cricverse360.com", password: "player123", user: { email: "rashid@cricverse360.com", name: "Rashid Mohammed", role: "player", playerId: "p3", avatar: "/avatars/player3.jpg" } },
+  { email: "rahul@cricverse360.com", password: "player123", user: { email: "rahul@cricverse360.com", name: "Rahul Desai", role: "player", playerId: "p8", avatar: "/avatars/player8.jpg" } },
   { email: "vikram.singh.cricket@gmail.com", password: "Cricket2026!", user: { email: "vikram.singh.cricket@gmail.com", name: "Vikram Singh", role: "player", playerId: "p9" } },
-  { email: "admin@cricverse.com", password: "admin123", user: { email: "admin@cricverse.com", name: "Master Admin", role: "admin" } },
+  { email: "admin@cricverse360.com", password: "admin123", user: { email: "admin@cricverse360.com", name: "Master Admin", role: "admin" } },
 ];
 
 const AuthContext = createContext<AuthContextType>({
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
     try {
-      const profiles = JSON.parse(localStorage.getItem("cricverse_profiles") || "[]");
+      const profiles = JSON.parse(localStorage.getItem("cricverse360_profiles") || "[]");
       const registered = profiles.find(
         (p: { basic: { email: string; password: string } }) =>
           p.basic.email.toLowerCase() === email.toLowerCase() && p.basic.password === password

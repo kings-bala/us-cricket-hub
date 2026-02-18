@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.cricverse.app',
-  appName: 'CricVerse',
+  appId: 'com.cricverse360.app',
+  appName: 'CricVerse360',
   webDir: 'out'
 };
 

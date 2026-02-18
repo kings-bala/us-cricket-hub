@@ -53,7 +53,7 @@ export default function AuthPage() {
           <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-lg text-white mx-auto mb-4">
             CV
           </div>
-          <h1 className="text-2xl font-bold text-white">Welcome to CricVerse</h1>
+          <h1 className="text-2xl font-bold text-white">Welcome to CricVerse360</h1>
           <p className="text-slate-400 mt-1">Sign in to your account</p>
         </div>
 
@@ -74,7 +74,7 @@ export default function AuthPage() {
               <label className="text-sm text-slate-400 block mb-1">Email</label>
               <input
                 type="email"
-                placeholder="you@cricverse.com"
+                placeholder="you@cricverse360.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"

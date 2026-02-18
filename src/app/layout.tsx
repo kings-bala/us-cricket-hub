@@ -3,7 +3,7 @@ import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
 
 export const metadata: Metadata = {
-  title: "CricVerse - International Cricket Talent Discovery Platform",
+  title: "CricVerse360 - International Cricket Talent Discovery Platform",
   description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
 };
 

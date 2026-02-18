@@ -280,11 +280,11 @@ export default function RegisterPage() {
     setSaving(true);
     const profile = { basic, cric, cpi, combine, createdAt: new Date().toISOString() };
     try {
-      const existing = JSON.parse(localStorage.getItem("cricverse_profiles") || "[]");
+      const existing = JSON.parse(localStorage.getItem("cricverse360_profiles") || "[]");
       existing.push(profile);
-      localStorage.setItem("cricverse_profiles", JSON.stringify(existing));
+      localStorage.setItem("cricverse360_profiles", JSON.stringify(existing));
       localStorage.setItem(
-        "cricverse_auth_user",
+        "cricverse360_auth_user",
         JSON.stringify({
           email: basic.email,
           name: basic.fullName,
