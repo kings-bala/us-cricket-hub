@@ -10,11 +10,56 @@ export type AuthUser = {
   avatar?: string;
 };
 
+export type LoginRecord = {
+  email: string;
+  name: string;
+  role: string;
+  loginAt: string;
+  lastActive: string;
+};
+
+const LOGIN_LOG_KEY = "cricverse_login_log";
+const BLOCKED_KEY = "cricverse_blocked_users";
+
+function getLoginLog(): LoginRecord[] {
+  try {
+    return JSON.parse(localStorage.getItem(LOGIN_LOG_KEY) || "[]");
+  } catch { return []; }
+}
+
+function saveLoginRecord(user: AuthUser) {
+  const log = getLoginLog();
+  const now = new Date().toISOString();
+  const idx = log.findIndex((r) => r.email.toLowerCase() === user.email.toLowerCase());
+  if (idx >= 0) {
+    log[idx].lastActive = now;
+    log[idx].name = user.name;
+  } else {
+    log.push({ email: user.email, name: user.name, role: user.role, loginAt: now, lastActive: now });
+  }
+  localStorage.setItem(LOGIN_LOG_KEY, JSON.stringify(log));
+}
+
+function getBlockedUsers(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(BLOCKED_KEY) || "[]");
+  } catch { return []; }
+}
+
+function isBlocked(email: string): boolean {
+  return getBlockedUsers().some((e) => e.toLowerCase() === email.toLowerCase());
+}
+
 type AuthContextType = {
   user: AuthUser | null;
   login: (email: string, password: string) => string | null;
   logout: () => void;
   isLoading: boolean;
+  getUsers: () => LoginRecord[];
+  blockUser: (email: string) => void;
+  unblockUser: (email: string) => void;
+  isUserBlocked: (email: string) => boolean;
+  removeUser: (email: string) => void;
 };
 
 const AUTH_KEY = "cricverse_auth_user";
@@ -27,7 +72,10 @@ const accounts: { email: string; password: string; user: AuthUser }[] = [
   { email: "admin@cricverse.com", password: "admin123", user: { email: "admin@cricverse.com", name: "Master Admin", role: "admin" } },
 ];
 
-const AuthContext = createContext<AuthContextType>({ user: null, login: () => "Not initialized", logout: () => {}, isLoading: true });
+const AuthContext = createContext<AuthContextType>({
+  user: null, login: () => "Not initialized", logout: () => {}, isLoading: true,
+  getUsers: () => [], blockUser: () => {}, unblockUser: () => {}, isUserBlocked: () => false, removeUser: () => {},
+});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -42,10 +90,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (email: string, password: string): string | null => {
+    if (isBlocked(email)) return "Your account has been suspended. Contact admin.";
     const account = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
     if (account) {
       setUser(account.user);
       localStorage.setItem(AUTH_KEY, JSON.stringify(account.user));
+      saveLoginRecord(account.user);
       return null;
     }
     try {
@@ -63,6 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
         setUser(u);
         localStorage.setItem(AUTH_KEY, JSON.stringify(u));
+        saveLoginRecord(u);
         return null;
       }
     } catch {}
@@ -74,7 +125,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(AUTH_KEY);
   };
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>;
+  const getUsers = (): LoginRecord[] => getLoginLog();
+
+  const blockUser = (email: string) => {
+    const blocked = getBlockedUsers();
+    if (!blocked.some((e) => e.toLowerCase() === email.toLowerCase())) {
+      blocked.push(email.toLowerCase());
+      localStorage.setItem(BLOCKED_KEY, JSON.stringify(blocked));
+    }
+    if (user && user.email.toLowerCase() === email.toLowerCase()) {
+      logout();
+    }
+  };
+
+  const unblockUser = (email: string) => {
+    const blocked = getBlockedUsers().filter((e) => e.toLowerCase() !== email.toLowerCase());
+    localStorage.setItem(BLOCKED_KEY, JSON.stringify(blocked));
+  };
+
+  const isUserBlocked = (email: string): boolean => isBlocked(email);
+
+  const removeUser = (email: string) => {
+    const log = getLoginLog().filter((r) => r.email.toLowerCase() !== email.toLowerCase());
+    localStorage.setItem(LOGIN_LOG_KEY, JSON.stringify(log));
+    blockUser(email);
+  };
+
+  return <AuthContext.Provider value={{ user, login, logout, isLoading, getUsers, blockUser, unblockUser, isUserBlocked, removeUser }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

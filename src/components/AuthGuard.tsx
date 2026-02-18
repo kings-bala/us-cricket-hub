@@ -11,12 +11,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   const publicPaths = ["/", "/auth", "/auth/register", "/analyze", "/analyze/live"];
   const isPublic = publicPaths.includes(pathname);
+  const isAdminRoute = pathname.startsWith("/admin");
 
   useEffect(() => {
     if (!isLoading && !user && !isPublic) {
       router.replace("/auth");
     }
-  }, [user, isLoading, pathname, router, isPublic]);
+    if (!isLoading && isAdminRoute && (!user || user.role !== "admin")) {
+      router.replace("/auth");
+    }
+  }, [user, isLoading, pathname, router, isPublic, isAdminRoute]);
 
   if (isLoading) {
     return (
