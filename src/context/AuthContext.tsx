@@ -69,6 +69,7 @@ const accounts: { email: string; password: string; user: AuthUser }[] = [
   { email: "jake@cricverse.com", password: "player123", user: { email: "jake@cricverse.com", name: "Jake Thompson", role: "player", playerId: "p2", avatar: "/avatars/player2.jpg" } },
   { email: "rashid@cricverse.com", password: "player123", user: { email: "rashid@cricverse.com", name: "Rashid Mohammed", role: "player", playerId: "p3", avatar: "/avatars/player3.jpg" } },
   { email: "rahul@cricverse.com", password: "player123", user: { email: "rahul@cricverse.com", name: "Rahul Desai", role: "player", playerId: "p8", avatar: "/avatars/player8.jpg" } },
+  { email: "vikram.singh.cricket@gmail.com", password: "Cricket2026!", user: { email: "vikram.singh.cricket@gmail.com", name: "Vikram Singh", role: "player", playerId: "p9" } },
   { email: "admin@cricverse.com", password: "admin123", user: { email: "admin@cricverse.com", name: "Master Admin", role: "admin" } },
 ];
 
