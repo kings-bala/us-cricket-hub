@@ -3,18 +3,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import type { LoginRecord } from "@/context/AuthContext";
+import type { LoginRecord, ReinstatementRequest } from "@/context/AuthContext";
 
 export default function AdminDashboard() {
-  const { user, getUsers, blockUser, unblockUser, isUserBlocked, removeUser } = useAuth();
+  const { user, getUsers, blockUser, unblockUser, isUserBlocked, removeUser, getReinstatementRequests, approveReinstatement, denyReinstatement } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<LoginRecord[]>([]);
   const [search, setSearch] = useState("");
   const [confirmAction, setConfirmAction] = useState<{ email: string; action: "block" | "unblock" | "remove" } | null>(null);
+  const [requests, setRequests] = useState<ReinstatementRequest[]>([]);
 
   const refresh = useCallback(() => {
     setUsers(getUsers());
-  }, [getUsers]);
+    setRequests(getReinstatementRequests());
+  }, [getUsers, getReinstatementRequests]);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -218,6 +220,58 @@ export default function AdminDashboard() {
             </div>
           )}
         </div>
+
+        {requests.filter((r) => r.status === "pending").length > 0 && (
+          <div className="bg-slate-800/50 border border-amber-500/30 rounded-xl">
+            <div className="p-5 border-b border-amber-500/20">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                  <svg className="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-amber-400">Reinstatement Requests</h2>
+                  <p className="text-xs text-slate-400">{requests.filter((r) => r.status === "pending").length} pending request(s)</p>
+                </div>
+              </div>
+            </div>
+            <div className="divide-y divide-slate-700/30">
+              {requests.filter((r) => r.status === "pending").map((req) => (
+                <div key={req.email + req.requestedAt} className="p-5 flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-sm font-bold text-amber-400">{req.name.charAt(0).toUpperCase()}</div>
+                      <div>
+                        <p className="text-sm font-medium text-white">{req.name}</p>
+                        <p className="text-xs text-slate-500">{req.email}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2 bg-slate-900/50 rounded-lg p-3 border border-slate-700/50">
+                      <p className="text-xs text-slate-500 mb-1">Reason:</p>
+                      <p className="text-sm text-slate-300">{req.reason}</p>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-2">Requested {new Date(req.requestedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => { approveReinstatement(req.email); refresh(); }}
+                      className="text-xs px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-colors"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => { denyReinstatement(req.email); refresh(); }}
+                      className="text-xs px-4 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+                    >
+                      Deny
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {confirmAction && (
