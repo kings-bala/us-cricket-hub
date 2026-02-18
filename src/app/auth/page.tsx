@@ -13,7 +13,7 @@ export default function AuthPage() {
   const router = useRouter();
 
   if (user) {
-    router.replace(user.role === "admin" ? "/" : "/players?tab=profile");
+    router.replace(user.role === "admin" ? "/admin" : "/players?tab=profile");
     return null;
   }
 
@@ -27,8 +27,6 @@ export default function AuthPage() {
     const err = login(email, password);
     if (err) {
       setError(err);
-    } else {
-      router.push("/");
     }
   };
 
