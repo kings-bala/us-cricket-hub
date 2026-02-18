@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { LoginRecord, ReinstatementRequest } from "@/context/AuthContext";
 
 export default function AdminDashboard() {
@@ -67,6 +68,20 @@ export default function AdminDashboard() {
             </div>
             <span className="text-sm text-slate-400">Signed in as <span className="text-white font-medium">{user.name}</span></span>
           </div>
+        </div>
+
+        <div className="flex gap-3">
+          <Link href="/admin/labeling" className="flex items-center gap-2 bg-slate-800/50 border border-purple-500/30 rounded-xl px-5 py-3 hover:border-purple-500/50 transition-colors group">
+            <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+              <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white group-hover:text-purple-300 transition-colors">Dataset Labeling</p>
+              <p className="text-xs text-slate-500">Label analysis clips for ML training</p>
+            </div>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
