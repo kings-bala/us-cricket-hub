@@ -17,6 +17,9 @@ import {
   clearHistory,
   type SavedAnalysis,
 } from "@/lib/analysis-history";
+import { estimateBallSpeed, classifyPace, type SpeedEstimate } from "@/lib/ball-speed";
+import { detectActionClips, getClipSummary, type ActionClip } from "@/lib/auto-clip";
+import VideoDrawingTools from "@/components/VideoDrawingTools";
 
 type AnalysisType = "batting" | "bowling" | "fielding";
 
@@ -50,6 +53,8 @@ export default function AnalyzePage() {
   const [bowlingHand, setBowlingHand] = useState<BowlingHand>("right");
   const [detectedHand, setDetectedHand] = useState<BowlingHand | null>(null);
   const [handOverridden, setHandOverridden] = useState(false);
+  const [speedEstimate, setSpeedEstimate] = useState<SpeedEstimate | null>(null);
+  const [actionClips, setActionClips] = useState<ActionClip[]>([]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -125,6 +130,16 @@ export default function AnalyzePage() {
 
     const result = summarizeAnalysis(analyzed, analysisType);
     setSummary(result);
+
+    if (analysisType === "bowling") {
+      const speed = estimateBallSpeed(poseFrames);
+      setSpeedEstimate(speed);
+    } else {
+      setSpeedEstimate(null);
+    }
+
+    const clips = detectActionClips(poseFrames);
+    setActionClips(clips);
 
     const saved = saveAnalysis(videoFile.name, result);
     setHistory((prev) => [saved, ...prev]);
@@ -202,6 +217,24 @@ export default function AnalyzePage() {
           <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
           Live Camera Analysis
         </Link>
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[
+          { href: "/analyze/coach", label: "AI Coach", color: "purple" },
+          { href: "/analyze/compare", label: "Pro Comparison", color: "cyan" },
+          { href: "/analyze/progress", label: "Progress", color: "amber" },
+          { href: "/analyze/drills", label: "Drill Library", color: "emerald" },
+          { href: "/analyze/notes", label: "Coach Notes", color: "orange" },
+        ].map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`text-xs px-3 py-1.5 rounded-full border transition-colors bg-${item.color}-500/10 text-${item.color}-400 border-${item.color}-500/30 hover:bg-${item.color}-500/20`}
+          >
+            {item.label}
+          </Link>
+        ))}
       </div>
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -398,6 +431,9 @@ export default function AnalyzePage() {
                 />
               </div>
               <canvas ref={canvasRef} className="hidden" />
+              <div className="p-3 border-t border-slate-700/50">
+                <VideoDrawingTools videoRef={videoRef} />
+              </div>
             </div>
           )}
 
@@ -551,16 +587,81 @@ export default function AnalyzePage() {
                     </div>
                   )}
 
+                  {speedEstimate && (
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-white mb-3">Ball Speed Estimation</h3>
+                      <div className="flex items-center gap-4">
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-white">{speedEstimate.speedKph}</p>
+                          <p className="text-xs text-slate-500">km/h</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-3xl font-bold text-slate-400">{speedEstimate.speedMph}</p>
+                          <p className="text-xs text-slate-500">mph</p>
+                        </div>
+                        <div className="flex-1">
+                          <p className={`text-sm font-medium ${classifyPace(speedEstimate.speedKph).color}`}>{classifyPace(speedEstimate.speedKph).label}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">Confidence: {speedEstimate.confidence} &middot; {speedEstimate.method}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {actionClips.length > 0 && (
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <h3 className="text-sm font-semibold text-white mb-3">Auto-Detected Clips</h3>
+                      <div className="grid grid-cols-4 gap-3 mb-3">
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-white">{actionClips.length}</p>
+                          <p className="text-xs text-slate-500">Clips</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-emerald-400">{getClipSummary(actionClips).activeDuration}s</p>
+                          <p className="text-xs text-slate-500">Active</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-red-400">{getClipSummary(actionClips).deadTime}s</p>
+                          <p className="text-xs text-slate-500">Dead Time</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-lg font-bold text-amber-400">{getClipSummary(actionClips).totalDuration}s</p>
+                          <p className="text-xs text-slate-500">Total</p>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        {actionClips.map((clip, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleSeekToFrame(clip.startTime)}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg border border-slate-700/50 hover:border-slate-600 transition-colors text-left"
+                          >
+                            <span className="text-xs text-slate-400 font-mono w-20">{formatTime(clip.startTime)} - {formatTime(clip.endTime)}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${clip.type === "batting" ? "bg-emerald-500/10 text-emerald-400" : clip.type === "bowling" ? "bg-blue-500/10 text-blue-400" : clip.type === "fielding" ? "bg-amber-500/10 text-amber-400" : "bg-slate-500/10 text-slate-400"}`}>{clip.label}</span>
+                            <span className="text-xs text-slate-600 ml-auto">{Math.round(clip.confidence * 100)}%</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-white mb-3">Next Steps</h3>
                     <div className="grid md:grid-cols-2 gap-3">
-                      <Link href="/coaches" className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 hover:border-emerald-500/40 transition-colors">
-                        <p className="text-sm font-medium text-emerald-400">Find a Coach</p>
-                        <p className="text-xs text-slate-400 mt-1">Connect with coaches who specialize in {analysisType}</p>
+                      <Link href="/analyze/coach" className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 hover:border-purple-500/40 transition-colors">
+                        <p className="text-sm font-medium text-purple-400">Ask AI Coach</p>
+                        <p className="text-xs text-slate-400 mt-1">Get personalized coaching tips based on this analysis</p>
                       </Link>
-                      <Link href="/players" className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 hover:border-blue-500/40 transition-colors">
-                        <p className="text-sm font-medium text-blue-400">Create Player Profile</p>
-                        <p className="text-xs text-slate-400 mt-1">Add this analysis to your scouting profile</p>
+                      <Link href="/analyze/compare" className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-4 hover:border-cyan-500/40 transition-colors">
+                        <p className="text-sm font-medium text-cyan-400">Compare with Pros</p>
+                        <p className="text-xs text-slate-400 mt-1">See how you compare to Kohli, Bumrah, and more</p>
+                      </Link>
+                      <Link href="/analyze/progress" className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 hover:border-amber-500/40 transition-colors">
+                        <p className="text-sm font-medium text-amber-400">View Progress</p>
+                        <p className="text-xs text-slate-400 mt-1">Track your improvement over time</p>
+                      </Link>
+                      <Link href="/analyze/notes" className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 hover:border-orange-500/40 transition-colors">
+                        <p className="text-sm font-medium text-orange-400">Coach Notes</p>
+                        <p className="text-xs text-slate-400 mt-1">Add coaching notes and export reports</p>
                       </Link>
                     </div>
                   </div>
