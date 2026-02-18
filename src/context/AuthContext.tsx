@@ -18,8 +18,17 @@ export type LoginRecord = {
   lastActive: string;
 };
 
+export type ReinstatementRequest = {
+  email: string;
+  name: string;
+  reason: string;
+  requestedAt: string;
+  status: "pending" | "approved" | "denied";
+};
+
 const LOGIN_LOG_KEY = "cricverse_login_log";
 const BLOCKED_KEY = "cricverse_blocked_users";
+const REINSTATE_KEY = "cricverse_reinstatement_requests";
 
 function getLoginLog(): LoginRecord[] {
   try {
@@ -50,6 +59,12 @@ function isBlocked(email: string): boolean {
   return getBlockedUsers().some((e) => e.toLowerCase() === email.toLowerCase());
 }
 
+function getReinstatementRequests(): ReinstatementRequest[] {
+  try {
+    return JSON.parse(localStorage.getItem(REINSTATE_KEY) || "[]");
+  } catch { return []; }
+}
+
 type AuthContextType = {
   user: AuthUser | null;
   login: (email: string, password: string) => string | null;
@@ -60,6 +75,11 @@ type AuthContextType = {
   unblockUser: (email: string) => void;
   isUserBlocked: (email: string) => boolean;
   removeUser: (email: string) => void;
+  requestReinstatement: (email: string, reason: string) => string | null;
+  getReinstatementRequests: () => ReinstatementRequest[];
+  approveReinstatement: (email: string) => void;
+  denyReinstatement: (email: string) => void;
+  hasPendingRequest: (email: string) => boolean;
 };
 
 const AUTH_KEY = "cricverse_auth_user";
@@ -76,6 +96,7 @@ const accounts: { email: string; password: string; user: AuthUser }[] = [
 const AuthContext = createContext<AuthContextType>({
   user: null, login: () => "Not initialized", logout: () => {}, isLoading: true,
   getUsers: () => [], blockUser: () => {}, unblockUser: () => {}, isUserBlocked: () => false, removeUser: () => {},
+  requestReinstatement: () => null, getReinstatementRequests: () => [], approveReinstatement: () => {}, denyReinstatement: () => {}, hasPendingRequest: () => false,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -152,7 +173,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     blockUser(email);
   };
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading, getUsers, blockUser, unblockUser, isUserBlocked, removeUser }}>{children}</AuthContext.Provider>;
+  const requestReinstatement = (email: string, reason: string): string | null => {
+    const requests = getReinstatementRequests();
+    const existing = requests.find((r) => r.email.toLowerCase() === email.toLowerCase() && r.status === "pending");
+    if (existing) return "You already have a pending reinstatement request.";
+    const log = getLoginLog();
+    const record = log.find((r) => r.email.toLowerCase() === email.toLowerCase());
+    const name = record ? record.name : email;
+    requests.push({ email: email.toLowerCase(), name, reason, requestedAt: new Date().toISOString(), status: "pending" });
+    localStorage.setItem(REINSTATE_KEY, JSON.stringify(requests));
+    return null;
+  };
+
+  const approveReinstatement = (email: string) => {
+    const requests = getReinstatementRequests().map((r) =>
+      r.email.toLowerCase() === email.toLowerCase() && r.status === "pending" ? { ...r, status: "approved" as const } : r
+    );
+    localStorage.setItem(REINSTATE_KEY, JSON.stringify(requests));
+    unblockUser(email);
+  };
+
+  const denyReinstatement = (email: string) => {
+    const requests = getReinstatementRequests().map((r) =>
+      r.email.toLowerCase() === email.toLowerCase() && r.status === "pending" ? { ...r, status: "denied" as const } : r
+    );
+    localStorage.setItem(REINSTATE_KEY, JSON.stringify(requests));
+  };
+
+  const hasPendingRequest = (email: string): boolean => {
+    return getReinstatementRequests().some((r) => r.email.toLowerCase() === email.toLowerCase() && r.status === "pending");
+  };
+
+  return <AuthContext.Provider value={{ user, login, logout, isLoading, getUsers, blockUser, unblockUser, isUserBlocked, removeUser, requestReinstatement, getReinstatementRequests: () => getReinstatementRequests(), approveReinstatement, denyReinstatement, hasPendingRequest }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
