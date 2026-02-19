@@ -6,22 +6,24 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { UserRole } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 
-const roleLabels: Record<UserRole, string> = {
+const roleLabels: Record<UserRole | "admin", string> = {
   player: "Player",
   agent: "Agent",
   owner: "T20 Owner",
   sponsor: "Sponsor",
   coach: "Coach",
   academy_admin: "Academy",
+  admin: "Admin",
 };
 
-const roleColors: Record<UserRole, string> = {
+const roleColors: Record<UserRole | "admin", string> = {
   player: "bg-emerald-500",
   agent: "bg-blue-500",
   owner: "bg-purple-500",
   sponsor: "bg-amber-500",
   coach: "bg-teal-500",
   academy_admin: "bg-orange-500",
+  admin: "bg-red-500",
 };
 
 type NavLink = { href: string; label: string; desc: string };
@@ -161,36 +163,70 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
   ],
 };
 
+const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
+  player: [
+    { href: "/players?tab=profile", label: "My Profile" },
+    { href: "/players?tab=mystats", label: "My Stats" },
+    { href: "/players?tab=training", label: "Training" },
+    { href: "/analyze", label: "Full Track AI" },
+    { href: "/players?tab=store", label: "Store" },
+  ],
+  agent: [
+    { href: "/players", label: "Cricinfo" },
+    { href: "/rankings", label: "CPI Metrics" },
+    { href: "/scouting", label: "Pro Scouting" },
+    { href: "/squad-builder", label: "Squad Builder" },
+    { href: "/analyze", label: "AI Video" },
+  ],
+  owner: [
+    { href: "/players", label: "Cricinfo" },
+    { href: "/rankings", label: "CPI Metrics" },
+    { href: "/squad-builder", label: "Squad Builder" },
+    { href: "/scouting", label: "Pro Scouting" },
+    { href: "/analyze", label: "AI Video" },
+  ],
+  sponsor: [
+    { href: "/players", label: "Player Registry" },
+    { href: "/sponsors", label: "Sponsorships" },
+  ],
+  coach: [
+    { href: "/players", label: "Cricinfo" },
+    { href: "/rankings", label: "CPI Metrics" },
+    { href: "/combine", label: "Combine" },
+    { href: "/scouting", label: "Pro Scouting" },
+    { href: "/analyze", label: "AI Video" },
+  ],
+  academy_admin: [
+    { href: "/academy", label: "Dashboard" },
+    { href: "/academy/roster", label: "Roster" },
+    { href: "/academy/staff", label: "Staff" },
+    { href: "/academy/attendance", label: "Attendance" },
+    { href: "/academy/invite", label: "Invite" },
+    { href: "/academy/reports", label: "Reports" },
+  ],
+};
+
 export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">CricVerse360</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
 
 function NavbarInner() {
-  const [role, setRole] = useState<UserRole>("player");
+  const [persona, setPersona] = useState<UserRole>("player");
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "admin";
-  const isAcademyAdmin = user?.role === "academy_admin";
+
+  const activeRole: UserRole = isAdmin ? persona : (user?.role && user.role !== "admin" ? user.role as UserRole : "player");
 
   useEffect(() => {
-    if (!isAdmin) { setRole("player"); return; }
+    if (!isAdmin) return;
     const saved = typeof window !== "undefined" ? localStorage.getItem("persona") : null;
-    if (saved && ["player","agent","owner","sponsor","coach"].includes(saved)) setRole(saved as UserRole);
+    if (saved && ["player","agent","owner","sponsor","coach","academy_admin"].includes(saved)) setPersona(saved as UserRole);
   }, [isAdmin]);
   useEffect(() => {
-    try { localStorage.setItem("persona", role); } catch {}
-  }, [role]);
+    if (isAdmin) { try { localStorage.setItem("persona", persona); } catch {} }
+  }, [persona, isAdmin]);
 
-  const groups = personaGroups[role];
-  const flatLinks: { href: string; label: string }[] =
-    role === "player"
-      ? [
-          { href: "/players?tab=profile", label: "My Profile" },
-          { href: "/players?tab=mystats", label: "My Stats" },
-          { href: "/players?tab=training", label: "Training" },
-          { href: "/analyze", label: "Full Track AI" },
-          { href: "/players?tab=store", label: "Store" },
-        ]
-      : groups.flatMap((g) => g.links.map(({ href, label }) => ({ href, label })));
+  const flatLinks = roleFlatLinks[activeRole];
   const pathname = usePathname();
   const search = useSearchParams();
   const currentPlayerTab = pathname && pathname.startsWith("/players") ? (search.get("tab") || "profile") : null;
@@ -210,7 +246,7 @@ function NavbarInner() {
                     {showTabs && user && (
                       <div className="hidden md:flex items-center gap-4">
                         {flatLinks.map((l) => {
-                          const isActive = role === "player"
+                          const isActive = activeRole === "player"
                             ? !!currentPlayerTab && l.href.includes(`tab=${currentPlayerTab}`)
                             : pathname === l.href || pathname.startsWith(l.href + "/");
                           return (
@@ -229,15 +265,18 @@ function NavbarInner() {
                     )}
 
           <div className="flex items-center gap-3">
+            {!isAdmin && user && user.role !== "player" && (
+              <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded-full text-white ${roleColors[activeRole]}`}>{roleLabels[activeRole]}</span>
+            )}
             {isAdmin && (
               <div className="hidden sm:flex items-center gap-2">
                 <span className="text-xs text-slate-400">View as:</span>
                 <select
-                  value={role}
-                  onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
-                  className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[role]}`}
+                  value={persona}
+                  onChange={(e) => { const r = e.target.value as UserRole; setPersona(r); setMobileOpen(false); router.push("/"); }}
+                  className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[persona]}`}
                 >
-                  {(Object.keys(roleLabels) as UserRole[]).map((r) => (
+                  {(Object.keys(roleFlatLinks) as UserRole[]).map((r) => (
                     <option key={r} value={r} className="bg-slate-800">
                       {roleLabels[r]}
                     </option>
@@ -251,7 +290,6 @@ function NavbarInner() {
                   {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
                   <span className="text-xs text-slate-300">{user.name}</span>
                   {isAdmin && <Link href="/admin" className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full hover:bg-amber-500/30 transition-colors">Admin</Link>}
-                {isAcademyAdmin && <Link href="/academy" className="text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full hover:bg-orange-500/30 transition-colors">Academy</Link>}
                 </div>
                 <button onClick={() => { logout(); router.push("/auth"); }} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full transition-colors">Logout</button>
               </div>
@@ -296,11 +334,11 @@ function NavbarInner() {
                 <Link href="/admin" onClick={() => setMobileOpen(false)} className="block py-1.5 text-sm text-amber-400 hover:text-amber-300 pl-2 border-l-2 border-amber-500 transition-colors">Admin Dashboard</Link>
                 <span className="text-xs text-slate-400">View as:</span>
                 <select
-                  value={role}
-                  onChange={(e) => { const r = e.target.value as UserRole; setRole(r); setMobileOpen(false); router.push("/"); }}
-                  className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[role]}`}
+                  value={persona}
+                  onChange={(e) => { const r = e.target.value as UserRole; setPersona(r); setMobileOpen(false); router.push("/"); }}
+                  className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[persona]}`}
                 >
-                  {(Object.keys(roleLabels) as UserRole[]).map((r) => (
+                  {(Object.keys(roleFlatLinks) as UserRole[]).map((r) => (
                     <option key={r} value={r} className="bg-slate-800">
                       {roleLabels[r]}
                     </option>
