@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { getItem, setItem, removeItem } from "@/lib/storage";
 
 export type AuthUser = {
   email: string;
@@ -26,14 +27,8 @@ export type ReinstatementRequest = {
   status: "pending" | "approved" | "denied";
 };
 
-const LOGIN_LOG_KEY = "cricverse360_login_log";
-const BLOCKED_KEY = "cricverse360_blocked_users";
-const REINSTATE_KEY = "cricverse360_reinstatement_requests";
-
 function getLoginLog(): LoginRecord[] {
-  try {
-    return JSON.parse(localStorage.getItem(LOGIN_LOG_KEY) || "[]");
-  } catch { return []; }
+  return getItem<LoginRecord[]>("login_log", []);
 }
 
 function saveLoginRecord(user: AuthUser) {
@@ -46,13 +41,11 @@ function saveLoginRecord(user: AuthUser) {
   } else {
     log.push({ email: user.email, name: user.name, role: user.role, loginAt: now, lastActive: now });
   }
-  localStorage.setItem(LOGIN_LOG_KEY, JSON.stringify(log));
+  setItem("login_log", log);
 }
 
 function getBlockedUsers(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(BLOCKED_KEY) || "[]");
-  } catch { return []; }
+  return getItem<string[]>("blocked_users", []);
 }
 
 function isBlocked(email: string): boolean {
@@ -60,9 +53,7 @@ function isBlocked(email: string): boolean {
 }
 
 function getReinstatementRequests(): ReinstatementRequest[] {
-  try {
-    return JSON.parse(localStorage.getItem(REINSTATE_KEY) || "[]");
-  } catch { return []; }
+  return getItem<ReinstatementRequest[]>("reinstatement_requests", []);
 }
 
 type AuthContextType = {
@@ -82,9 +73,7 @@ type AuthContextType = {
   hasPendingRequest: (email: string) => boolean;
 };
 
-const AUTH_KEY = "cricverse360_auth_user";
-
-const accounts: { email: string; password: string; user: AuthUser }[] = [
+const SEED_ACCOUNTS: { email: string; password: string; user: AuthUser }[] = [
   { email: "arjun@cricverse360.com", password: "player123", user: { email: "arjun@cricverse360.com", name: "Arjun Patel", role: "player", playerId: "p1", avatar: "/avatars/player1.jpg" } },
   { email: "jake@cricverse360.com", password: "player123", user: { email: "jake@cricverse360.com", name: "Jake Thompson", role: "player", playerId: "p2", avatar: "/avatars/player2.jpg" } },
   { email: "rashid@cricverse360.com", password: "player123", user: { email: "rashid@cricverse360.com", name: "Rashid Mohammed", role: "player", playerId: "p3", avatar: "/avatars/player3.jpg" } },
@@ -104,47 +93,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(AUTH_KEY);
-      if (saved) setUser(JSON.parse(saved));
-    } catch {}
+    const saved = getItem<AuthUser | null>("auth_user", null);
+    if (saved) setUser(saved);
     setIsLoading(false);
   }, []);
 
   const login = (email: string, password: string): string | null => {
     if (isBlocked(email)) return "Your account has been suspended. Contact admin.";
-    const account = accounts.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
-    if (account) {
-      setUser(account.user);
-      localStorage.setItem(AUTH_KEY, JSON.stringify(account.user));
-      saveLoginRecord(account.user);
+
+    const profiles = getItem<{ basic: { email: string; password: string; fullName: string } }[]>("profiles", []);
+    const registered = profiles.find(
+      (p) => p.basic.email.toLowerCase() === email.toLowerCase() && p.basic.password === password
+    );
+    if (registered) {
+      const u: AuthUser = {
+        email: registered.basic.email,
+        name: registered.basic.fullName,
+        role: "player",
+        playerId: `reg_${Date.now()}`,
+      };
+      setUser(u);
+      setItem("auth_user", u);
+      saveLoginRecord(u);
       return null;
     }
-    try {
-      const profiles = JSON.parse(localStorage.getItem("cricverse360_profiles") || "[]");
-      const registered = profiles.find(
-        (p: { basic: { email: string; password: string } }) =>
-          p.basic.email.toLowerCase() === email.toLowerCase() && p.basic.password === password
-      );
-      if (registered) {
-        const u: AuthUser = {
-          email: registered.basic.email,
-          name: registered.basic.fullName,
-          role: "player",
-          playerId: `reg_${Date.now()}`,
-        };
-        setUser(u);
-        localStorage.setItem(AUTH_KEY, JSON.stringify(u));
-        saveLoginRecord(u);
-        return null;
-      }
-    } catch {}
+
+    const seed = SEED_ACCOUNTS.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
+    if (seed) {
+      setUser(seed.user);
+      setItem("auth_user", seed.user);
+      saveLoginRecord(seed.user);
+      return null;
+    }
+
     return "Invalid email or password";
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem(AUTH_KEY);
+    removeItem("auth_user");
   };
 
   const getUsers = (): LoginRecord[] => getLoginLog();
@@ -153,7 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const blocked = getBlockedUsers();
     if (!blocked.some((e) => e.toLowerCase() === email.toLowerCase())) {
       blocked.push(email.toLowerCase());
-      localStorage.setItem(BLOCKED_KEY, JSON.stringify(blocked));
+      setItem("blocked_users", blocked);
     }
     if (user && user.email.toLowerCase() === email.toLowerCase()) {
       logout();
@@ -162,14 +149,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const unblockUser = (email: string) => {
     const blocked = getBlockedUsers().filter((e) => e.toLowerCase() !== email.toLowerCase());
-    localStorage.setItem(BLOCKED_KEY, JSON.stringify(blocked));
+    setItem("blocked_users", blocked);
   };
 
   const isUserBlocked = (email: string): boolean => isBlocked(email);
 
   const removeUser = (email: string) => {
     const log = getLoginLog().filter((r) => r.email.toLowerCase() !== email.toLowerCase());
-    localStorage.setItem(LOGIN_LOG_KEY, JSON.stringify(log));
+    setItem("login_log", log);
     blockUser(email);
   };
 
@@ -181,7 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const record = log.find((r) => r.email.toLowerCase() === email.toLowerCase());
     const name = record ? record.name : email;
     requests.push({ email: email.toLowerCase(), name, reason, requestedAt: new Date().toISOString(), status: "pending" });
-    localStorage.setItem(REINSTATE_KEY, JSON.stringify(requests));
+    setItem("reinstatement_requests", requests);
     return null;
   };
 
@@ -189,7 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const requests = getReinstatementRequests().map((r) =>
       r.email.toLowerCase() === email.toLowerCase() && r.status === "pending" ? { ...r, status: "approved" as const } : r
     );
-    localStorage.setItem(REINSTATE_KEY, JSON.stringify(requests));
+    setItem("reinstatement_requests", requests);
     unblockUser(email);
   };
 
@@ -197,7 +184,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const requests = getReinstatementRequests().map((r) =>
       r.email.toLowerCase() === email.toLowerCase() && r.status === "pending" ? { ...r, status: "denied" as const } : r
     );
-    localStorage.setItem(REINSTATE_KEY, JSON.stringify(requests));
+    setItem("reinstatement_requests", requests);
   };
 
   const hasPendingRequest = (email: string): boolean => {
