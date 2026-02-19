@@ -1,11 +1,12 @@
 "use client";
 
-import { Suspense, useEffect, useState, useMemo } from "react";
+import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus } from "@/data/mock";
 import { legends, skillColors, type Skill, type Routine } from "@/data/legends";
 import StatCard from "@/components/StatCard";
+import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
   "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
@@ -26,11 +27,18 @@ export default function PlayersPage() {
 
 function PlayersContent() {
   const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
-  const [trainingTab, setTrainingTab] = useState<"routines" | "drills" | "planner" | "log">("routines");
+  const [trainingTab, setTrainingTab] = useState<"routines" | "drills" | "planner" | "log" | "progress" | "notes">("routines");
   const [drillCategory, setDrillCategory] = useState<"all" | "batting" | "bowling" | "fielding" | "fitness">("all");
   const [drillLevel, setDrillLevel] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
   const [sessionLogs, setSessionLogs] = useState<{ id: string; date: string; type: string; duration: string; notes: string }[]>([]);
   const [plannerDays, setPlannerDays] = useState<Record<string, string[]>>({});
+  const [progressFilter, setProgressFilter] = useState<"all" | "batting" | "bowling" | "fielding">("all");
+  const [analysisHistory, setAnalysisHistory] = useState<SavedAnalysis[]>([]);
+  const [coachNotes, setCoachNotes] = useState<{ id: string; analysisId: string; text: string; timestamp: string; category: "technique" | "fitness" | "mental" | "general" }[]>([]);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
+  const [newNote, setNewNote] = useState("");
+  const [noteCategory, setNoteCategory] = useState<"technique" | "fitness" | "mental" | "general">("technique");
+  const [exportFormat, setExportFormat] = useState<"text" | "csv">("text");
   const search = useSearchParams();
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
 
@@ -38,7 +46,55 @@ function PlayersContent() {
     const todayKey = new Date().toISOString().slice(0, 10);
     const stored = localStorage.getItem(`cricverse360_routine_log_${todayKey}`);
     if (stored) setCompletedRoutines(JSON.parse(stored));
+    setAnalysisHistory(getHistory());
+    try {
+      const raw = localStorage.getItem("cricverse360_coach_notes");
+      if (raw) setCoachNotes(JSON.parse(raw));
+    } catch {}
+    const h = getHistory();
+    if (h.length > 0) setSelectedAnalysis(h[0]);
   }, []);
+
+  const addCoachNote = useCallback(() => {
+    if (!newNote.trim() || !selectedAnalysis) return;
+    const note = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, analysisId: selectedAnalysis.id, text: newNote.trim(), timestamp: new Date().toISOString(), category: noteCategory };
+    const updated = [note, ...coachNotes];
+    setCoachNotes(updated);
+    try { localStorage.setItem("cricverse360_coach_notes", JSON.stringify(updated)); } catch {}
+    setNewNote("");
+  }, [newNote, selectedAnalysis, noteCategory, coachNotes]);
+
+  const deleteCoachNote = useCallback((id: string) => {
+    const updated = coachNotes.filter((n) => n.id !== id);
+    setCoachNotes(updated);
+    try { localStorage.setItem("cricverse360_coach_notes", JSON.stringify(updated)); } catch {}
+  }, [coachNotes]);
+
+  const exportCoachNotes = useCallback(() => {
+    if (!selectedAnalysis) return;
+    const sessionNotes = coachNotes.filter((n) => n.analysisId === selectedAnalysis.id);
+    let content = "";
+    if (exportFormat === "csv") {
+      content = "Date,Category,Note,Analysis,Score\n";
+      sessionNotes.forEach((n) => {
+        content += `"${new Date(n.timestamp).toLocaleDateString()}","${n.category}","${n.text.replace(/"/g, '""')}","${selectedAnalysis.fileName}","${selectedAnalysis.summary.overallScore}"\n`;
+      });
+    } else {
+      content = `Coach Notes Report - ${selectedAnalysis.fileName}\nAnalysis Type: ${selectedAnalysis.summary.type} | Score: ${selectedAnalysis.summary.overallScore}/100\nGenerated: ${new Date().toLocaleDateString()}\n${"=".repeat(50)}\n\nANALYSIS SUMMARY:\n`;
+      selectedAnalysis.summary.categories.forEach((c) => { content += `  ${c.category}: ${c.score}/100 - ${c.comment}\n`; });
+      content += `\nCOACH NOTES:\n`;
+      sessionNotes.forEach((n) => { content += `  [${n.category.toUpperCase()}] ${new Date(n.timestamp).toLocaleDateString()} - ${n.text}\n`; });
+      content += `\nRECOMMENDED DRILLS:\n`;
+      selectedAnalysis.summary.drills.forEach((d, i) => { content += `  ${i + 1}. ${d}\n`; });
+    }
+    const blob = new Blob([content], { type: exportFormat === "csv" ? "text/csv" : "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `coach-notes-${selectedAnalysis.fileName.replace(/\.[^.]+$/, "")}.${exportFormat === "csv" ? "csv" : "txt"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [selectedAnalysis, coachNotes, exportFormat]);
 
   const toggleRoutine = (routineKey: string) => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -51,7 +107,7 @@ function PlayersContent() {
     const t = search.get("tab");
     const sub = search.get("sub");
     if (t === "profile" || t === "mystats" || t === "training" || t === "ai" || t === "store") setTab(t);
-    if (sub === "routines" || sub === "drills" || sub === "planner" || sub === "log") setTrainingTab(sub);
+    if (sub === "routines" || sub === "drills" || sub === "planner" || sub === "log" || sub === "progress" || sub === "notes") setTrainingTab(sub);
   }, [search]);
 
   const tabs = [
@@ -279,6 +335,8 @@ function PlayersContent() {
           { id: "drills", label: "Drill Library" },
           { id: "planner", label: "Training Plan" },
           { id: "log", label: "Session Log" },
+          { id: "progress", label: "Progress" },
+          { id: "notes", label: "Coach Notes" },
         ] as const;
 
         let savedSelections: Record<string, string> = {};
@@ -728,6 +786,271 @@ function PlayersContent() {
                 )}
               </div>
             )}
+
+            {trainingTab === "progress" && (() => {
+              const filtered = analysisHistory
+                .filter((a) => progressFilter === "all" || a.summary.type === progressFilter)
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+              const scoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
+              const barColor = (s: number) => s >= 75 ? "bg-emerald-500" : s >= 60 ? "bg-amber-500" : "bg-red-500";
+              const allCategories = Array.from(new Set(filtered.flatMap((a) => a.summary.categories.map((c) => c.category))));
+              const getTrend = (scores: number[]) => {
+                if (scores.length < 2) return { direction: "neutral" as const, change: 0 };
+                const recent = scores.slice(-3);
+                const earlier = scores.slice(0, Math.max(1, scores.length - 3));
+                const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+                const earlierAvg = earlier.reduce((a, b) => a + b, 0) / earlier.length;
+                const change = Math.round(recentAvg - earlierAvg);
+                return { direction: change > 2 ? "up" as const : change < -2 ? "down" as const : "neutral" as const, change };
+              };
+              const overallScores = filtered.map((a) => a.summary.overallScore);
+              const overallTrend = getTrend(overallScores);
+              const avgScore = overallScores.length > 0 ? Math.round(overallScores.reduce((a, b) => a + b, 0) / overallScores.length) : 0;
+              const bestScore = overallScores.length > 0 ? Math.max(...overallScores) : 0;
+              const latestScore = overallScores.length > 0 ? overallScores[overallScores.length - 1] : 0;
+
+              return (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1">Progress Dashboard</h2>
+                      <p className="text-sm text-slate-400">Track your technique improvement over time.</p>
+                    </div>
+                    <select value={progressFilter} onChange={(e) => setProgressFilter(e.target.value as typeof progressFilter)} className="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                      <option value="all">All Types</option>
+                      <option value="batting">Batting</option>
+                      <option value="bowling">Bowling</option>
+                      <option value="fielding">Fielding</option>
+                    </select>
+                  </div>
+                  {filtered.length === 0 ? (
+                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+                      <p className="text-slate-400 font-medium">No analysis data yet</p>
+                      <p className="text-xs text-slate-500 mt-1">Analyze multiple videos to see your progress over time.</p>
+                      <Link href="/analyze" className="inline-block mt-4 text-sm text-amber-400 hover:text-amber-300">Go to Analysis &rarr;</Link>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Sessions</p>
+                          <p className="text-2xl font-bold text-white">{filtered.length}</p>
+                        </div>
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Average Score</p>
+                          <p className={`text-2xl font-bold ${scoreColor(avgScore)}`}>{avgScore}</p>
+                        </div>
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Best Score</p>
+                          <p className={`text-2xl font-bold ${scoreColor(bestScore)}`}>{bestScore}</p>
+                        </div>
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Trend</p>
+                          <div className="flex items-center gap-2">
+                            <p className={`text-2xl font-bold ${overallTrend.direction === "up" ? "text-emerald-400" : overallTrend.direction === "down" ? "text-red-400" : "text-slate-400"}`}>
+                              {overallTrend.direction === "up" ? "+" : ""}{overallTrend.change}
+                            </p>
+                            <span className="text-lg">{overallTrend.direction === "up" ? "\u2191" : overallTrend.direction === "down" ? "\u2193" : "\u2192"}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-white mb-4">Score Over Time</h3>
+                        <div className="flex items-end gap-1.5 h-32">
+                          {filtered.map((a, i) => {
+                            const height = (a.summary.overallScore / 100) * 120;
+                            return (
+                              <div key={a.id} className="flex-1 flex flex-col items-center group relative" style={{ minWidth: "20px", maxWidth: "60px" }}>
+                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                  {a.summary.overallScore} &mdash; {new Date(a.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                </div>
+                                <div className={`w-full rounded-t-sm transition-all duration-500 ${barColor(a.summary.overallScore)} ${i === filtered.length - 1 ? "opacity-100" : "opacity-60"}`} style={{ height: `${height}px` }} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs text-slate-600">{filtered.length > 0 ? new Date(filtered[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                          <span className="text-xs text-slate-600">{filtered.length > 0 ? new Date(filtered[filtered.length - 1].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                        </div>
+                      </div>
+                      {allCategories.length > 0 && (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                          <h3 className="text-sm font-semibold text-white mb-4">Category Trends</h3>
+                          <div className="space-y-4">
+                            {allCategories.map((cat) => {
+                              const catScores = filtered.map((a) => a.summary.categories.find((c) => c.category === cat)?.score).filter((s): s is number => s !== undefined);
+                              const trend = getTrend(catScores);
+                              const latest = catScores.length > 0 ? catScores[catScores.length - 1] : 0;
+                              const avg = catScores.length > 0 ? Math.round(catScores.reduce((a, b) => a + b, 0) / catScores.length) : 0;
+                              return (
+                                <div key={cat}>
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-sm text-white font-medium">{cat}</span>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-xs text-slate-500">Avg: {avg}</span>
+                                      <span className={`text-xs font-bold ${scoreColor(latest)}`}>{latest}</span>
+                                      <span className={`text-xs ${trend.direction === "up" ? "text-emerald-400" : trend.direction === "down" ? "text-red-400" : "text-slate-500"}`}>
+                                        {trend.direction === "up" ? `+${trend.change}` : trend.direction === "down" ? `${trend.change}` : "="}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="w-full bg-slate-700 rounded-full h-2">
+                                    <div className={`h-2 rounded-full transition-all duration-700 ${barColor(latest)}`} style={{ width: `${latest}%` }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-white mb-4">Session History</h3>
+                        <div className="space-y-2">
+                          {[...filtered].reverse().map((a) => (
+                            <div key={a.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-700/50 hover:border-slate-600 transition-colors">
+                              <div>
+                                <p className="text-sm text-white font-medium truncate">{a.fileName}</p>
+                                <p className="text-xs text-slate-500">{new Date(a.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} &middot; {a.summary.type}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className={`text-lg font-bold ${scoreColor(a.summary.overallScore)}`}>{a.summary.overallScore}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {latestScore > 0 && (
+                        <div className={`rounded-xl p-5 border ${overallTrend.direction === "up" ? "bg-emerald-500/5 border-emerald-500/20" : overallTrend.direction === "down" ? "bg-amber-500/5 border-amber-500/20" : "bg-blue-500/5 border-blue-500/20"}`}>
+                          <h3 className={`text-sm font-semibold mb-2 ${overallTrend.direction === "up" ? "text-emerald-400" : overallTrend.direction === "down" ? "text-amber-400" : "text-blue-400"}`}>
+                            {overallTrend.direction === "up" ? "Great Progress!" : overallTrend.direction === "down" ? "Room for Improvement" : "Steady Performance"}
+                          </h3>
+                          <p className="text-sm text-slate-300">
+                            {overallTrend.direction === "up"
+                              ? `Your scores are trending up by ${overallTrend.change} points. Keep up the great work!`
+                              : overallTrend.direction === "down"
+                                ? `Your recent scores have dipped by ${Math.abs(overallTrend.change)} points. Focus on the areas highlighted above.`
+                                : "Your performance is consistent. Challenge yourself with more complex drills to push beyond your current level."}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {trainingTab === "notes" && (() => {
+              const noteCategoryColors: Record<string, { text: string; bg: string }> = {
+                technique: { text: "text-emerald-400", bg: "bg-emerald-500/10" },
+                fitness: { text: "text-blue-400", bg: "bg-blue-500/10" },
+                mental: { text: "text-purple-400", bg: "bg-purple-500/10" },
+                general: { text: "text-slate-400", bg: "bg-slate-500/10" },
+              };
+              const noteScoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
+              const filteredNotes = selectedAnalysis ? coachNotes.filter((n) => n.analysisId === selectedAnalysis.id) : coachNotes;
+
+              return (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-white mb-1">Coach Notes & Reports</h2>
+                    <p className="text-sm text-slate-400">Add coaching notes to analyses and export detailed reports.</p>
+                  </div>
+                  <div className="grid lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-1 space-y-4">
+                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Sessions</h3>
+                        {analysisHistory.length === 0 ? (
+                          <p className="text-xs text-slate-500">No analyses yet.</p>
+                        ) : (
+                          <div className="space-y-2 max-h-80 overflow-y-auto">
+                            {analysisHistory.map((a) => {
+                              const noteCount = coachNotes.filter((n) => n.analysisId === a.id).length;
+                              return (
+                                <button key={a.id} onClick={() => setSelectedAnalysis(a)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${selectedAnalysis?.id === a.id ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                                  <p className="text-white font-medium truncate">{a.fileName}</p>
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className={noteScoreColor(a.summary.overallScore)}>{a.summary.overallScore}</span>
+                                    <span className="text-slate-500 capitalize">{a.summary.type}</span>
+                                    {noteCount > 0 && <span className="text-orange-400 ml-auto">{noteCount} notes</span>}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="lg:col-span-3 space-y-6">
+                      {!selectedAnalysis ? (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+                          <p className="text-slate-400">Select an analysis session to add notes</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                            <div className="flex items-center justify-between mb-3">
+                              <div>
+                                <h3 className="text-sm font-semibold text-white">{selectedAnalysis.fileName}</h3>
+                                <p className="text-xs text-slate-500">{selectedAnalysis.summary.type} analysis &middot; Score: {selectedAnalysis.summary.overallScore}/100 &middot; {new Date(selectedAnalysis.date).toLocaleDateString()}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value as "text" | "csv")} className="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                                  <option value="text">Text Report</option>
+                                  <option value="csv">CSV Export</option>
+                                </select>
+                                <button onClick={exportCoachNotes} className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-lg text-xs font-medium hover:bg-orange-500/30 transition-colors">Export</button>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedAnalysis.summary.categories.map((c, i) => (
+                                <span key={i} className={`text-xs px-2 py-1 rounded-full border ${c.score >= 75 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : c.score >= 60 ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
+                                  {c.category}: {c.score}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                            <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
+                            <div className="flex gap-2 mb-3">
+                              {(["technique", "fitness", "mental", "general"] as const).map((cat) => (
+                                <button key={cat} onClick={() => setNoteCategory(cat)} className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${noteCategory === cat ? `${noteCategoryColors[cat].bg} ${noteCategoryColors[cat].text} border-current` : "border-slate-700 text-slate-400 hover:text-white"}`}>
+                                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex gap-2">
+                              <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Add coaching observation, feedback, or drill suggestion..." className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 resize-none" rows={2} />
+                              <button onClick={addCoachNote} disabled={!newNote.trim()} className={`px-4 py-2.5 rounded-lg font-medium text-sm self-end transition-colors ${newNote.trim() ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-slate-700 text-slate-500 cursor-not-allowed"}`}>Add</button>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            {filteredNotes.length === 0 ? (
+                              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                                <p className="text-xs text-slate-500">No notes yet for this session. Add your first coaching note above.</p>
+                              </div>
+                            ) : (
+                              filteredNotes.map((note) => (
+                                <div key={note.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[note.category].bg} ${noteCategoryColors[note.category].text}`}>{note.category}</span>
+                                      <span className="text-xs text-slate-600">{new Date(note.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })} at {new Date(note.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>
+                                    </div>
+                                    <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                                  </div>
+                                  <p className="text-sm text-slate-300">{note.text}</p>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         );
       })()}

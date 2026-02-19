@@ -222,8 +222,6 @@ export default function AnalyzePage() {
         {[
           { href: "/analyze/coach", label: "AI Coach", color: "purple" },
           { href: "/analyze/compare", label: "Pro Comparison", color: "cyan" },
-          { href: "/analyze/progress", label: "Progress", color: "amber" },
-          { href: "/analyze/notes", label: "Coach Notes", color: "orange" },
         ].map((item) => (
           <Link
             key={item.href}

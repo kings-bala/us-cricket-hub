@@ -93,6 +93,8 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players?tab=training&sub=drills", label: "Drill Library", desc: "Curated coaching drills" },
       { href: "/players?tab=training&sub=planner", label: "Training Plan", desc: "Weekly schedule builder" },
       { href: "/players?tab=training&sub=log", label: "Session Log", desc: "Log your practice sessions" },
+      { href: "/players?tab=training&sub=progress", label: "Progress", desc: "Track improvement over time" },
+      { href: "/players?tab=training&sub=notes", label: "Coach Notes", desc: "Add notes & export reports" },
       { href: "/coaches", label: "Find Coach", desc: "Connect with a coach" },
     ]},
     { title: "Store", id: "store", links: [
