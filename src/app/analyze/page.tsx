@@ -222,6 +222,7 @@ export default function AnalyzePage() {
         {[
           { href: "/analyze/coach", label: "AI Coach", color: "purple" },
           { href: "/analyze/compare", label: "Pro Comparison", color: "cyan" },
+          { href: "/analyze/session", label: "Net Session Tracker", color: "cyan" },
         ].map((item) => (
           <Link
             key={item.href}

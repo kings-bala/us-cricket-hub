@@ -17,6 +17,7 @@ import {
   clearHistory,
   type SavedAnalysis,
 } from "@/lib/analysis-history";
+import { estimateBallSpeed, classifyPace, type SpeedEstimate } from "@/lib/ball-speed";
 
 type AnalysisType = "batting" | "bowling" | "fielding";
 
@@ -32,6 +33,8 @@ export default function LiveAnalyzePage() {
   const [showFeedback, setShowFeedback] = useState(true);
   const [recentFrameLandmarks, setRecentFrameLandmarks] = useState<NormalizedLandmark[][]>([]);
   const [poseWarning, setPoseWarning] = useState<string | null>(null);
+  const [speedEstimate, setSpeedEstimate] = useState<SpeedEstimate | null>(null);
+  const timestampedFramesRef = useRef<{ landmarks: NormalizedLandmark[]; timestamp: number }[]>([]);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -91,6 +94,16 @@ export default function LiveAnalyzePage() {
           return updated;
         });
 
+        timestampedFramesRef.current.push({ landmarks: result.landmarks, timestamp: result.timestamp });
+        if (timestampedFramesRef.current.length > 60) {
+          timestampedFramesRef.current = timestampedFramesRef.current.slice(-60);
+        }
+
+        if (analysisType === "bowling" && timestampedFramesRef.current.length >= 5) {
+          const speed = estimateBallSpeed(timestampedFramesRef.current);
+          if (speed) setSpeedEstimate(speed);
+        }
+
         if (analysisType === "bowling" && recentFrameLandmarks.length >= 10) {
           const detected = detectBowlingHand(recentFrameLandmarks);
           if (detected !== bowlingHand) {
@@ -128,6 +141,8 @@ export default function LiveAnalyzePage() {
     stopCamera();
     setLiveAnalysis(null);
     setRecentFrameLandmarks([]);
+    setSpeedEstimate(null);
+    timestampedFramesRef.current = [];
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
@@ -432,6 +447,22 @@ export default function LiveAnalyzePage() {
                 <div className="absolute top-4 left-4 flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-sm font-medium text-emerald-400">Live</span>
+                </div>
+              )}
+
+              {isStreaming && speedEstimate && analysisType === "bowling" && !poseWarning && (
+                <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm border border-slate-600/50 rounded-xl p-3 text-center min-w-[120px]">
+                  <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1">Speed Gun</p>
+                  <p className="text-3xl font-black text-white leading-none">{speedEstimate.speedKph}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">km/h</p>
+                  <div className="border-t border-slate-700 mt-2 pt-2">
+                    <p className="text-lg font-bold text-slate-300">{speedEstimate.speedMph} <span className="text-[10px] font-normal text-slate-500">mph</span></p>
+                  </div>
+                  <p className={`text-xs font-semibold mt-1 ${classifyPace(speedEstimate.speedKph).color}`}>{classifyPace(speedEstimate.speedKph).label}</p>
+                  <div className="flex items-center justify-center gap-1 mt-1">
+                    <div className={`w-1.5 h-1.5 rounded-full ${speedEstimate.confidence === "high" ? "bg-emerald-400" : speedEstimate.confidence === "medium" ? "bg-amber-400" : "bg-red-400"}`} />
+                    <span className="text-[10px] text-slate-500">{speedEstimate.confidence}</span>
+                  </div>
                 </div>
               )}
 
