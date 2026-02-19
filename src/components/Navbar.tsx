@@ -110,9 +110,13 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
     ]},
-    { title: "Tools", id: "tools", links: [
+    { title: "Pro Scouting", id: "scouting", links: [
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
+    ]},
+    { title: "Squad Builder", id: "squad", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
+    ]},
+    { title: "AI Analysis", id: "ai", links: [
       { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
   ],
@@ -121,9 +125,13 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
     ]},
-    { title: "Tools", id: "tools", links: [
+    { title: "Squad Builder", id: "squad", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
+    ]},
+    { title: "Pro Scouting", id: "scouting", links: [
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
+    ]},
+    { title: "AI Analysis", id: "ai", links: [
       { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
   ],
@@ -144,8 +152,10 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
       { href: "/combine", label: "Combine", desc: "Athletic testing" },
     ]},
-    { title: "Tools", id: "tools", links: [
+    { title: "Pro Scouting", id: "scouting", links: [
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
+    ]},
+    { title: "AI Analysis", id: "ai", links: [
       { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
   ],
