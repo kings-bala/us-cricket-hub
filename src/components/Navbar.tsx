@@ -109,24 +109,22 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Stats", id: "stats", links: [
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
-      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
     ]},
     { title: "Tools", id: "tools", links: [
-      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
-      { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
+      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
+      { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
   ],
   owner: [
     { title: "Stats", id: "stats", links: [
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
-      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
     ]},
     { title: "Tools", id: "tools", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
-      { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
+      { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
   ],
   sponsor: [
@@ -134,21 +132,21 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players", label: "Player Registry", desc: "Browse player profiles" },
     ]},
     { title: "Sponsorships", id: "sponsorships", links: [
-      { href: "/sponsors", label: "Bat Sponsor", desc: "Partner with talent" },
-      { href: "/sponsors", label: "Kit Sponsor", desc: "Team apparel" },
-      { href: "/sponsors", label: "Training Sponsor", desc: "Academy & coaching" },
+      { href: "/sponsors", label: "Sponsorships", desc: "Partner with talent" },
     ]},
   ],
   coach: [
-    { title: "Stats", id: "stats", links: [
+    { title: "Academy", id: "academy", links: [
+      { href: "/academy/attendance", label: "Attendance", desc: "Mark daily attendance" },
+    ]},
+    { title: "My Academy Stats", id: "mystats", links: [
       { href: "/players", label: "Cricinfo", desc: "Stats & records" },
       { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
-      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
+      { href: "/combine", label: "Combine", desc: "Athletic testing" },
     ]},
     { title: "Tools", id: "tools", links: [
-      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
-      { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
+      { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
   ],
   academy_admin: [
@@ -176,25 +174,26 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/rankings", label: "CPI Metrics" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/squad-builder", label: "Squad Builder" },
-    { href: "/analyze", label: "AI Video" },
+    { href: "/analyze", label: "AI Analysis" },
   ],
   owner: [
     { href: "/players", label: "Cricinfo" },
     { href: "/rankings", label: "CPI Metrics" },
     { href: "/squad-builder", label: "Squad Builder" },
     { href: "/scouting", label: "Pro Scouting" },
-    { href: "/analyze", label: "AI Video" },
+    { href: "/analyze", label: "AI Analysis" },
   ],
   sponsor: [
     { href: "/players", label: "Player Registry" },
     { href: "/sponsors", label: "Sponsorships" },
   ],
   coach: [
+    { href: "/academy/attendance", label: "Attendance" },
     { href: "/players", label: "Cricinfo" },
     { href: "/rankings", label: "CPI Metrics" },
     { href: "/combine", label: "Combine" },
     { href: "/scouting", label: "Pro Scouting" },
-    { href: "/analyze", label: "AI Video" },
+    { href: "/analyze", label: "AI Analysis" },
   ],
   academy_admin: [
     { href: "/academy", label: "Dashboard" },
