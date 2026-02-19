@@ -3,13 +3,16 @@ import { parseHtml, parseUrlMeta } from "@/lib/cricclubs-parser";
 
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
+    let { url } = await req.json();
     if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "URL is required" }, { status: 400 });
+      return NextResponse.json({ error: "URL or Player ID is required" }, { status: 400 });
     }
 
-    if (!url.includes("cricclubs.com")) {
-      return NextResponse.json({ error: "Not a valid CricClubs URL" }, { status: 400 });
+    url = url.trim();
+    if (/^\d+$/.test(url)) {
+      url = `https://cricclubs.com/viewPlayer.do?playerId=${url}`;
+    } else if (!url.includes("cricclubs.com")) {
+      return NextResponse.json({ error: "Not a valid CricClubs URL or Player ID" }, { status: 400 });
     }
 
     const meta = parseUrlMeta(url);

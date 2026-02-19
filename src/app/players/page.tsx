@@ -7,6 +7,9 @@ import { players, tournaments, performanceFeedItems, playerCombineData, generate
 import { legends, skillColors, type Skill, type Routine } from "@/data/legends";
 import StatCard from "@/components/StatCard";
 import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
+import { useAuth } from "@/context/AuthContext";
+import { getItem } from "@/lib/storage";
+import type { Player } from "@/types";
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
   "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
@@ -118,7 +121,65 @@ function PlayersContent() {
     { id: "store", label: "Merchandise Store" },
   ] as const;
 
-  const player = players[0];
+  const { user } = useAuth();
+  const player = useMemo(() => {
+    if (user?.email) {
+      const seedMap: Record<string, string> = {
+        "arjun@cricverse360.com": "p1",
+        "jake@cricverse360.com": "p2",
+        "rashid@cricverse360.com": "p3",
+        "rahul@cricverse360.com": "p8",
+      };
+      const seedId = seedMap[user.email.toLowerCase()];
+      if (seedId) {
+        const found = players.find((p) => p.id === seedId);
+        if (found) return found;
+      }
+      const profiles = getItem<{ basic: { email: string; fullName: string; role: string; battingStyle: string; bowlingStyle: string; ageGroup: string; country: string; state: string; city: string; region: string }; cric: { totalMatches: string; totalRuns: string; totalWickets: string; battingAverage: string; bowlingAverage: string; strikeRate: string; economy: string } }[]>("profiles", []);
+      const reg = profiles.find((p) => p.basic.email.toLowerCase() === user.email.toLowerCase());
+      if (reg) {
+        const c = reg.cric;
+        return {
+          id: `reg_${user.email}`,
+          name: reg.basic.fullName,
+          age: 0,
+          ageGroup: (reg.basic.ageGroup || "Men") as Player["ageGroup"],
+          country: reg.basic.country || "USA",
+          countryCode: "US",
+          region: (reg.basic.region || "Americas") as Player["region"],
+          state: reg.basic.state || "",
+          city: reg.basic.city || "",
+          role: (reg.basic.role || "Batsman") as Player["role"],
+          battingStyle: (reg.basic.battingStyle || "Right-hand Bat") as Player["battingStyle"],
+          bowlingStyle: (reg.basic.bowlingStyle || "Right-arm Medium") as Player["bowlingStyle"],
+          profileTier: "Free" as const,
+          avatar: "",
+          verified: false,
+          stats: {
+            matches: Number(c.totalMatches) || 0,
+            innings: Number(c.totalMatches) || 0,
+            runs: Number(c.totalRuns) || 0,
+            battingAverage: Number(c.battingAverage) || 0,
+            strikeRate: Number(c.strikeRate) || 0,
+            fifties: 0,
+            hundreds: 0,
+            wickets: Number(c.totalWickets) || 0,
+            bowlingAverage: Number(c.bowlingAverage) || 0,
+            economy: Number(c.economy) || 0,
+            bestBowling: "-",
+            catches: 0,
+            stumpings: 0,
+          },
+          fitnessData: { sprintSpeed: 0, yoYoTest: 0, throwDistance: 0, beepTestLevel: 0 },
+          highlights: [] as Player["highlights"],
+          achievements: [] as string[],
+          showcaseEvents: [] as string[],
+          targetLeagues: [] as Player["targetLeagues"],
+        } satisfies Player;
+      }
+    }
+    return players[0];
+  }, [user?.email]);
   const playerFeed = [...performanceFeedItems]
     .filter((item) => item.playerId === player.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

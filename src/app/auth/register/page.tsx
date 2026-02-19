@@ -11,6 +11,7 @@ import type {
   Region,
 } from "@/types";
 import { parseCricClubsText, parseUrlMeta } from "@/lib/cricclubs-parser";
+import { getItem, setItem } from "@/lib/storage";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -279,20 +280,15 @@ export default function RegisterPage() {
   const handleSubmit = () => {
     setSaving(true);
     const profile = { basic, cric, cpi, combine, createdAt: new Date().toISOString() };
-    try {
-      const existing = JSON.parse(localStorage.getItem("cricverse360_profiles") || "[]");
-      existing.push(profile);
-      localStorage.setItem("cricverse360_profiles", JSON.stringify(existing));
-      localStorage.setItem(
-        "cricverse360_auth_user",
-        JSON.stringify({
-          email: basic.email,
-          name: basic.fullName,
-          role: "player",
-          playerId: `reg_${Date.now()}`,
-        })
-      );
-    } catch {}
+    const existing = getItem<Record<string, unknown>[]>("profiles", []);
+    existing.push(profile);
+    setItem("profiles", existing);
+    setItem("auth_user", {
+      email: basic.email,
+      name: basic.fullName,
+      role: "player",
+      playerId: `reg_${Date.now()}`,
+    });
     setTimeout(() => {
       router.push("/auth");
     }, 500);
@@ -624,11 +620,11 @@ export default function RegisterPage() {
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className={labelClass}>CricClubs Profile URL</label>
+                    <label className={labelClass}>CricClubs Player ID or Profile URL</label>
                     <div className="flex gap-2">
                       <input
-                        type="url"
-                        placeholder="https://cricclubs.com/USYCA/viewPlayer.do?playerId=..."
+                        type="text"
+                        placeholder="e.g. 12345 or https://cricclubs.com/.../viewPlayer.do?playerId=12345"
                         value={cric.cricClubsUrl}
                         onChange={(e) => {
                           setCric({ ...cric, cricClubsUrl: e.target.value });
