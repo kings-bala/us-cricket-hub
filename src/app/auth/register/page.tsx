@@ -12,6 +12,7 @@ import type {
 } from "@/types";
 import { parseCricClubsText, parseUrlMeta } from "@/lib/cricclubs-parser";
 import { getItem, setItem } from "@/lib/storage";
+import type { Academy } from "@/types";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -148,6 +149,8 @@ export default function RegisterPage() {
   const [llmParsing, setLlmParsing] = useState(false);
   const [heroesStatus, setHeroesStatus] = useState<"idle" | "success">("idle");
   const [heroesMessage, setHeroesMessage] = useState("");
+  const [academyCode, setAcademyCode] = useState("");
+  const [academyMatch, setAcademyMatch] = useState<Academy | null>(null);
 
   const applyStats = (data: Record<string, string>) => {
     setCric((prev) => ({
@@ -279,10 +282,18 @@ export default function RegisterPage() {
 
   const handleSubmit = () => {
     setSaving(true);
-    const profile = { basic, cric, cpi, combine, createdAt: new Date().toISOString() };
+    const profile = { basic, cric, cpi, combine, academyId: academyMatch?.id || "", createdAt: new Date().toISOString() };
     const existing = getItem<Record<string, unknown>[]>("profiles", []);
     existing.push(profile);
     setItem("profiles", existing);
+    if (academyMatch) {
+      const academies = getItem<Academy[]>("academies", []);
+      const idx = academies.findIndex((a) => a.id === academyMatch.id);
+      if (idx >= 0 && !academies[idx].playerEmails.includes(basic.email.toLowerCase())) {
+        academies[idx].playerEmails.push(basic.email.toLowerCase());
+        setItem("academies", academies);
+      }
+    }
     setItem("auth_user", {
       email: basic.email,
       name: basic.fullName,
@@ -579,6 +590,38 @@ export default function RegisterPage() {
                     className={inputClass}
                   />
                 </div>
+              </div>
+
+              <div className="border-t border-slate-700 pt-4 mt-2">
+                <label className={labelClass}>Academy Join Code (optional)</label>
+                <p className="text-xs text-slate-500 mb-2">If your academy gave you a join code, enter it here to link your profile.</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. ABC123"
+                    value={academyCode}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase();
+                      setAcademyCode(val);
+                      setAcademyMatch(null);
+                      if (val.length >= 4) {
+                        const academies = getItem<Academy[]>("academies", []);
+                        const found = academies.find((a) => a.joinCode === val);
+                        if (found) setAcademyMatch(found);
+                      }
+                    }}
+                    className={inputClass + " flex-1 font-mono tracking-widest uppercase"}
+                  />
+                </div>
+                {academyMatch && (
+                  <div className="mt-2 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <p className="text-sm text-emerald-400 font-medium">{academyMatch.name}</p>
+                    <p className="text-xs text-slate-400">{academyMatch.location} · {academyMatch.playerEmails.length}/{academyMatch.maxSeats} seats used</p>
+                  </div>
+                )}
+                {academyCode.length >= 4 && !academyMatch && (
+                  <p className="text-xs text-red-400 mt-1">No academy found with this code.</p>
+                )}
               </div>
             </div>
           )}

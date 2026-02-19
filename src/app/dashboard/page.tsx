@@ -14,6 +14,7 @@ const roleLabels: Record<UserRole, string> = {
   owner: "T20 Owner Dashboard",
   sponsor: "Sponsor Dashboard",
   coach: "Coach Dashboard",
+  academy_admin: "Academy Dashboard",
 };
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
