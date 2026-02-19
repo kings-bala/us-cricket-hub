@@ -592,6 +592,97 @@ function PlayersContent() {
                       </div>
                     )}
 
+                    {totalRoutines > 0 && (() => {
+                      const last14: { date: string; done: number; total: number }[] = [];
+                      for (let i = 13; i >= 0; i--) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
+                        const key = d.toISOString().slice(0, 10);
+                        let dayLog: Record<string, boolean> = {};
+                        try { const raw = localStorage.getItem(`cricverse360_routine_log_${key}`); if (raw) dayLog = JSON.parse(raw); } catch {}
+                        const doneCount = Object.values(dayLog).filter(Boolean).length;
+                        last14.push({ date: key, done: doneCount, total: totalRoutines });
+                      }
+                      let streak = 0;
+                      for (let i = last14.length - 1; i >= 0; i--) {
+                        if (last14[i].done > 0) streak++;
+                        else break;
+                      }
+                      const totalDone14 = last14.reduce((s, d) => s + d.done, 0);
+                      const totalPossible14 = last14.reduce((s, d) => s + d.total, 0);
+                      const completionRate = totalPossible14 > 0 ? Math.round((totalDone14 / totalPossible14) * 100) : 0;
+                      const activeDays = last14.filter((d) => d.done > 0).length;
+                      const bestStreak = (() => {
+                        let best = 0, cur = 0;
+                        for (const d of last14) { if (d.done > 0) { cur++; if (cur > best) best = cur; } else { cur = 0; } }
+                        return best;
+                      })();
+                      const maxDone = Math.max(...last14.map((d) => d.total), 1);
+                      const weekDays = last14.slice(-7);
+
+                      return (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                          <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Routine Progress</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-emerald-400">{streak}</p>
+                              <p className="text-xs text-slate-400">Day Streak</p>
+                            </div>
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-blue-400">{completionRate}%</p>
+                              <p className="text-xs text-slate-400">Completion Rate</p>
+                            </div>
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-amber-400">{activeDays}/14</p>
+                              <p className="text-xs text-slate-400">Active Days</p>
+                            </div>
+                            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-purple-400">{bestStreak}</p>
+                              <p className="text-xs text-slate-400">Best Streak</p>
+                            </div>
+                          </div>
+                          <h4 className="text-xs font-semibold text-slate-400 mb-2">Last 7 Days</h4>
+                          <div className="flex items-end gap-2 h-24 mb-1">
+                            {weekDays.map((d) => {
+                              const pct = d.total > 0 ? (d.done / d.total) * 100 : 0;
+                              const h = Math.max(4, (pct / 100) * 80);
+                              return (
+                                <div key={d.date} className="flex-1 flex flex-col items-center group relative">
+                                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    {d.done}/{d.total}
+                                  </div>
+                                  <div className={`w-full rounded-t-sm transition-all ${pct === 100 ? "bg-emerald-500" : pct > 0 ? "bg-amber-500" : "bg-slate-700"} ${pct === 100 ? "opacity-100" : "opacity-70"}`} style={{ height: `${h}px` }} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="flex gap-2">
+                            {weekDays.map((d) => (
+                              <div key={d.date} className="flex-1 text-center">
+                                <p className="text-xs text-slate-500">{new Date(d.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" })}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <h4 className="text-xs font-semibold text-slate-400 mt-4 mb-2">14-Day History</h4>
+                          <div className="grid grid-cols-7 gap-1.5">
+                            {last14.map((d) => {
+                              const pct = d.total > 0 ? (d.done / d.total) * 100 : 0;
+                              return (
+                                <div key={d.date} className="group relative">
+                                  <div className={`aspect-square rounded-md flex items-center justify-center text-xs font-medium ${pct === 100 ? "bg-emerald-500/30 text-emerald-400 border border-emerald-500/40" : pct > 0 ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-slate-800/50 text-slate-600 border border-slate-700/30"}`}>
+                                    {new Date(d.date + "T12:00:00").getDate()}
+                                  </div>
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    {d.done}/{d.total} done
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <Link href="/coaches" className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors">
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>
                       Find Coach
