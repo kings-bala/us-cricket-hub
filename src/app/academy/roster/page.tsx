@@ -4,11 +4,18 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getItem, setItem } from "@/lib/storage";
-import type { Academy } from "@/types";
+import type { Academy, PlayerLevel } from "@/types";
 
 type PlayerProfile = {
-  basic: { email: string; fullName: string; role: string; ageGroup: string; battingStyle: string; bowlingStyle: string };
+  basic: { email: string; fullName: string; role: string; ageGroup: string; battingStyle: string; bowlingStyle: string; level?: PlayerLevel };
   cric: { totalMatches: string; totalRuns: string; totalWickets: string; battingAverage: string; strikeRate: string };
+};
+
+const LEVELS: PlayerLevel[] = ["Beginner", "Intermediate", "Advanced"];
+const levelColors: Record<PlayerLevel, string> = {
+  Beginner: "bg-blue-500/20 text-blue-400",
+  Intermediate: "bg-amber-500/20 text-amber-400",
+  Advanced: "bg-emerald-500/20 text-emerald-400",
 };
 
 export default function AcademyRosterPage() {
@@ -16,6 +23,7 @@ export default function AcademyRosterPage() {
   const [academy, setAcademy] = useState<Academy | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [levelFilter, setLevelFilter] = useState("all");
 
   useEffect(() => {
     if (!user) return;
@@ -34,8 +42,18 @@ export default function AcademyRosterPage() {
   const filtered = enrolled.filter((p) => {
     const matchSearch = !search || p.basic.fullName.toLowerCase().includes(search.toLowerCase()) || p.basic.email.toLowerCase().includes(search.toLowerCase());
     const matchFilter = filter === "all" || p.basic.role.toLowerCase() === filter.toLowerCase();
-    return matchSearch && matchFilter;
+    const matchLevel = levelFilter === "all" || (p.basic.level || "Beginner") === levelFilter;
+    return matchSearch && matchFilter && matchLevel;
   });
+
+  const setPlayerLevel = (email: string, level: PlayerLevel) => {
+    const allProfiles = getItem<PlayerProfile[]>("profiles", []);
+    const pIdx = allProfiles.findIndex((p) => p.basic.email.toLowerCase() === email.toLowerCase());
+    if (pIdx >= 0) {
+      allProfiles[pIdx].basic.level = level;
+      setItem("profiles", allProfiles);
+    }
+  };
 
   const removePlayer = (email: string) => {
     if (!academy) return;
@@ -90,6 +108,14 @@ export default function AcademyRosterPage() {
             <option value="All-Rounder">All-Rounder</option>
             <option value="Wicket-Keeper">Wicket-Keeper</option>
           </select>
+          <select
+            value={levelFilter}
+            onChange={(e) => setLevelFilter(e.target.value)}
+            className="bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none"
+          >
+            <option value="all">All Levels</option>
+            {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+          </select>
         </div>
 
         {filtered.length === 0 ? (
@@ -105,6 +131,7 @@ export default function AcademyRosterPage() {
                 <tr className="border-b border-slate-700">
                   <th className="text-left text-xs uppercase tracking-wider text-slate-400 px-4 py-3">Player</th>
                   <th className="text-left text-xs uppercase tracking-wider text-slate-400 px-4 py-3 hidden sm:table-cell">Role</th>
+                  <th className="text-left text-xs uppercase tracking-wider text-slate-400 px-4 py-3 hidden sm:table-cell">Level</th>
                   <th className="text-left text-xs uppercase tracking-wider text-slate-400 px-4 py-3 hidden md:table-cell">Age Group</th>
                   <th className="text-left text-xs uppercase tracking-wider text-slate-400 px-4 py-3 hidden md:table-cell">Matches</th>
                   <th className="text-left text-xs uppercase tracking-wider text-slate-400 px-4 py-3 hidden lg:table-cell">Runs</th>
@@ -127,6 +154,15 @@ export default function AcademyRosterPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-slate-300 hidden sm:table-cell">{p.basic.role}</td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <select
+                        value={p.basic.level || "Beginner"}
+                        onChange={(e) => setPlayerLevel(p.basic.email, e.target.value as PlayerLevel)}
+                        className={`text-xs px-2 py-1 rounded-full border-0 focus:outline-none cursor-pointer ${levelColors[p.basic.level || "Beginner"]}`}
+                      >
+                        {LEVELS.map((l) => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </td>
                     <td className="px-4 py-3 text-sm text-slate-300 hidden md:table-cell">{p.basic.ageGroup || "-"}</td>
                     <td className="px-4 py-3 text-sm text-slate-300 hidden md:table-cell">{p.cric?.totalMatches || "0"}</td>
                     <td className="px-4 py-3 text-sm text-slate-300 hidden lg:table-cell">{p.cric?.totalRuns || "0"}</td>

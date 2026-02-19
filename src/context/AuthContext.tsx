@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getItem, setItem, removeItem } from "@/lib/storage";
+import type { Academy, AcademyStaff } from "@/types";
 
 export type AuthUser = {
   email: string;
@@ -57,6 +58,40 @@ function getReinstatementRequests(): ReinstatementRequest[] {
   return getItem<ReinstatementRequest[]>("reinstatement_requests", []);
 }
 
+function seedRisingStarAcademy() {
+  const academies = getItem<Academy[]>("academies", []);
+  if (academies.some((a) => a.id === "academy_risingstar")) return;
+  academies.push({
+    id: "academy_risingstar",
+    name: "Rising Star Cricket Academy",
+    location: "USA",
+    logo: "/rising-star-logo.jpg",
+    headCoach: "Coach Yashwant",
+    contactEmail: "risingstar@cricverse360.com",
+    adminEmail: "risingstar@cricverse360.com",
+    joinCode: "RSCA26",
+    seatPlan: "pro",
+    maxSeats: 50,
+    playerEmails: [],
+    coachEmails: ["yashwant@risingstar.com", "aji@risingstar.com", "mandar@risingstar.com", "vraj@risingstar.com"],
+    createdAt: new Date().toISOString(),
+  });
+  setItem("academies", academies);
+  const staff = getItem<AcademyStaff[]>("academy_staff", []);
+  const coaches: { name: string; email: string; role: "Head Coach" | "Assistant Coach" | "Bowling Coach" | "Batting Coach" }[] = [
+    { name: "Coach Yashwant", email: "yashwant@risingstar.com", role: "Head Coach" },
+    { name: "Coach Aji", email: "aji@risingstar.com", role: "Bowling Coach" },
+    { name: "Coach Mandar", email: "mandar@risingstar.com", role: "Batting Coach" },
+    { name: "Coach Vraj", email: "vraj@risingstar.com", role: "Assistant Coach" },
+  ];
+  for (const c of coaches) {
+    if (!staff.some((s) => s.email === c.email && s.academyId === "academy_risingstar")) {
+      staff.push({ id: `staff_rs_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`, name: c.name, email: c.email, phone: "", role: c.role, specialization: "", joinedAt: new Date().toISOString(), academyId: "academy_risingstar" });
+    }
+  }
+  setItem("academy_staff", staff);
+}
+
 type AuthContextType = {
   user: AuthUser | null;
   login: (email: string, password: string) => string | null;
@@ -82,6 +117,7 @@ const SEED_ACCOUNTS: { email: string; password: string; user: AuthUser }[] = [
   { email: "vikram.singh.cricket@gmail.com", password: "Cricket2026!", user: { email: "vikram.singh.cricket@gmail.com", name: "Vikram Singh", role: "player", playerId: "p9" } },
   { email: "admin@cricverse360.com", password: "admin123", user: { email: "admin@cricverse360.com", name: "Master Admin", role: "admin" } },
   { email: "academy@cricverse360.com", password: "academy123", user: { email: "academy@cricverse360.com", name: "NorCal Cricket Academy", role: "academy_admin", academyId: "academy_demo" } },
+  { email: "risingstar@cricverse360.com", password: "risingstar123", user: { email: "risingstar@cricverse360.com", name: "Rising Star Cricket Academy", role: "academy_admin", academyId: "academy_risingstar" } },
 ];
 
 const AuthContext = createContext<AuthContextType>({
@@ -122,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const seed = SEED_ACCOUNTS.find((a) => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
     if (seed) {
+      if (seed.user.academyId === "academy_risingstar") seedRisingStarAcademy();
       setUser(seed.user);
       setItem("auth_user", seed.user);
       saveLoginRecord(seed.user);

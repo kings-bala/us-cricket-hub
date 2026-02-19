@@ -247,6 +247,8 @@ export interface PerformanceFeedItem {
   league: string;
 }
 
+export type PlayerLevel = "Beginner" | "Intermediate" | "Advanced";
+
 export type AcademySeatPlan = "free" | "starter" | "pro" | "enterprise";
 
 export interface Academy {

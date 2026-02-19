@@ -60,9 +60,14 @@ export default function AcademyDashboard() {
     <main className="min-h-screen bg-slate-900 text-white">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">{academy.name}</h1>
-            <p className="text-slate-400">{academy.location} · Head Coach: {academy.headCoach}</p>
+          <div className="flex items-center gap-4">
+            {academy.logo && (
+              <img src={academy.logo} alt={academy.name} className="w-16 h-16 rounded-xl object-cover bg-white" />
+            )}
+            <div>
+              <h1 className="text-3xl font-bold">{academy.name}</h1>
+              <p className="text-slate-400">{academy.location} · Head Coach: {academy.headCoach}</p>
+            </div>
           </div>
           <div className="flex gap-3">
             <Link href="/academy/invite" className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Invite Players</Link>
