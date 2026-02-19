@@ -51,14 +51,16 @@ export function validateCricketPose(
   const ra = landmarks[LANDMARK.RIGHT_ANKLE];
   const lw = landmarks[LANDMARK.LEFT_WRIST];
   const rw = landmarks[LANDMARK.RIGHT_WRIST];
+  const le = landmarks[LANDMARK.LEFT_ELBOW];
+  const re = landmarks[LANDMARK.RIGHT_ELBOW];
   const nose = landmarks[LANDMARK.NOSE];
 
-  if (!ls || !rs || !lh || !rh || !lk || !rk || !la || !ra || !nose) {
+  if (!ls || !rs || !lh || !rh || !lk || !rk || !la || !ra || !nose || !lw || !rw || !le || !re) {
     return { isValid: false, reason: "Full body not visible. Please step back so the camera can see your entire body." };
   }
 
-  const keyPoints = [ls, rs, lh, rh, lk, rk];
-  const lowVisCount = keyPoints.filter(p => p.visibility !== undefined && p.visibility < 0.4).length;
+  const keyPoints = [ls, rs, lh, rh, lk, rk, la, ra];
+  const lowVisCount = keyPoints.filter(p => p.visibility !== undefined && p.visibility < 0.5).length;
   if (lowVisCount >= 3) {
     return { isValid: false, reason: "Body not clearly visible. Ensure good lighting and stand facing the camera." };
   }
@@ -67,46 +69,72 @@ export function validateCricketPose(
   const hipY = (lh.y + rh.y) / 2;
   const kneeY = (lk.y + rk.y) / 2;
   const ankleY = (la.y + ra.y) / 2;
+  const shoulderWidth = Math.abs(ls.x - rs.x);
 
   const torsoHeight = Math.abs(hipY - shoulderY);
   const legHeight = Math.abs(ankleY - hipY);
+  const fullHeight = Math.abs(ankleY - nose.y);
 
-  if (legHeight < torsoHeight * 0.5) {
-    return { isValid: false, reason: "Person appears to be sitting. Please stand up to begin analysis." };
-  }
-
-  const hipToKnee = Math.abs(kneeY - hipY);
-  const kneeToAnkle = Math.abs(ankleY - kneeY);
-  if (hipToKnee < torsoHeight * 0.3 && kneeToAnkle < torsoHeight * 0.3) {
-    return { isValid: false, reason: "Person appears to be sitting or crouching. Please stand in a cricket position." };
+  const bodyVertical = (ankleY - nose.y);
+  const bodyHorizontal = Math.abs(((la.x + ra.x) / 2) - nose.x);
+  if (bodyVertical > 0 && bodyHorizontal > bodyVertical * 0.7) {
+    return { isValid: false, reason: "Person appears to be lying down. Please stand upright to begin analysis." };
   }
 
   if (nose.y > hipY) {
     return { isValid: false, reason: "Person appears to be lying down or hunched over. Please stand upright." };
   }
 
+  const shoulderToAnkleVertical = ankleY - shoulderY;
+  if (shoulderToAnkleVertical > 0 && torsoHeight > shoulderToAnkleVertical * 0.6) {
+    return { isValid: false, reason: "Person does not appear to be standing. Please stand up for analysis." };
+  }
+
+  if (legHeight < torsoHeight * 0.6) {
+    return { isValid: false, reason: "Person appears to be sitting. Please stand up to begin analysis." };
+  }
+
+  const hipToKnee = Math.abs(kneeY - hipY);
+  const kneeToAnkle = Math.abs(ankleY - kneeY);
+  if (hipToKnee < torsoHeight * 0.35 && kneeToAnkle < torsoHeight * 0.35) {
+    return { isValid: false, reason: "Person appears to be sitting or crouching. Please stand in a cricket position." };
+  }
+
+  if (fullHeight < 0.15) {
+    return { isValid: false, reason: "Person is too far or too small in frame. Please move closer to the camera." };
+  }
+
   if (type === "batting") {
-    const handsAboveHip = (lw.y < hipY + torsoHeight * 0.3) || (rw.y < hipY + torsoHeight * 0.3);
-    const hasStance = Math.abs(la.x - ra.x) > Math.abs(ls.x - rs.x) * 0.4;
-    if (!handsAboveHip && !hasStance) {
-      return { isValid: false, reason: "No batting stance detected. Hold a bat and take your stance to begin analysis." };
+    const handsAboveHip = (lw.y < hipY - torsoHeight * 0.1) && (rw.y < hipY - torsoHeight * 0.1);
+    const hasStance = Math.abs(la.x - ra.x) > shoulderWidth * 0.5;
+    const elbowBent = calcAngle(ls, le, lw) < 160 || calcAngle(rs, re, rw) < 160;
+    if (!handsAboveHip || !hasStance) {
+      return { isValid: false, reason: "No batting stance detected. Hold a bat with both hands up and feet apart." };
+    }
+    if (!elbowBent && !handsAboveHip) {
+      return { isValid: false, reason: "Arms appear relaxed. Take a proper batting stance with bat raised." };
     }
   }
 
   if (type === "bowling") {
-    const eitherArmUp = (lw.y < shoulderY) || (rw.y < shoulderY);
-    const hasStride = Math.abs(la.y - ra.y) > torsoHeight * 0.1 || Math.abs(la.x - ra.x) > Math.abs(ls.x - rs.x) * 0.5;
-    if (!eitherArmUp && !hasStride) {
-      return { isValid: false, reason: "No bowling action detected. Start your run-up or raise your bowling arm to begin analysis." };
+    const eitherArmAboveShoulder = (lw.y < shoulderY - torsoHeight * 0.2) || (rw.y < shoulderY - torsoHeight * 0.2);
+    const wideStride = Math.abs(la.x - ra.x) > shoulderWidth * 0.8;
+    const verticalStride = Math.abs(la.y - ra.y) > torsoHeight * 0.2;
+    const hasAction = eitherArmAboveShoulder && (wideStride || verticalStride);
+    if (!hasAction) {
+      return { isValid: false, reason: "No bowling action detected. Raise your bowling arm high and stride forward to begin." };
     }
   }
 
   if (type === "fielding") {
-    const kneesBent = calcAngle(lh, lk, la) < 160 || calcAngle(rh, rk, ra) < 160;
-    const handsLow = lw.y > hipY || rw.y > hipY;
-    const hasStance = Math.abs(la.x - ra.x) > Math.abs(ls.x - rs.x) * 0.4;
-    if (!kneesBent && !handsLow && !hasStance) {
-      return { isValid: false, reason: "No fielding position detected. Get into a ready position with knees bent." };
+    const leftKneeBent = calcAngle(lh, lk, la) < 155;
+    const rightKneeBent = calcAngle(rh, rk, ra) < 155;
+    const kneesBent = leftKneeBent || rightKneeBent;
+    const handsLow = (lw.y > hipY + torsoHeight * 0.2) || (rw.y > hipY + torsoHeight * 0.2);
+    const hasStance = Math.abs(la.x - ra.x) > shoulderWidth * 0.5;
+    const fieldingCriteria = [kneesBent, handsLow, hasStance].filter(Boolean).length;
+    if (fieldingCriteria < 2) {
+      return { isValid: false, reason: "No fielding position detected. Get low with knees bent, hands ready, feet apart." };
     }
   }
 
