@@ -209,6 +209,7 @@ export default function Navbar() { return (<Suspense fallback={<div className="b
 
 function NavbarInner() {
   const [persona, setPersona] = useState<UserRole>("player");
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
@@ -225,7 +226,9 @@ function NavbarInner() {
     if (isAdmin) { try { localStorage.setItem("persona", persona); } catch {} }
   }, [persona, isAdmin]);
 
+  const useFlat = activeRole === "player";
   const flatLinks = roleFlatLinks[activeRole];
+  const groups = personaGroups[activeRole];
   const pathname = usePathname();
   const search = useSearchParams();
   const currentPlayerTab = pathname && pathname.startsWith("/players") ? (search.get("tab") || "profile") : null;
@@ -242,12 +245,10 @@ function NavbarInner() {
             <span className="font-bold text-lg hidden sm:block">CricVerse360</span>
           </Link>
 
-                    {showTabs && user && (
+                    {showTabs && user && useFlat && (
                       <div className="hidden md:flex items-center gap-4">
                         {flatLinks.map((l) => {
-                          const isActive = activeRole === "player"
-                            ? !!currentPlayerTab && l.href.includes(`tab=${currentPlayerTab}`)
-                            : pathname === l.href || pathname.startsWith(l.href + "/");
+                          const isActive = !!currentPlayerTab && l.href.includes(`tab=${currentPlayerTab}`);
                           return (
                             <Link
                               key={l.href}
@@ -260,6 +261,25 @@ function NavbarInner() {
                             </Link>
                           );
                         })}
+                      </div>
+                    )}
+                    {showTabs && user && !useFlat && (
+                      <div className="hidden md:flex items-center gap-5">
+                        {groups.map((g) =>
+                          g.links.length === 1 ? (
+                            <Link
+                              key={g.id}
+                              href={g.links[0].href}
+                              className={`text-sm px-1.5 pb-0.5 border-b-2 transition-colors ${
+                                pathname === g.links[0].href || pathname.startsWith(g.links[0].href + "/") ? "text-white border-emerald-500" : "text-slate-300 border-transparent hover:text-white"
+                              }`}
+                            >
+                              {g.links[0].label}
+                            </Link>
+                          ) : (
+                            <NavDropdown key={g.id} id={g.id} label={g.title} links={g.links} open={dropdownOpen} setOpen={setDropdownOpen} />
+                          )
+                        )}
                       </div>
                     )}
 
@@ -314,7 +334,7 @@ function NavbarInner() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-4">
-            {showTabs && user && (
+            {showTabs && user && useFlat && (
               <div className="space-y-1">
                 {flatLinks.map((l) => (
                   <Link
@@ -325,6 +345,25 @@ function NavbarInner() {
                   >
                     {l.label}
                   </Link>
+                ))}
+              </div>
+            )}
+            {showTabs && user && !useFlat && (
+              <div className="space-y-3">
+                {groups.map((g) => (
+                  <div key={g.id}>
+                    {g.links.length > 1 && <span className="block text-xs text-slate-500 uppercase tracking-wider mb-1 pl-2">{g.title}</span>}
+                    {g.links.map((l) => (
+                      <Link
+                        key={l.href}
+                        href={l.href}
+                        onClick={() => setMobileOpen(false)}
+                        className="block py-1.5 text-sm text-slate-300 hover:text-white pl-4 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
+                      >
+                        {l.label}
+                      </Link>
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
