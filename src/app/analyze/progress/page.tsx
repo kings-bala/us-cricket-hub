@@ -41,7 +41,7 @@ export default function ProgressPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-3">
-        <Link href="/analyze" className="text-sm text-slate-400 hover:text-white">&larr; Back to Analysis</Link>
+        <Link href="/players?tab=training&sub=progress" className="text-sm text-slate-400 hover:text-white">&larr; Back to Training</Link>
       </div>
       <div className="flex items-center justify-between mb-6">
         <div>
