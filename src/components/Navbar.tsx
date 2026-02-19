@@ -107,8 +107,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
   ],
   agent: [
     { title: "Stats", id: "stats", links: [
-      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
-      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
+      { href: "/stats", label: "Stats", desc: "Stats & rankings hub" },
     ]},
     { title: "Pro Scouting", id: "scouting", links: [
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
@@ -122,8 +121,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
   ],
   owner: [
     { title: "Stats", id: "stats", links: [
-      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
-      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
+      { href: "/stats", label: "Stats", desc: "Stats & rankings hub" },
     ]},
     { title: "Squad Builder", id: "squad", links: [
       { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
@@ -148,9 +146,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/academy/attendance", label: "Attendance", desc: "Mark daily attendance" },
     ]},
     { title: "My Academy Stats", id: "mystats", links: [
-      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
-      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
-      { href: "/combine", label: "Combine", desc: "Athletic testing" },
+      { href: "/academy/stats", label: "My Academy Stats", desc: "Academy stats hub" },
     ]},
     { title: "Pro Scouting", id: "scouting", links: [
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
@@ -180,15 +176,13 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/players?tab=store", label: "Store" },
   ],
   agent: [
-    { href: "/players", label: "Cricinfo" },
-    { href: "/rankings", label: "CPI Metrics" },
+    { href: "/stats", label: "Stats" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/squad-builder", label: "Squad Builder" },
     { href: "/analyze", label: "AI Analysis" },
   ],
   owner: [
-    { href: "/players", label: "Cricinfo" },
-    { href: "/rankings", label: "CPI Metrics" },
+    { href: "/stats", label: "Stats" },
     { href: "/squad-builder", label: "Squad Builder" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/analyze", label: "AI Analysis" },
@@ -199,9 +193,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
   ],
   coach: [
     { href: "/academy/attendance", label: "Attendance" },
-    { href: "/players", label: "Cricinfo" },
-    { href: "/rankings", label: "CPI Metrics" },
-    { href: "/combine", label: "Combine" },
+    { href: "/academy/stats", label: "My Academy Stats" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/analyze", label: "AI Analysis" },
   ],
