@@ -126,6 +126,15 @@ export default function AcademyDashboard() {
                   <div className="text-xs text-slate-400">View and manage enrolled players</div>
                 </div>
               </Link>
+              <Link href="/academy/attendance" className="flex items-center gap-3 p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
+                <div className="w-8 h-8 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                </div>
+                <div>
+                  <div className="text-sm font-medium">Attendance</div>
+                  <div className="text-xs text-slate-400">Mark daily attendance for players</div>
+                </div>
+              </Link>
               <Link href="/academy/reports" className="flex items-center gap-3 p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
                 <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
                   <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
