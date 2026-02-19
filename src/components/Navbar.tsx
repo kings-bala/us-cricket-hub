@@ -89,9 +89,11 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
     ]},
     { title: "Training", id: "training", links: [
-      { href: "/dashboard", label: "Idol Capture", desc: "Mirror routines & goals" },
-      { href: "/dashboard", label: "Track Exercises", desc: "Planned workouts" },
-      { href: "/coaches", label: "Connect with Coach", desc: "Find a coach" },
+      { href: "/players?tab=training&sub=routines", label: "Routines", desc: "Idol-based training routines" },
+      { href: "/players?tab=training&sub=drills", label: "Drill Library", desc: "Curated coaching drills" },
+      { href: "/players?tab=training&sub=planner", label: "Training Plan", desc: "Weekly schedule builder" },
+      { href: "/players?tab=training&sub=log", label: "Session Log", desc: "Log your practice sessions" },
+      { href: "/coaches", label: "Find Coach", desc: "Connect with a coach" },
     ]},
     { title: "Store", id: "store", links: [
       { href: "/store", label: "Merchandise Store", desc: "Cricket gear & equipment" },
