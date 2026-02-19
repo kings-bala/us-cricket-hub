@@ -12,6 +12,7 @@ const roleLabels: Record<UserRole, string> = {
   owner: "T20 Owner",
   sponsor: "Sponsor",
   coach: "Coach",
+  academy_admin: "Academy",
 };
 
 const roleColors: Record<UserRole, string> = {
@@ -20,6 +21,7 @@ const roleColors: Record<UserRole, string> = {
   owner: "bg-purple-500",
   sponsor: "bg-amber-500",
   coach: "bg-teal-500",
+  academy_admin: "bg-orange-500",
 };
 
 type NavLink = { href: string; label: string; desc: string };
@@ -147,6 +149,14 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/analyze", label: "AI Video Analysis", desc: "AI breakdowns" },
     ]},
   ],
+  academy_admin: [
+    { title: "Academy", id: "academy", links: [
+      { href: "/academy", label: "Dashboard", desc: "Academy overview" },
+      { href: "/academy/roster", label: "Roster", desc: "Manage players" },
+      { href: "/academy/invite", label: "Invite", desc: "Invite players" },
+      { href: "/academy/reports", label: "Reports", desc: "Progress reports" },
+    ]},
+  ],
 };
 
 export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">CricVerse360</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
@@ -157,6 +167,7 @@ function NavbarInner() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
   const isAdmin = user?.role === "admin";
+  const isAcademyAdmin = user?.role === "academy_admin";
 
   useEffect(() => {
     if (!isAdmin) { setRole("player"); return; }
@@ -238,6 +249,7 @@ function NavbarInner() {
                   {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
                   <span className="text-xs text-slate-300">{user.name}</span>
                   {isAdmin && <Link href="/admin" className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full hover:bg-amber-500/30 transition-colors">Admin</Link>}
+                {isAcademyAdmin && <Link href="/academy" className="text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full hover:bg-orange-500/30 transition-colors">Academy</Link>}
                 </div>
                 <button onClick={() => { logout(); router.push("/auth"); }} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full transition-colors">Logout</button>
               </div>
