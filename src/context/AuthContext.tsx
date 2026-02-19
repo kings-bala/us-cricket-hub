@@ -7,7 +7,7 @@ import type { Academy, AcademyStaff } from "@/types";
 export type AuthUser = {
   email: string;
   name: string;
-  role: "player" | "admin" | "academy_admin";
+  role: "player" | "agent" | "owner" | "sponsor" | "coach" | "admin" | "academy_admin";
   playerId?: string;
   avatar?: string;
   academyId?: string;
@@ -118,6 +118,10 @@ const SEED_ACCOUNTS: { email: string; password: string; user: AuthUser }[] = [
   { email: "admin@cricverse360.com", password: "admin123", user: { email: "admin@cricverse360.com", name: "Master Admin", role: "admin" } },
   { email: "academy@cricverse360.com", password: "academy123", user: { email: "academy@cricverse360.com", name: "NorCal Cricket Academy", role: "academy_admin", academyId: "academy_demo" } },
   { email: "risingstar@cricverse360.com", password: "risingstar123", user: { email: "risingstar@cricverse360.com", name: "Rising Star Cricket Academy", role: "academy_admin", academyId: "academy_risingstar" } },
+  { email: "agent@cricverse360.com", password: "agent123", user: { email: "agent@cricverse360.com", name: "Ravi Mehta", role: "agent" } },
+  { email: "owner@cricverse360.com", password: "owner123", user: { email: "owner@cricverse360.com", name: "Vikram Holdings", role: "owner" } },
+  { email: "sponsor@cricverse360.com", password: "sponsor123", user: { email: "sponsor@cricverse360.com", name: "CricGear Pro", role: "sponsor" } },
+  { email: "coach@cricverse360.com", password: "coach123", user: { email: "coach@cricverse360.com", name: "Coach Kapil", role: "coach" } },
 ];
 
 const AuthContext = createContext<AuthContextType>({
