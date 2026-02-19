@@ -270,3 +270,16 @@ export interface AcademyAttendance {
   playerEmail: string;
   present: boolean;
 }
+
+export type StaffRole = "Head Coach" | "Assistant Coach" | "Bowling Coach" | "Batting Coach" | "Fielding Coach" | "Fitness Trainer" | "Physio" | "Manager" | "Analyst" | "Other";
+
+export interface AcademyStaff {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: StaffRole;
+  specialization: string;
+  joinedAt: string;
+  academyId: string;
+}
