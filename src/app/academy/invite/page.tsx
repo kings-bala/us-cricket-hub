@@ -4,12 +4,13 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { getItem, setItem } from "@/lib/storage";
-import type { Academy } from "@/types";
+import type { Academy, PlayerLevel } from "@/types";
 
 export default function AcademyInvitePage() {
   const { user } = useAuth();
   const [academy, setAcademy] = useState<Academy | null>(null);
   const [emails, setEmails] = useState("");
+  const [defaultLevel, setDefaultLevel] = useState<PlayerLevel>("Beginner");
   const [invited, setInvited] = useState<string[]>([]);
   const [error, setError] = useState("");
 
@@ -39,12 +40,16 @@ export default function AcademyInvitePage() {
     if (idx < 0) return;
 
     const newEmails: string[] = [];
+    const profiles = getItem<{ basic: { email: string; fullName: string; role: string; ageGroup: string; battingStyle: string; bowlingStyle: string; level?: PlayerLevel }; cric: { totalMatches: string; totalRuns: string; totalWickets: string; battingAverage: string; strikeRate: string } }[]>("profiles", []);
     for (const email of emailList) {
       if (!academies[idx].playerEmails.includes(email)) {
         academies[idx].playerEmails.push(email);
         newEmails.push(email);
+        const pIdx = profiles.findIndex((p) => p.basic.email.toLowerCase() === email);
+        if (pIdx >= 0) { profiles[pIdx].basic.level = defaultLevel; }
       }
     }
+    setItem("profiles", profiles);
     setItem("academies", academies);
     setAcademy({ ...academy, playerEmails: academies[idx].playerEmails });
     setInvited(newEmails);
@@ -97,6 +102,14 @@ export default function AcademyInvitePage() {
               className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-400 focus:border-emerald-500 focus:outline-none resize-none mb-3"
             />
             {error && <p className="text-red-400 text-xs mb-2">{error}</p>}
+            <div className="mb-3">
+              <label className="block text-xs text-slate-400 mb-1">Default Level</label>
+              <select value={defaultLevel} onChange={(e) => setDefaultLevel(e.target.value as PlayerLevel)} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Advanced">Advanced</option>
+              </select>
+            </div>
             <button onClick={handleInvite} className="w-full bg-emerald-500 hover:bg-emerald-600 py-2 rounded-lg text-sm font-medium transition-colors">Add Players</button>
           </div>
         </div>

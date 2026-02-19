@@ -16,6 +16,7 @@ export default function AcademyRegisterPage() {
   const [location, setLocation] = useState("");
   const [headCoach, setHeadCoach] = useState("");
   const [contactEmail, setContactEmail] = useState(user?.email || "");
+  const [logoUrl, setLogoUrl] = useState("");
   const [plan, setPlan] = useState<AcademySeatPlan>("free");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -32,7 +33,7 @@ export default function AcademyRegisterPage() {
       id: `academy_${Date.now()}`,
       name,
       location,
-      logo: "",
+      logo: logoUrl,
       headCoach,
       contactEmail,
       adminEmail: user?.email || contactEmail,
@@ -91,6 +92,10 @@ export default function AcademyRegisterPage() {
             <div>
               <label className="block text-sm text-slate-300 mb-1">Contact Email *</label>
               <input className={inputClass} type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="academy@example.com" />
+            </div>
+            <div>
+              <label className="block text-sm text-slate-300 mb-1">Logo URL</label>
+              <input className={inputClass} value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://example.com/logo.jpg (optional)" />
             </div>
           </div>
 
