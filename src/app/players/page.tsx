@@ -37,10 +37,12 @@ function PlayersContent() {
   const [plannerDays, setPlannerDays] = useState<Record<string, string[]>>({});
   const [progressFilter, setProgressFilter] = useState<"all" | "batting" | "bowling" | "fielding">("all");
   const [analysisHistory, setAnalysisHistory] = useState<SavedAnalysis[]>([]);
-  const [coachNotes, setCoachNotes] = useState<{ id: string; analysisId: string; text: string; timestamp: string; category: "technique" | "fitness" | "mental" | "general" }[]>([]);
+  const [coachNotes, setCoachNotes] = useState<{ id: string; analysisId: string; text: string; timestamp: string; category: "technique" | "fitness" | "mental" | "general"; date?: string; location?: string }[]>([]);
   const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
   const [newNote, setNewNote] = useState("");
   const [noteCategory, setNoteCategory] = useState<"technique" | "fitness" | "mental" | "general">("technique");
+  const [noteDate, setNoteDate] = useState(new Date().toISOString().slice(0, 10));
+  const [noteLocation, setNoteLocation] = useState("");
   const [exportFormat, setExportFormat] = useState<"text" | "csv">("text");
   const search = useSearchParams();
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
@@ -59,13 +61,13 @@ function PlayersContent() {
   }, []);
 
   const addCoachNote = useCallback(() => {
-    if (!newNote.trim() || !selectedAnalysis) return;
-    const note = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, analysisId: selectedAnalysis.id, text: newNote.trim(), timestamp: new Date().toISOString(), category: noteCategory };
+    if (!newNote.trim()) return;
+    const note = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, analysisId: selectedAnalysis?.id || "manual", text: newNote.trim(), timestamp: new Date().toISOString(), category: noteCategory, date: noteDate, location: noteLocation.trim() || undefined };
     const updated = [note, ...coachNotes];
     setCoachNotes(updated);
     try { localStorage.setItem("cricverse360_coach_notes", JSON.stringify(updated)); } catch {}
     setNewNote("");
-  }, [newNote, selectedAnalysis, noteCategory, coachNotes]);
+  }, [newNote, selectedAnalysis, noteCategory, noteDate, noteLocation, coachNotes]);
 
   const deleteCoachNote = useCallback((id: string) => {
     const updated = coachNotes.filter((n) => n.id !== id);
@@ -74,27 +76,42 @@ function PlayersContent() {
   }, [coachNotes]);
 
   const exportCoachNotes = useCallback(() => {
-    if (!selectedAnalysis) return;
-    const sessionNotes = coachNotes.filter((n) => n.analysisId === selectedAnalysis.id);
+    const notesToExport = selectedAnalysis ? coachNotes.filter((n) => n.analysisId === selectedAnalysis.id) : coachNotes;
+    if (notesToExport.length === 0) return;
     let content = "";
     if (exportFormat === "csv") {
-      content = "Date,Category,Note,Analysis,Score\n";
-      sessionNotes.forEach((n) => {
-        content += `"${new Date(n.timestamp).toLocaleDateString()}","${n.category}","${n.text.replace(/"/g, '""')}","${selectedAnalysis.fileName}","${selectedAnalysis.summary.overallScore}"\n`;
+      content = "Date,Location,Category,Note,Source\n";
+      notesToExport.forEach((n) => {
+        const date = n.date || new Date(n.timestamp).toLocaleDateString();
+        const loc = n.location || "";
+        const source = n.analysisId === "manual" ? "Manual" : (selectedAnalysis?.fileName || "Session");
+        content += `"${date}","${loc}","${n.category}","${n.text.replace(/"/g, '""')}","${source}"\n`;
       });
     } else {
-      content = `Coach Notes Report - ${selectedAnalysis.fileName}\nAnalysis Type: ${selectedAnalysis.summary.type} | Score: ${selectedAnalysis.summary.overallScore}/100\nGenerated: ${new Date().toLocaleDateString()}\n${"=".repeat(50)}\n\nANALYSIS SUMMARY:\n`;
-      selectedAnalysis.summary.categories.forEach((c) => { content += `  ${c.category}: ${c.score}/100 - ${c.comment}\n`; });
+      content = selectedAnalysis
+        ? `Coach Notes Report - ${selectedAnalysis.fileName}\nAnalysis Type: ${selectedAnalysis.summary.type} | Score: ${selectedAnalysis.summary.overallScore}/100\n`
+        : `Coach Notes Report\n`;
+      content += `Generated: ${new Date().toLocaleDateString()}\n${"=".repeat(50)}\n`;
+      if (selectedAnalysis) {
+        content += `\nANALYSIS SUMMARY:\n`;
+        selectedAnalysis.summary.categories.forEach((c) => { content += `  ${c.category}: ${c.score}/100 - ${c.comment}\n`; });
+      }
       content += `\nCOACH NOTES:\n`;
-      sessionNotes.forEach((n) => { content += `  [${n.category.toUpperCase()}] ${new Date(n.timestamp).toLocaleDateString()} - ${n.text}\n`; });
-      content += `\nRECOMMENDED DRILLS:\n`;
-      selectedAnalysis.summary.drills.forEach((d, i) => { content += `  ${i + 1}. ${d}\n`; });
+      notesToExport.forEach((n) => {
+        const date = n.date || new Date(n.timestamp).toLocaleDateString();
+        const loc = n.location ? ` @ ${n.location}` : "";
+        content += `  [${n.category.toUpperCase()}] ${date}${loc} - ${n.text}\n`;
+      });
+      if (selectedAnalysis) {
+        content += `\nRECOMMENDED DRILLS:\n`;
+        selectedAnalysis.summary.drills.forEach((d, i) => { content += `  ${i + 1}. ${d}\n`; });
+      }
     }
     const blob = new Blob([content], { type: exportFormat === "csv" ? "text/csv" : "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `coach-notes-${selectedAnalysis.fileName.replace(/\.[^.]+$/, "")}.${exportFormat === "csv" ? "csv" : "txt"}`;
+    a.download = `coach-notes-${selectedAnalysis?.fileName?.replace(/\.[^.]+$/, "") || "all"}.${exportFormat === "csv" ? "csv" : "txt"}`;
     a.click();
     URL.revokeObjectURL(url);
   }, [selectedAnalysis, coachNotes, exportFormat]);
@@ -1112,103 +1129,112 @@ function PlayersContent() {
                 general: { text: "text-slate-400", bg: "bg-slate-500/10" },
               };
               const noteScoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
-              const filteredNotes = selectedAnalysis ? coachNotes.filter((n) => n.analysisId === selectedAnalysis.id) : coachNotes;
+              const [noteFilter, setNoteFilter] = useState<string | null>(null);
+              const filteredNotes = noteFilter ? coachNotes.filter((n) => n.analysisId === noteFilter) : coachNotes;
+              const manualNoteCount = coachNotes.filter((n) => n.analysisId === "manual").length;
 
               return (
                 <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-bold text-white mb-1">Coach Notes & Reports</h2>
-                    <p className="text-sm text-slate-400">Add coaching notes to analyses and export detailed reports.</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1">Coach Notes & Reports</h2>
+                      <p className="text-sm text-slate-400">Add coaching notes manually or link them to analysis sessions.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value as "text" | "csv")} className="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                        <option value="text">Text Report</option>
+                        <option value="csv">CSV Export</option>
+                      </select>
+                      <button onClick={exportCoachNotes} disabled={coachNotes.length === 0} className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${coachNotes.length > 0 ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30" : "bg-slate-700 text-slate-500 cursor-not-allowed border border-slate-700"}`}>Export</button>
+                    </div>
+                  </div>
+                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
+                    <div className="flex gap-2 mb-3">
+                      {(["technique", "fitness", "mental", "general"] as const).map((cat) => (
+                        <button key={cat} onClick={() => setNoteCategory(cat)} className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${noteCategory === cat ? `${noteCategoryColors[cat].bg} ${noteCategoryColors[cat].text} border-current` : "border-slate-700 text-slate-400 hover:text-white"}`}>
+                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-2 mb-3">
+                      <div>
+                        <label className="text-xs text-slate-500 mb-1 block">Date</label>
+                        <input type="date" value={noteDate} onChange={(e) => setNoteDate(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500 mb-1 block">Location</label>
+                        <input type="text" value={noteLocation} onChange={(e) => setNoteLocation(e.target.value)} placeholder="e.g. Indoor Nets, Ground A" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Add coaching observation, feedback, or drill suggestion..." className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 resize-none" rows={2} />
+                      <button onClick={addCoachNote} disabled={!newNote.trim()} className={`px-4 py-2.5 rounded-lg font-medium text-sm self-end transition-colors ${newNote.trim() ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-slate-700 text-slate-500 cursor-not-allowed"}`}>Add</button>
+                    </div>
+                    {selectedAnalysis && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-slate-500">Linked to:</span>
+                        <span className="text-xs text-orange-400">{selectedAnalysis.fileName}</span>
+                        <button onClick={() => setSelectedAnalysis(null)} className="text-xs text-slate-600 hover:text-white">(clear)</button>
+                      </div>
+                    )}
                   </div>
                   <div className="grid lg:grid-cols-4 gap-6">
                     <div className="lg:col-span-1 space-y-4">
                       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Sessions</h3>
-                        {analysisHistory.length === 0 ? (
-                          <p className="text-xs text-slate-500">No analyses yet.</p>
-                        ) : (
-                          <div className="space-y-2 max-h-80 overflow-y-auto">
-                            {analysisHistory.map((a) => {
-                              const noteCount = coachNotes.filter((n) => n.analysisId === a.id).length;
-                              return (
-                                <button key={a.id} onClick={() => setSelectedAnalysis(a)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${selectedAnalysis?.id === a.id ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
-                                  <p className="text-white font-medium truncate">{a.fileName}</p>
-                                  <div className="flex items-center gap-2 mt-0.5">
-                                    <span className={noteScoreColor(a.summary.overallScore)}>{a.summary.overallScore}</span>
-                                    <span className="text-slate-500 capitalize">{a.summary.type}</span>
-                                    {noteCount > 0 && <span className="text-orange-400 ml-auto">{noteCount} notes</span>}
-                                  </div>
-                                </button>
-                              );
-                            })}
-                          </div>
+                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Filter by Source</h3>
+                        <div className="space-y-2">
+                          <button onClick={() => setNoteFilter(null)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${!noteFilter ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                            <p className="text-white font-medium">All Notes</p>
+                            <span className="text-slate-500">{coachNotes.length} total</span>
+                          </button>
+                          <button onClick={() => setNoteFilter("manual")} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${noteFilter === "manual" ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                            <p className="text-white font-medium">Manual Notes</p>
+                            <span className="text-slate-500">{manualNoteCount} notes</span>
+                          </button>
+                        </div>
+                        {analysisHistory.length > 0 && (
+                          <>
+                            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 mt-4">Sessions</h3>
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                              {analysisHistory.map((a) => {
+                                const noteCount = coachNotes.filter((n) => n.analysisId === a.id).length;
+                                return (
+                                  <button key={a.id} onClick={() => setNoteFilter(a.id)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${noteFilter === a.id ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                                    <p className="text-white font-medium truncate">{a.fileName}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className={noteScoreColor(a.summary.overallScore)}>{a.summary.overallScore}</span>
+                                      <span className="text-slate-500 capitalize">{a.summary.type}</span>
+                                      {noteCount > 0 && <span className="text-orange-400 ml-auto">{noteCount}</span>}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
-                    <div className="lg:col-span-3 space-y-6">
-                      {!selectedAnalysis ? (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
-                          <p className="text-slate-400">Select an analysis session to add notes</p>
+                    <div className="lg:col-span-3 space-y-2">
+                      {filteredNotes.length === 0 ? (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                          <p className="text-xs text-slate-500">No notes yet. Add your first coaching note above.</p>
                         </div>
                       ) : (
-                        <>
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-                            <div className="flex items-center justify-between mb-3">
-                              <div>
-                                <h3 className="text-sm font-semibold text-white">{selectedAnalysis.fileName}</h3>
-                                <p className="text-xs text-slate-500">{selectedAnalysis.summary.type} analysis &middot; Score: {selectedAnalysis.summary.overallScore}/100 &middot; {new Date(selectedAnalysis.date).toLocaleDateString()}</p>
+                        filteredNotes.map((note) => (
+                          <div key={note.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[note.category].bg} ${noteCategoryColors[note.category].text}`}>{note.category}</span>
+                                <span className="text-xs text-slate-600">{note.date || new Date(note.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                                {note.location && <span className="text-xs text-cyan-400/70">@ {note.location}</span>}
+                                {note.analysisId === "manual" && <span className="text-xs text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Manual</span>}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value as "text" | "csv")} className="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
-                                  <option value="text">Text Report</option>
-                                  <option value="csv">CSV Export</option>
-                                </select>
-                                <button onClick={exportCoachNotes} className="bg-orange-500/20 text-orange-400 border border-orange-500/30 px-3 py-1 rounded-lg text-xs font-medium hover:bg-orange-500/30 transition-colors">Export</button>
-                              </div>
+                              <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors shrink-0">Delete</button>
                             </div>
-                            <div className="flex flex-wrap gap-2">
-                              {selectedAnalysis.summary.categories.map((c, i) => (
-                                <span key={i} className={`text-xs px-2 py-1 rounded-full border ${c.score >= 75 ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : c.score >= 60 ? "bg-amber-500/10 border-amber-500/20 text-amber-400" : "bg-red-500/10 border-red-500/20 text-red-400"}`}>
-                                  {c.category}: {c.score}
-                                </span>
-                              ))}
-                            </div>
+                            <p className="text-sm text-slate-300">{note.text}</p>
                           </div>
-                          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-                            <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
-                            <div className="flex gap-2 mb-3">
-                              {(["technique", "fitness", "mental", "general"] as const).map((cat) => (
-                                <button key={cat} onClick={() => setNoteCategory(cat)} className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${noteCategory === cat ? `${noteCategoryColors[cat].bg} ${noteCategoryColors[cat].text} border-current` : "border-slate-700 text-slate-400 hover:text-white"}`}>
-                                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                                </button>
-                              ))}
-                            </div>
-                            <div className="flex gap-2">
-                              <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Add coaching observation, feedback, or drill suggestion..." className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 resize-none" rows={2} />
-                              <button onClick={addCoachNote} disabled={!newNote.trim()} className={`px-4 py-2.5 rounded-lg font-medium text-sm self-end transition-colors ${newNote.trim() ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-slate-700 text-slate-500 cursor-not-allowed"}`}>Add</button>
-                            </div>
-                          </div>
-                          <div className="space-y-2">
-                            {filteredNotes.length === 0 ? (
-                              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
-                                <p className="text-xs text-slate-500">No notes yet for this session. Add your first coaching note above.</p>
-                              </div>
-                            ) : (
-                              filteredNotes.map((note) => (
-                                <div key={note.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[note.category].bg} ${noteCategoryColors[note.category].text}`}>{note.category}</span>
-                                      <span className="text-xs text-slate-600">{new Date(note.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })} at {new Date(note.timestamp).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</span>
-                                    </div>
-                                    <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
-                                  </div>
-                                  <p className="text-sm text-slate-300">{note.text}</p>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </>
+                        ))
                       )}
                     </div>
                   </div>
