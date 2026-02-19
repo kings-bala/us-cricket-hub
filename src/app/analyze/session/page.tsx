@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { getItem, setItem } from "@/lib/storage";
+import { useLivePoseDetection } from "@/hooks/useLivePoseDetection";
+import { validateCricketPose } from "@/lib/cricket-analysis";
+import { estimateBallSpeed, classifyPace, type SpeedEstimate } from "@/lib/ball-speed";
+import type { NormalizedLandmark } from "@mediapipe/tasks-vision";
 
 type DeliveryType = "pace" | "inswing" | "outswing" | "offspin" | "legspin" | "yorker" | "bouncer" | "slower";
 type ShotResult = "dot" | "1" | "2" | "3" | "4" | "6" | "wicket" | "wide" | "noball";
@@ -76,8 +80,116 @@ export default function NetSessionTracker() {
   const [pastSessions, setPastSessions] = useState<NetSession[]>(() => getSessions());
   const [viewingSession, setViewingSession] = useState<NetSession | null>(null);
 
+  const [cameraMode, setCameraMode] = useState(false);
+  const [liveSpeed, setLiveSpeed] = useState<SpeedEstimate | null>(null);
+  const [actionDetected, setActionDetected] = useState(false);
+  const [poseStatus, setPoseStatus] = useState<string | null>(null);
+  const timestampedFramesRef = useRef<{ landmarks: NormalizedLandmark[]; timestamp: number }[]>([]);
+  const prevMotionRef = useRef(0);
+
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
+  const animFrameRef = useRef<number | null>(null);
+
   const pitchRef = useRef<SVGSVGElement>(null);
   const wagonRef = useRef<SVGSVGElement>(null);
+
+  const {
+    isLoading: modelLoading,
+    isStreaming,
+    error: cameraError,
+    startCamera,
+    stopCamera,
+    detectFrame,
+    drawLandmarks,
+  } = useLivePoseDetection();
+
+  const processFrame = useCallback(() => {
+    if (!videoRef.current || !overlayRef.current || !isStreaming) return;
+    const video = videoRef.current;
+    const canvas = overlayRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.width = video.videoWidth || video.clientWidth;
+    canvas.height = video.videoHeight || video.clientHeight;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const result = detectFrame(video);
+    if (result) {
+      drawLandmarks(ctx, result.landmarks, canvas.width, canvas.height);
+
+      const validation = validateCricketPose(result.landmarks, "bowling");
+      if (!validation.isValid) {
+        setPoseStatus(validation.reason);
+        setActionDetected(false);
+      } else {
+        setPoseStatus(null);
+
+        timestampedFramesRef.current.push({ landmarks: result.landmarks, timestamp: result.timestamp });
+        if (timestampedFramesRef.current.length > 90) {
+          timestampedFramesRef.current = timestampedFramesRef.current.slice(-90);
+        }
+
+        const frames = timestampedFramesRef.current;
+        if (frames.length >= 5) {
+          const recent = frames.slice(-5);
+          let motion = 0;
+          for (let i = 1; i < recent.length; i++) {
+            const prev = recent[i - 1].landmarks;
+            const curr = recent[i].landmarks;
+            const rw1 = prev[16];
+            const rw2 = curr[16];
+            if (rw1 && rw2) {
+              motion += Math.sqrt((rw2.x - rw1.x) ** 2 + (rw2.y - rw1.y) ** 2);
+            }
+          }
+          const avgMotion = motion / (recent.length - 1);
+
+          if (avgMotion > 0.04 && prevMotionRef.current <= 0.04) {
+            setActionDetected(true);
+            const speedEst = estimateBallSpeed(frames);
+            if (speedEst) {
+              setLiveSpeed(speedEst);
+              setSpeed(speedEst.speedKph);
+            }
+          }
+          if (avgMotion <= 0.02 && actionDetected) {
+            setActionDetected(false);
+          }
+          prevMotionRef.current = avgMotion;
+        }
+      }
+    }
+
+    animFrameRef.current = requestAnimationFrame(processFrame);
+  }, [isStreaming, detectFrame, drawLandmarks, actionDetected]);
+
+  useEffect(() => {
+    if (isStreaming && cameraMode) {
+      animFrameRef.current = requestAnimationFrame(processFrame);
+    }
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [isStreaming, cameraMode, processFrame]);
+
+  const handleStartCamera = useCallback(async () => {
+    if (!videoRef.current) return;
+    setCameraMode(true);
+    await startCamera(videoRef.current);
+  }, [startCamera]);
+
+  const handleStopCamera = useCallback(() => {
+    stopCamera();
+    setCameraMode(false);
+    setLiveSpeed(null);
+    setActionDetected(false);
+    setPoseStatus(null);
+    timestampedFramesRef.current = [];
+    prevMotionRef.current = 0;
+    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+  }, [stopCamera]);
 
   const handleMapClick = useCallback((e: React.MouseEvent<SVGSVGElement>, map: "pitch" | "wagon") => {
     const svg = map === "pitch" ? pitchRef.current : wagonRef.current;
@@ -164,8 +276,14 @@ export default function NetSessionTracker() {
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">Net Session Tracker</h1>
           <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded-full border border-cyan-500/30">Pocket Hawk-Eye</span>
+          {isStreaming && (
+            <span className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded-full border border-red-500/30 flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              Camera Live
+            </span>
+          )}
         </div>
-        <p className="text-slate-400">Track every delivery — speed, pitch map, wagon wheel, and session analytics.</p>
+        <p className="text-slate-400">Track every delivery — speed, pitch map, wagon wheel, and session analytics. Enable camera for auto speed detection.</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -173,7 +291,35 @@ export default function NetSessionTracker() {
           {!viewingSession && (
             <>
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <h2 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Hybrid Mode</h2>
+                {!isStreaming ? (
+                  <button
+                    onClick={handleStartCamera}
+                    disabled={modelLoading}
+                    className={`w-full py-2.5 rounded-lg font-medium text-sm transition-colors ${!modelLoading ? "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30" : "bg-slate-700 text-slate-500 cursor-not-allowed"}`}
+                  >
+                    {modelLoading ? "Loading AI..." : "Enable Camera (Auto Speed)"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleStopCamera}
+                    className="w-full py-2.5 rounded-lg font-medium text-sm border border-slate-600 text-slate-300 hover:border-slate-500 transition-colors"
+                  >
+                    Disable Camera
+                  </button>
+                )}
+                {cameraError && <p className="text-xs text-red-400 mt-2">{cameraError}</p>}
+                <p className="text-xs text-slate-600 mt-2">Camera auto-detects bowling action and fills speed. You confirm pitch &amp; result.</p>
+              </div>
+
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                 <h2 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Speed (km/h)</h2>
+                {liveSpeed && (
+                  <div className="mb-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-between">
+                    <span className="text-xs text-emerald-400">AI Detected</span>
+                    <span className="text-sm font-bold text-emerald-400">{liveSpeed.speedKph} km/h &middot; {classifyPace(liveSpeed.speedKph).label}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -297,6 +443,41 @@ export default function NetSessionTracker() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          {cameraMode && isStreaming && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+              <div className="relative bg-black" style={{ minHeight: 200 }}>
+                <video ref={videoRef} playsInline muted className="w-full" style={{ transform: "scaleX(-1)", maxHeight: 240 }} />
+                <canvas ref={overlayRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" style={{ transform: "scaleX(-1)" }} />
+                {liveSpeed && (
+                  <div className="absolute top-3 right-3 bg-black/70 backdrop-blur-sm border border-slate-600/50 rounded-xl p-2 text-center min-w-[90px]">
+                    <p className="text-[9px] uppercase tracking-wider text-slate-400">Speed</p>
+                    <p className="text-2xl font-black text-white leading-none">{liveSpeed.speedKph}</p>
+                    <p className="text-[9px] text-slate-400">km/h</p>
+                    <p className={`text-[10px] font-semibold mt-0.5 ${classifyPace(liveSpeed.speedKph).color}`}>{classifyPace(liveSpeed.speedKph).label}</p>
+                  </div>
+                )}
+                {actionDetected && (
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-emerald-500/80 backdrop-blur-sm rounded-full px-3 py-1">
+                    <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    <span className="text-xs font-semibold text-white">Action Detected</span>
+                  </div>
+                )}
+                {poseStatus && (
+                  <div className="absolute bottom-3 left-3 right-3 bg-amber-900/80 border border-amber-500/40 rounded-lg p-2 backdrop-blur-sm">
+                    <p className="text-[10px] text-amber-300 text-center">{poseStatus}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {!cameraMode && (
+            <div className="hidden">
+              <video ref={videoRef} playsInline muted />
+              <canvas ref={overlayRef} />
+            </div>
+          )}
+
           <div className="flex gap-2 mb-2">
             <button
               onClick={() => setActiveMap("pitch")}
