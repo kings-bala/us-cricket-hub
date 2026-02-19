@@ -166,7 +166,7 @@ export default function AdminDashboard() {
                 <tbody className="divide-y divide-slate-700/30">
                   {filtered.map((u) => {
                     const blocked = isUserBlocked(u.email);
-                    const isAdmin = u.email.toLowerCase() === "admin@cricverse360.com";
+                    const isAdmin = u.role === "admin";
                     return (
                       <tr key={u.email} className="hover:bg-slate-800/30 transition-colors">
                         <td className="px-5 py-4">
