@@ -153,6 +153,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Academy", id: "academy", links: [
       { href: "/academy", label: "Dashboard", desc: "Academy overview" },
       { href: "/academy/roster", label: "Roster", desc: "Manage players" },
+      { href: "/academy/attendance", label: "Attendance", desc: "Mark daily attendance" },
       { href: "/academy/invite", label: "Invite", desc: "Invite players" },
       { href: "/academy/reports", label: "Reports", desc: "Progress reports" },
     ]},
