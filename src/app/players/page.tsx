@@ -430,8 +430,9 @@ function PlayersContent() {
           localStorage.setItem(PLAN_KEY, JSON.stringify(updated));
         };
 
-        const addSessionLog = (type: string, duration: string, notes: string) => {
-          const entry = { id: `log_${Date.now()}`, date: new Date().toISOString(), type, duration, notes };
+        const addSessionLog = (type: string, duration: string, notes: string, dateStr: string) => {
+          const date = dateStr ? new Date(dateStr + "T12:00:00").toISOString() : new Date().toISOString();
+          const entry = { id: `log_${Date.now()}`, date, type, duration, notes };
           const updated = [entry, ...currentLogs];
           setSessionLogs(updated);
           localStorage.setItem(LOG_KEY, JSON.stringify(updated));
@@ -831,11 +832,13 @@ function PlayersContent() {
                       const type = (form.elements.namedItem("logType") as HTMLSelectElement).value;
                       const duration = (form.elements.namedItem("logDuration") as HTMLInputElement).value;
                       const notes = (form.elements.namedItem("logNotes") as HTMLTextAreaElement).value;
-                      if (type && duration) { addSessionLog(type, duration, notes); form.reset(); }
+                      const dateVal = (form.elements.namedItem("logDate") as HTMLInputElement).value;
+                      if (type && duration) { addSessionLog(type, duration, notes, dateVal); form.reset(); }
                     }}
                     className="space-y-3"
                   >
-                    <div className="grid sm:grid-cols-2 gap-3">
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <input name="logDate" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg p-2.5" required />
                       <select name="logType" className="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg p-2.5" required>
                         <option value="">Select type...</option>
                         <option value="Batting Nets">Batting Nets</option>
