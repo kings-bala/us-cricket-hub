@@ -46,6 +46,8 @@ function PlayersContent() {
   const [exportFormat, setExportFormat] = useState<"text" | "csv">("text");
   const search = useSearchParams();
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [noteFilter, setNoteFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -659,11 +661,23 @@ function PlayersContent() {
                                       <p className="text-xs text-slate-400 mb-1 ml-8">{item.routine.description}</p>
                                       <div className="flex items-center gap-3 ml-8">
                                         <p className="text-xs text-slate-500">Idol: {item.idol} &middot; {item.routine.frequency}</p>
-                                        <a href={item.routine.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
+                                        <button onClick={() => setPlayingVideo(playingVideo === item.key ? null : item.key)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
                                           <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814ZM9.545 15.568V8.432L15.818 12l-6.273 3.568Z"/></svg>
-                                          Watch
-                                        </a>
+                                          {playingVideo === item.key ? "Close" : "Watch"}
+                                        </button>
                                       </div>
+                                      {playingVideo === item.key && (
+                                        <div className="mt-2 ml-8">
+                                          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                                            <iframe
+                                              className="absolute inset-0 w-full h-full rounded-lg"
+                                              src={`https://www.youtube.com/embed/${item.routine.videoUrl.match(/[?&]v=([^&]+)/)?.[1] || ""}?autoplay=1`}
+                                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                              allowFullScreen
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   );
                                 })}
@@ -812,13 +826,27 @@ function PlayersContent() {
                         </div>
                         <h3 className="text-sm font-semibold text-white mb-1">{drill.title}</h3>
                         <p className="text-xs text-slate-400 line-clamp-2">{drill.description}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-slate-500">{drill.channel}</span>
-                          <a href={drill.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                            Watch
-                          </a>
-                        </div>
+                        {playingVideo === drill.id ? (
+                          <div className="mt-3">
+                            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                              <iframe
+                                className="absolute inset-0 w-full h-full rounded-lg"
+                                src={`https://www.youtube.com/embed/${drill.videoUrl.match(/[?&]v=([^&]+)/)?.[1] || ""}?autoplay=1`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                              />
+                            </div>
+                            <button onClick={() => setPlayingVideo(null)} className="mt-2 text-xs text-slate-400 hover:text-white transition-colors">Close</button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs text-slate-500">{drill.channel}</span>
+                            <button onClick={() => setPlayingVideo(drill.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
+                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                              Watch
+                            </button>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -1129,7 +1157,6 @@ function PlayersContent() {
                 general: { text: "text-slate-400", bg: "bg-slate-500/10" },
               };
               const noteScoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
-              const [noteFilter, setNoteFilter] = useState<string | null>(null);
               const filteredNotes = noteFilter ? coachNotes.filter((n) => n.analysisId === noteFilter) : coachNotes;
               const manualNoteCount = coachNotes.filter((n) => n.analysisId === "manual").length;
 
