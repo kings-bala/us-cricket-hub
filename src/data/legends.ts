@@ -200,6 +200,119 @@ export const legends: Legend[] = [
       { name: "Raw Pace Intervals", duration: "20 min", frequency: "3x/week", description: "Bowl 6-ball overs at full pace with 2-minute rest intervals to simulate match intensity", videoUrl: "https://www.youtube.com/results?search_query=cricket+fast+bowling+interval+training" },
     ],
   }},
+  { id: "l21", name: "Virat Kohli", country: "India", era: "2008–present", skills: ["Batting"], highlights: "80+ international centuries, chasing master, modern-era run machine", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Virat_Kohli_during_the_India_vs_Aus_4th_Test_match_at_the_Narendra_Modi_Stadium_on_09_March_2023.jpg/200px-Virat_Kohli_during_the_India_vs_Aus_4th_Test_match_at_the_Narendra_Modi_Stadium_on_09_March_2023.jpg", routines: {
+    Batting: [
+      { name: "Chase Simulation", duration: "45 min", frequency: "5x/week", description: "Simulate run-chase scenarios — 120 off 20 overs, 50 off 30 balls — build pressure-handling skills", videoUrl: "https://www.youtube.com/results?search_query=virat+kohli+batting+chase+drills" },
+      { name: "Cover Drive Perfection", duration: "30 min", frequency: "Daily", description: "Repetitive cover drives with emphasis on head position, weight transfer, and full follow-through", videoUrl: "https://www.youtube.com/results?search_query=virat+kohli+cover+drive+technique" },
+      { name: "Fitness & Conditioning", duration: "60 min", frequency: "Daily", description: "High-intensity interval training, core work, and agility drills — elite fitness is non-negotiable", videoUrl: "https://www.youtube.com/results?search_query=virat+kohli+fitness+training+routine" },
+      { name: "Fast Bowling Nets", duration: "40 min", frequency: "5x/week", description: "Face 150+ km/h throwdowns to sharpen reflexes and timing against express pace", videoUrl: "https://www.youtube.com/results?search_query=cricket+facing+fast+bowling+net+practice" },
+    ],
+  }},
+  { id: "l22", name: "Rohit Sharma", country: "India", era: "2007–present", skills: ["Batting"], highlights: "3 ODI double centuries, Hitman, T20 World Cup-winning captain", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Rohit_Sharma_India_cricket_captain.jpg/200px-Rohit_Sharma_India_cricket_captain.jpg", routines: {
+    Batting: [
+      { name: "Pull Shot Clinic", duration: "30 min", frequency: "Daily", description: "Practice the signature pull and hook shots — roll the wrists, place between fielders", videoUrl: "https://www.youtube.com/results?search_query=rohit+sharma+pull+shot+technique+tutorial" },
+      { name: "Timing Over Power", duration: "40 min", frequency: "5x/week", description: "Practice lofted drives and flicks using pure timing — minimal effort, maximum distance", videoUrl: "https://www.youtube.com/results?search_query=rohit+sharma+effortless+batting+timing" },
+      { name: "Powerplay Domination", duration: "30 min", frequency: "4x/week", description: "Simulate opening in powerplay overs — target boundaries through gaps with field restrictions", videoUrl: "https://www.youtube.com/results?search_query=cricket+powerplay+batting+opening+drills" },
+    ],
+  }},
+  { id: "l23", name: "Jasprit Bumrah", country: "India", era: "2016–present", skills: ["Bowling"], highlights: "Unorthodox action, death-overs specialist, #1 ICC Test bowler", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Jasprit_Bumrah_at_Wankhede_Stadium%2C_Nov_2024.jpg/200px-Jasprit_Bumrah_at_Wankhede_Stadium%2C_Nov_2024.jpg", routines: {
+    Bowling: [
+      { name: "Yorker Factory", duration: "40 min", frequency: "Daily", description: "Bowl 50+ yorkers targeting the base of stumps and blockhole — aim for 80% accuracy", videoUrl: "https://www.youtube.com/results?search_query=jasprit+bumrah+yorker+bowling+drills" },
+      { name: "Short Run-Up Pace", duration: "30 min", frequency: "5x/week", description: "Generate 140+ km/h from a short run-up — focus on explosive delivery stride and hip drive", videoUrl: "https://www.youtube.com/results?search_query=bumrah+bowling+action+short+run+up" },
+      { name: "Variation Mastery", duration: "35 min", frequency: "4x/week", description: "Practice slower balls, knuckle balls, wide yorkers, and bouncers with the same action", videoUrl: "https://www.youtube.com/results?search_query=cricket+death+bowling+variations+slower+ball" },
+      { name: "Core & Lower Back", duration: "25 min", frequency: "Daily", description: "Strengthen core and lower back to support the unique hyperextended bowling action", videoUrl: "https://www.youtube.com/results?search_query=fast+bowler+core+lower+back+exercises" },
+    ],
+  }},
+  { id: "l24", name: "Pat Cummins", country: "Australia", era: "2011–present", skills: ["Bowling"], highlights: "World Cup-winning captain, 200+ Test wickets, relentless fast bowler", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/2018.01.06.17.38.18-Pat_Cummins_%2839488673691%29_%28cropped%29.jpg/200px-2018.01.06.17.38.18-Pat_Cummins_%2839488673691%29_%28cropped%29.jpg", routines: {
+    Bowling: [
+      { name: "Channel Bowling", duration: "40 min", frequency: "Daily", description: "Hit the 4th-5th stump channel relentlessly — build the consistency to bowl 6 good balls an over", videoUrl: "https://www.youtube.com/results?search_query=pat+cummins+bowling+line+length+channel" },
+      { name: "Bouncer Setup", duration: "30 min", frequency: "4x/week", description: "Use the bouncer as a setup ball — follow with a full ball targeting the stumps", videoUrl: "https://www.youtube.com/results?search_query=cricket+bouncer+setup+bowling+plan" },
+      { name: "Workload Management", duration: "30 min", frequency: "Daily", description: "Recovery drills, ice baths, and mobility work to sustain pace across a 5-day Test match", videoUrl: "https://www.youtube.com/results?search_query=fast+bowler+recovery+workload+management" },
+    ],
+  }},
+  { id: "l25", name: "Babar Azam", country: "Pakistan", era: "2015–present", skills: ["Batting"], highlights: "Fab Four member, #1 across all formats, elegant stroke-maker", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Babar_azam_2023.jpg/200px-Babar_azam_2023.jpg", routines: {
+    Batting: [
+      { name: "On-Drive Mastery", duration: "30 min", frequency: "Daily", description: "Practice the wristy on-drive and flick through mid-wicket with perfect balance and timing", videoUrl: "https://www.youtube.com/results?search_query=babar+azam+on+drive+batting+technique" },
+      { name: "All-Format Adaptability", duration: "45 min", frequency: "5x/week", description: "Switch between Test match defense, ODI anchoring, and T20 aggression in the same session", videoUrl: "https://www.youtube.com/results?search_query=babar+azam+batting+all+formats+versatile" },
+      { name: "Pace & Spin Nets", duration: "40 min", frequency: "4x/week", description: "Alternate between pace and spin bowlers to build adaptability against different bowling types", videoUrl: "https://www.youtube.com/results?search_query=cricket+batting+against+pace+and+spin" },
+    ],
+  }},
+  { id: "l26", name: "Joe Root", country: "England", era: "2012–present", skills: ["Batting"], highlights: "12,000+ Test runs, 30+ centuries, reverse sweep specialist", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/Joe_Root_2015.jpg/200px-Joe_Root_2015.jpg", routines: {
+    Batting: [
+      { name: "Reverse Sweep Drill", duration: "25 min", frequency: "4x/week", description: "Practice reverse sweeps and switch hits against spin — use it as both scoring and pressure-release shot", videoUrl: "https://www.youtube.com/results?search_query=joe+root+reverse+sweep+batting+technique" },
+      { name: "Scoring in All Conditions", duration: "45 min", frequency: "5x/week", description: "Practice on different surfaces — fast, slow, turning — to build adaptability for away tours", videoUrl: "https://www.youtube.com/results?search_query=cricket+batting+different+conditions+pitches" },
+      { name: "Conversion Rate", duration: "40 min", frequency: "3x/week", description: "Simulate innings from 50* onwards — practice converting fifties into hundreds with disciplined shot selection", videoUrl: "https://www.youtube.com/results?search_query=cricket+batting+converting+50+to+100" },
+    ],
+  }},
+  { id: "l27", name: "Ben Stokes", country: "England", era: "2011–present", skills: ["Batting", "Bowling"], highlights: "Headingley 135*, World Cup 2019 hero, fearless match-winner", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Ben_Stokes_in_2019_%28cropped%29.jpg/200px-Ben_Stokes_in_2019_%28cropped%29.jpg", routines: {
+    Batting: [
+      { name: "Pressure Hitting", duration: "40 min", frequency: "5x/week", description: "Simulate match-winning scenarios — 30 off 20, 15 off 6 — practice calculated aggression under pressure", videoUrl: "https://www.youtube.com/results?search_query=ben+stokes+batting+pressure+match+winning" },
+      { name: "Six-Hitting Drills", duration: "30 min", frequency: "4x/week", description: "Practice clearing the boundary against pace and spin — target specific zones", videoUrl: "https://www.youtube.com/results?search_query=cricket+six+hitting+power+hitting+drills" },
+    ],
+    Bowling: [
+      { name: "Wicket-Taking Spells", duration: "30 min", frequency: "4x/week", description: "Practice bowling aggressive short spells of 4-5 overs at high intensity to break partnerships", videoUrl: "https://www.youtube.com/results?search_query=cricket+medium+fast+bowling+wicket+taking" },
+      { name: "Reverse Swing at Pace", duration: "25 min", frequency: "3x/week", description: "Bowl with the old ball and generate reverse swing at 130-140 km/h", videoUrl: "https://www.youtube.com/results?search_query=cricket+reverse+swing+medium+fast+bowling" },
+    ],
+  }},
+  { id: "l28", name: "Rashid Khan", country: "Afghanistan", era: "2015–present", skills: ["Bowling"], highlights: "Youngest Test captain, 500+ T20 wickets, leg-spin wizard", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Rashid_Khan_2021.jpg/200px-Rashid_Khan_2021.jpg", routines: {
+    Bowling: [
+      { name: "Rapid Leg-Spin", duration: "40 min", frequency: "Daily", description: "Bowl leg-breaks, googlies, and flippers at speed — minimize flight time to rush batsmen", videoUrl: "https://www.youtube.com/results?search_query=rashid+khan+leg+spin+bowling+technique" },
+      { name: "Googly Disguise", duration: "30 min", frequency: "5x/week", description: "Practice bowling the googly with identical action to the leg-break — focus on wrist position", videoUrl: "https://www.youtube.com/results?search_query=cricket+googly+bowling+wrist+position+tutorial" },
+      { name: "T20 Death Bowling", duration: "30 min", frequency: "4x/week", description: "Bowl in the death overs of T20s — practice wider lines, slower balls, and yorkers as a spinner", videoUrl: "https://www.youtube.com/results?search_query=cricket+spin+bowling+death+overs+t20" },
+    ],
+  }},
+  { id: "l29", name: "Suryakumar Yadav", country: "India", era: "2021–present", skills: ["Batting"], highlights: "T20I #1 batter, 360-degree modern striker, 4 T20I centuries", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Suryakumar_Yadav_2023.jpg/200px-Suryakumar_Yadav_2023.jpg", routines: {
+    Batting: [
+      { name: "360° Shot Practice", duration: "40 min", frequency: "Daily", description: "Practice laps, scoops, reverse pulls, and switch hits — score in every zone of the ground", videoUrl: "https://www.youtube.com/results?search_query=suryakumar+yadav+360+batting+shots+tutorial" },
+      { name: "Intent From Ball One", duration: "30 min", frequency: "5x/week", description: "Practice attacking the first ball of the innings — build the fearless T20 mentality", videoUrl: "https://www.youtube.com/results?search_query=t20+batting+aggressive+intent+powerplay" },
+      { name: "Upper-Cut & Ramp", duration: "25 min", frequency: "4x/week", description: "Master the upper-cut over third man and ramp over the keeper against pace", videoUrl: "https://www.youtube.com/results?search_query=cricket+upper+cut+ramp+shot+technique" },
+    ],
+  }},
+  { id: "l30", name: "Kagiso Rabada", country: "South Africa", era: "2014–present", skills: ["Bowling"], highlights: "300+ international wickets, aggressive fast bowler, ICC #1 ranked", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f1/Kagiso_Rabada_2018_%28cropped%29.jpg/200px-Kagiso_Rabada_2018_%28cropped%29.jpg", routines: {
+    Bowling: [
+      { name: "Aggressive Pace Spells", duration: "40 min", frequency: "5x/week", description: "Bowl hostile 5-over spells at 145+ km/h — practice maintaining pace late in the day", videoUrl: "https://www.youtube.com/results?search_query=kagiso+rabada+fast+bowling+aggressive+spells" },
+      { name: "Nip-Backer Delivery", duration: "30 min", frequency: "Daily", description: "Practice the ball that nips back into right-handers off the seam at pace — LBW weapon", videoUrl: "https://www.youtube.com/results?search_query=cricket+seam+bowling+nip+back+inswing" },
+      { name: "Death Overs Execution", duration: "30 min", frequency: "4x/week", description: "Bowl yorkers and slower bouncers in the last 5 overs under scoreboard pressure", videoUrl: "https://www.youtube.com/results?search_query=cricket+fast+bowling+death+overs+t20" },
+    ],
+  }},
+  { id: "l31", name: "Rishabh Pant", country: "India", era: "2017–present", skills: ["Wicket-Keeping", "Batting"], highlights: "Fearless keeper-batter, match-winning centuries in Aus & Eng, T20 destroyer", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Rishabh_Pant_%282%29.jpg/200px-Rishabh_Pant_%282%29.jpg", routines: {
+    "Wicket-Keeping": [
+      { name: "Standing Up to Pace", duration: "30 min", frequency: "Daily", description: "Practice keeping up to medium-fast bowlers — improve reflexes and quick stumping ability", videoUrl: "https://www.youtube.com/results?search_query=rishabh+pant+wicket+keeping+standing+up" },
+      { name: "Athletic Keeping", duration: "25 min", frequency: "5x/week", description: "Diving catches, one-handed takes, and acrobatic dismissals to build spectacular keeping skills", videoUrl: "https://www.youtube.com/results?search_query=cricket+wicket+keeping+diving+athletic+drills" },
+    ],
+    Batting: [
+      { name: "Fearless Counter-Attack", duration: "40 min", frequency: "5x/week", description: "Practice attacking in tough situations — score against the new ball, reverse sweep spinners in Tests", videoUrl: "https://www.youtube.com/results?search_query=rishabh+pant+counter+attacking+batting" },
+      { name: "Reverse Sweep Mastery", duration: "25 min", frequency: "4x/week", description: "Practice reverse sweeps and switch hits against both pace and spin from a left-hand stance", videoUrl: "https://www.youtube.com/results?search_query=rishabh+pant+reverse+sweep+left+hand" },
+    ],
+  }},
+  { id: "l32", name: "Steve Smith", country: "Australia", era: "2010–present", skills: ["Batting"], highlights: "9,000+ Test runs, 32 centuries, unorthodox genius with 60+ average", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Steve_Smith_%28cricketer%29_2.jpg/200px-Steve_Smith_%28cricketer%29_2.jpg", routines: {
+    Batting: [
+      { name: "Shuffling Trigger Move", duration: "30 min", frequency: "Daily", description: "Practice the signature shuffle across the stumps to get into position for leg-side scoring", videoUrl: "https://www.youtube.com/results?search_query=steve+smith+batting+trigger+movement+shuffle" },
+      { name: "Leave & Defend", duration: "40 min", frequency: "5x/week", description: "Practice disciplined leaving outside off and solid defense to build marathon innings", videoUrl: "https://www.youtube.com/results?search_query=steve+smith+batting+defence+leave+technique" },
+      { name: "Wristy Flicks", duration: "25 min", frequency: "4x/week", description: "Work the ball off the pads through mid-wicket and fine leg with wristy placement", videoUrl: "https://www.youtube.com/results?search_query=steve+smith+flick+leg+side+batting" },
+    ],
+  }},
+  { id: "l33", name: "Shaheen Shah Afridi", country: "Pakistan", era: "2018–present", skills: ["Bowling"], highlights: "Left-arm fast, 100+ Test wickets, deadly with the new ball", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Shaheen_Shah_Afridi_2022.jpg/200px-Shaheen_Shah_Afridi_2022.jpg", routines: {
+    Bowling: [
+      { name: "Left-Arm Angle Attack", duration: "40 min", frequency: "Daily", description: "Exploit the natural angle into right-handers — target the stumps and LBW zone consistently", videoUrl: "https://www.youtube.com/results?search_query=shaheen+afridi+left+arm+fast+bowling" },
+      { name: "New Ball Swing", duration: "30 min", frequency: "5x/week", description: "Bowl with the new ball and generate late inswing to right-handers at 145+ km/h", videoUrl: "https://www.youtube.com/results?search_query=cricket+left+arm+fast+inswing+new+ball" },
+      { name: "Powerplay Wickets", duration: "30 min", frequency: "4x/week", description: "Practice bowling in powerplay overs — mix full, short, and wide yorkers to take early wickets", videoUrl: "https://www.youtube.com/results?search_query=cricket+fast+bowling+powerplay+wickets" },
+    ],
+  }},
+  { id: "l34", name: "Mitchell Starc", country: "Australia", era: "2010–present", skills: ["Bowling"], highlights: "Left-arm thunderbolt, World Cup specialist, 300+ Test wickets", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Mitchell_Starc_bowling%2C_2021.jpg/200px-Mitchell_Starc_bowling%2C_2021.jpg", routines: {
+    Bowling: [
+      { name: "Inswing Yorker", duration: "40 min", frequency: "Daily", description: "Master the devastating inswinging yorker to right-handers — the signature World Cup delivery", videoUrl: "https://www.youtube.com/results?search_query=mitchell+starc+inswing+yorker+bowling" },
+      { name: "Raw Pace Generation", duration: "35 min", frequency: "5x/week", description: "Full-effort deliveries at 150+ km/h — focus on run-up rhythm and explosive front-arm pull", videoUrl: "https://www.youtube.com/results?search_query=mitchell+starc+fast+bowling+pace+generation" },
+      { name: "White Ball Mastery", duration: "30 min", frequency: "4x/week", description: "Practice bowling with the white ball — exploit swing in the first 10 and last 10 overs", videoUrl: "https://www.youtube.com/results?search_query=cricket+white+ball+swing+bowling+technique" },
+    ],
+  }},
+  { id: "l35", name: "Travis Head", country: "Australia", era: "2018–present", skills: ["Batting"], highlights: "Ashes hero, World Cup final century, aggressive left-hand batter", photo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Travis_Head_2023.jpg/200px-Travis_Head_2023.jpg", routines: {
+    Batting: [
+      { name: "Counter-Attack Mode", duration: "40 min", frequency: "5x/week", description: "Practice attacking from the first ball — back yourself to hit boundaries when bowlers err in length", videoUrl: "https://www.youtube.com/results?search_query=travis+head+aggressive+batting+counter+attack" },
+      { name: "Spin Domination", duration: "30 min", frequency: "4x/week", description: "Step out and hit spinners over the top — use the feet to convert good balls into scoring opportunities", videoUrl: "https://www.youtube.com/results?search_query=cricket+batting+against+spin+stepping+out" },
+      { name: "Left-Hand Advantage", duration: "30 min", frequency: "Daily", description: "Exploit the left-hander's angle — cut, pull, and drive through the off-side gaps", videoUrl: "https://www.youtube.com/results?search_query=left+hand+batting+technique+cricket+drills" },
+    ],
+  }},
 ];
 
 export const skillColors: Record<Skill, { bg: string; text: string; border: string }> = {
