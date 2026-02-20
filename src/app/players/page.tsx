@@ -47,6 +47,7 @@ function PlayersContent() {
   const search = useSearchParams();
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [noteFilter, setNoteFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -1156,7 +1157,6 @@ function PlayersContent() {
                 general: { text: "text-slate-400", bg: "bg-slate-500/10" },
               };
               const noteScoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
-              const [noteFilter, setNoteFilter] = useState<string | null>(null);
               const filteredNotes = noteFilter ? coachNotes.filter((n) => n.analysisId === noteFilter) : coachNotes;
               const manualNoteCount = coachNotes.filter((n) => n.analysisId === "manual").length;
 
