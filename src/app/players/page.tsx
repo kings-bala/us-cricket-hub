@@ -115,6 +115,8 @@ function PlayersContent() {
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [noteFilter, setNoteFilter] = useState<string | null>(null);
+  const [chartsReady, setChartsReady] = useState(false);
+  useEffect(() => { import("recharts").then(() => setChartsReady(true)); }, []);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -359,7 +361,7 @@ function PlayersContent() {
                   <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
                 </div>
               </div>
-              {profileBattingChart.length > 0 && (
+              {chartsReady && profileBattingChart.length > 0 && (
                 <div className="h-28">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={profileBattingChart} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
@@ -386,7 +388,7 @@ function PlayersContent() {
                   <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bestBowling}</div><div className="text-[9px] text-slate-500">Best</div></div>
                 </div>
               </div>
-              {profileRadarData.some(d => d.value > 0) && (
+              {chartsReady && profileRadarData.some(d => d.value > 0) && (
                 <div className="mt-2">
                   <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
                   <div className="h-32">
