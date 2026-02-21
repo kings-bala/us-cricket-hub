@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { sponsors, availableSponsorships, tournaments } from "@/data/mock";
 
 const typeIcons: Record<string, string> = {
@@ -16,6 +19,10 @@ const typeColors: Record<string, string> = {
 
 export default function SponsorsPage() {
   const upcomingTournaments = tournaments.filter((t) => t.status === "upcoming");
+  const [inquiryTarget, setInquiryTarget] = useState<{ name: string; type: string } | null>(null);
+  const [inquiryEmail, setInquiryEmail] = useState("");
+  const [inquiryMsg, setInquiryMsg] = useState("");
+  const [inquirySent, setInquirySent] = useState<Record<string, boolean>>({});
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -90,8 +97,15 @@ export default function SponsorsPage() {
                 {asset.name}
               </h3>
               <p className="text-sm text-slate-400 mb-4">{asset.description}</p>
-              <button className="w-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                Inquire Now
+              <button
+                onClick={() => { if (!inquirySent[asset.name]) setInquiryTarget({ name: asset.name, type: "opportunity" }); }}
+                className={`w-full px-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                  inquirySent[asset.name]
+                    ? "bg-amber-500/20 text-amber-400 border-amber-500/30 cursor-default"
+                    : "bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border-amber-500/30"
+                }`}
+              >
+                {inquirySent[asset.name] ? "Inquiry Sent" : "Inquire Now"}
               </button>
             </div>
           ))}
@@ -112,8 +126,15 @@ export default function SponsorsPage() {
                 <p className="text-sm text-slate-400">📍 {t.venue}</p>
                 <p className="text-sm text-slate-400">📅 {t.startDate}</p>
               </div>
-              <button className="shrink-0 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">
-                Sponsor
+              <button
+                onClick={() => { if (!inquirySent[t.name]) setInquiryTarget({ name: t.name, type: "event" }); }}
+                className={`shrink-0 px-4 py-2 rounded-lg text-sm transition-colors ${
+                  inquirySent[t.name]
+                    ? "bg-emerald-500/20 text-emerald-400 cursor-default"
+                    : "bg-slate-700 hover:bg-slate-600 text-white"
+                }`}
+              >
+                {inquirySent[t.name] ? "Inquiry Sent" : "Sponsor"}
               </button>
             </div>
           ))}
@@ -125,10 +146,46 @@ export default function SponsorsPage() {
         <p className="text-slate-300 mb-6 max-w-xl mx-auto">
           Looking for a bespoke sponsorship package? We create tailored partnerships that align with your brand and marketing goals.
         </p>
-        <button className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
+        <button
+          onClick={() => setInquiryTarget({ name: "Custom Partnership", type: "partnership" })}
+          className="bg-amber-500 hover:bg-amber-600 text-white px-8 py-3 rounded-full font-semibold transition-colors"
+        >
           Contact Our Partnerships Team
         </button>
       </div>
+
+      {inquiryTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setInquiryTarget(null)}>
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-white mb-1">Sponsorship Inquiry</h3>
+            <p className="text-sm text-slate-400 mb-4">
+              {inquiryTarget.type === "partnership" ? "Tell us about your brand and sponsorship goals" : `Interested in sponsoring: ${inquiryTarget.name}`}
+            </p>
+            <div className="space-y-3">
+              <input
+                type="email"
+                value={inquiryEmail}
+                onChange={(e) => setInquiryEmail(e.target.value)}
+                placeholder="Your business email"
+                className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              />
+              <textarea
+                value={inquiryMsg}
+                onChange={(e) => setInquiryMsg(e.target.value)}
+                placeholder="Tell us about your brand and what you're looking for..."
+                className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 h-24 resize-none"
+              />
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setInquiryTarget(null)} className="flex-1 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm hover:bg-slate-700/50 transition-colors">Cancel</button>
+              <button
+                onClick={() => { setInquirySent((prev) => ({ ...prev, [inquiryTarget.name]: true })); setInquiryTarget(null); setInquiryEmail(""); setInquiryMsg(""); }}
+                className="flex-1 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-medium transition-colors"
+              >Send Inquiry</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

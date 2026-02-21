@@ -12,6 +12,9 @@ export default function CoachesPage() {
   const [region, setRegion] = useState<Region | "All">("All");
   const [specialization, setSpecialization] = useState<Specialization | "All">("All");
   const [minRating, setMinRating] = useState(0);
+  const [connectCoach, setConnectCoach] = useState<string | null>(null);
+  const [connectMsg, setConnectMsg] = useState("");
+  const [connectSent, setConnectSent] = useState<Record<string, boolean>>({});
 
   const filtered = useMemo(() => {
     let result = [...coaches];
@@ -161,13 +164,54 @@ export default function CoachesPage() {
               <span className={`text-xs px-2 py-1 rounded-full ${coach.availability === "available" ? "bg-emerald-500/20 text-emerald-400" : coach.availability === "limited" ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"}`}>
                 {coach.availability}
               </span>
-              <button className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors">
-                Connect
+              <button
+                onClick={() => { if (connectSent[coach.id]) return; setConnectCoach(coach.id); setConnectMsg(""); }}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors border ${
+                  connectSent[coach.id]
+                    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30 cursor-default"
+                    : "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                }`}
+              >
+                {connectSent[coach.id] ? "Request Sent" : "Connect"}
               </button>
             </div>
           </div>
         ))}
       </div>
+
+      {connectCoach && (() => {
+        const coach = coaches.find((c) => c.id === connectCoach);
+        if (!coach) return null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setConnectCoach(null)}>
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                  {coach.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <div>
+                  <p className="text-white font-semibold">{coach.name}</p>
+                  <p className="text-xs text-slate-400">{coach.specialization} &middot; {coach.country}</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400 mb-3">Send a connection request to {coach.name.split(" ")[0]}:</p>
+              <textarea
+                value={connectMsg}
+                onChange={(e) => setConnectMsg(e.target.value)}
+                placeholder="Hi, I'm interested in your coaching services..."
+                className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 h-24 resize-none"
+              />
+              <div className="flex gap-2 mt-4">
+                <button onClick={() => setConnectCoach(null)} className="flex-1 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm hover:bg-slate-700/50 transition-colors">Cancel</button>
+                <button
+                  onClick={() => { setConnectSent((prev) => ({ ...prev, [coach.id]: true })); setConnectCoach(null); }}
+                  className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors"
+                >Send Request</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
