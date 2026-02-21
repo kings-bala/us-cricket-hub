@@ -6,17 +6,39 @@ import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus, calculateCPI } from "@/data/mock";
 
-const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
-const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
-const Bar = dynamic(() => import("recharts").then(m => m.Bar), { ssr: false });
-const XAxis = dynamic(() => import("recharts").then(m => m.XAxis), { ssr: false });
-const YAxis = dynamic(() => import("recharts").then(m => m.YAxis), { ssr: false });
-const Tooltip = dynamic(() => import("recharts").then(m => m.Tooltip), { ssr: false });
-const RadarChart = dynamic(() => import("recharts").then(m => m.RadarChart), { ssr: false });
-const Radar = dynamic(() => import("recharts").then(m => m.Radar), { ssr: false });
-const PolarGrid = dynamic(() => import("recharts").then(m => m.PolarGrid), { ssr: false });
-const PolarAngleAxis = dynamic(() => import("recharts").then(m => m.PolarAngleAxis), { ssr: false });
-const PolarRadiusAxis = dynamic(() => import("recharts").then(m => m.PolarRadiusAxis), { ssr: false });
+const ProfileBattingChart = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } = mod;
+  return { default: ({ data }: { data: { name: string; runs: number }[] }) => (
+    <div className="h-28">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+          <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+          <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 11 }} />
+          <Bar dataKey="runs" fill="#10b981" radius={[3, 3, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )};
+}), { ssr: false });
+const ProfileRadarChart = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } = mod;
+  return { default: ({ data }: { data: { axis: string; value: number }[] }) => (
+    <div className="mt-2">
+      <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
+      <div className="h-32">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={data} cx="50%" cy="50%" outerRadius="65%">
+            <PolarGrid stroke="#334155" />
+            <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+            <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
+            <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 2 }} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )};
+}), { ssr: false });
 import { legends, skillColors, type Skill, type Routine } from "@/data/legends";
 import StatCard from "@/components/StatCard";
 import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
@@ -312,14 +334,7 @@ function PlayersContent() {
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-slate-800/80 via-slate-800/50 to-slate-800/80 border border-slate-700/50 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row items-center gap-5">
-              <div className="flex-shrink-0 flex items-center gap-4">
-                {player.avatar ? (
-                  <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
-                    {player.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                )}
+              <div className="flex-shrink-0">
                 <CPIRing score={profileCpi.overall} size={100} />
               </div>
               <div className="flex-1 text-center md:text-left">
@@ -335,7 +350,14 @@ function PlayersContent() {
                   <span className="text-xs text-slate-500">Rank #{profileCpi.nationalRank || "—"}</span>
                 </div>
               </div>
-              <div className="flex-shrink-0 hidden md:block">
+              <div className="flex-shrink-0 hidden md:flex flex-col items-center gap-2">
+                {player.avatar ? (
+                  <img src={player.avatar} alt={player.name} className="w-20 h-20 rounded-full object-cover border-2 border-emerald-500" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
+                    {player.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
                 <Link href="/stats" className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Full Dashboard &rarr;</Link>
               </div>
             </div>
@@ -359,16 +381,7 @@ function PlayersContent() {
                   <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
                 </div>
               </div>
-              <div className="h-28">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={profileBattingChart} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 11 }} />
-                    <Bar dataKey="runs" fill="#10b981" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {profileBattingChart.length > 0 && <ProfileBattingChart data={profileBattingChart} />}
             </div>
 
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
@@ -384,19 +397,7 @@ function PlayersContent() {
                   <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bestBowling}</div><div className="text-[9px] text-slate-500">Best</div></div>
                 </div>
               </div>
-              <div className="mt-2">
-                <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
-                <div className="h-32">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={profileRadarData} cx="50%" cy="50%" outerRadius="65%">
-                      <PolarGrid stroke="#334155" />
-                      <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 10 }} />
-                      <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
-                      <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 2 }} />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
+              {profileRadarData.some(d => d.value > 0) && <ProfileRadarChart data={profileRadarData} />}
             </div>
           </div>
 
