@@ -21,7 +21,9 @@ export default function AuthPage() {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsSuspended(false);
@@ -31,7 +33,9 @@ export default function AuthPage() {
       setError("Please enter email and password");
       return;
     }
-    const err = login(email, password);
+    setLoading(true);
+    const err = await login(email, password);
+    setLoading(false);
     if (err) {
       setError(err);
       if (err.includes("suspended")) setIsSuspended(true);
@@ -93,10 +97,17 @@ export default function AuthPage() {
 
             <button
               type="submit"
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white py-2.5 rounded-lg font-semibold transition-colors mt-2"
+              disabled={loading}
+              className="w-full bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white py-2.5 rounded-lg font-semibold transition-colors mt-2"
             >
-              Sign In
+              {loading ? "Signing in..." : "Sign In"}
             </button>
+
+            <div className="text-center mt-2">
+              <Link href="/auth/forgot-password" className="text-sm text-slate-400 hover:text-emerald-400 transition-colors">
+                Forgot password?
+              </Link>
+            </div>
           </div>
         </form>
 

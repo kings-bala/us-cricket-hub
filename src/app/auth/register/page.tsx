@@ -12,6 +12,7 @@ import type {
 } from "@/types";
 import { parseCricClubsText, parseUrlMeta } from "@/lib/cricclubs-parser";
 import { getItem, setItem } from "@/lib/storage";
+import { useAuth } from "@/context/AuthContext";
 import type { Academy } from "@/types";
 
 type Step = 1 | 2 | 3 | 4;
@@ -78,8 +79,10 @@ const stepLabels = ["Basic Info", "CricClubs / CricHeroes", "CPI Metrics", "Comb
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { register } = useAuth();
   const [step, setStep] = useState<Step>(1);
   const [saving, setSaving] = useState(false);
+  const [backendError, setBackendError] = useState("");
 
   const [basic, setBasic] = useState<BasicInfo>({
     fullName: "",
@@ -280,8 +283,9 @@ export default function RegisterPage() {
     if (step > 1) setStep((step - 1) as Step);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setSaving(true);
+    setBackendError("");
     const profile = { basic, cric, cpi, combine, academyId: academyMatch?.id || "", createdAt: new Date().toISOString() };
     const existing = getItem<Record<string, unknown>[]>("profiles", []);
     existing.push(profile);
@@ -294,15 +298,34 @@ export default function RegisterPage() {
         setItem("academies", academies);
       }
     }
-    setItem("auth_user", {
+
+    const result = await register({
       email: basic.email,
-      name: basic.fullName,
+      password: basic.password,
+      fullName: basic.fullName,
       role: "player",
-      playerId: `reg_${Date.now()}`,
     });
-    setTimeout(() => {
-      router.push("/auth");
-    }, 500);
+
+    if (result.needsVerification) {
+      router.push(`/auth/verify?email=${encodeURIComponent(basic.email)}`);
+      return;
+    }
+
+    if (result.error) {
+      setBackendError(result.error);
+      setItem("auth_user", {
+        email: basic.email,
+        name: basic.fullName,
+        role: "player",
+        playerId: `reg_${Date.now()}`,
+      });
+      setTimeout(() => {
+        router.push("/auth");
+      }, 500);
+      return;
+    }
+
+    setSaving(false);
   };
 
   const inputClass =

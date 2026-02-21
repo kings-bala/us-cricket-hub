@@ -2,19 +2,32 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://zig9f1eaqf.execute-
 
 let currentUserEmail = "";
 let currentUserName = "";
+let currentAccessToken = "";
 
 export function setApiUser(email: string, name: string): void {
   currentUserEmail = email;
   currentUserName = name;
 }
 
+export function setAccessToken(token: string): void {
+  currentAccessToken = token;
+}
+
+export function getAccessToken(): string {
+  return currentAccessToken;
+}
+
 export function clearApiUser(): void {
   currentUserEmail = "";
   currentUserName = "";
+  currentAccessToken = "";
 }
 
 function getUserHeaders(): Record<string, string> {
   const h: Record<string, string> = {};
+  if (currentAccessToken) {
+    h["Authorization"] = `Bearer ${currentAccessToken}`;
+  }
   if (currentUserEmail) h["X-User-Email"] = currentUserEmail;
   if (currentUserName) h["X-User-Name"] = currentUserName;
   return h;
