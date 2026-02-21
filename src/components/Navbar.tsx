@@ -164,6 +164,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/academy/invite", label: "Invite", desc: "Invite players" },
       { href: "/academy/reports", label: "Reports", desc: "Progress reports" },
     ]},
+    { title: "Payments", id: "payments", links: [
+      { href: "/payments", label: "Fee Management", desc: "Collect fees & track payments" },
+    ]},
   ],
 };
 
@@ -204,6 +207,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/academy/attendance", label: "Attendance" },
     { href: "/academy/invite", label: "Invite" },
     { href: "/academy/reports", label: "Reports" },
+    { href: "/payments", label: "Payments" },
   ],
 };
 
