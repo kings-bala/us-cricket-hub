@@ -5,19 +5,57 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { players, playerMatchHistory, playerCombineData, calculateCPI, getFormStatus } from "@/data/mock";
 
-const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
-const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
-const Bar = dynamic(() => import("recharts").then(m => m.Bar), { ssr: false });
-const XAxis = dynamic(() => import("recharts").then(m => m.XAxis), { ssr: false });
-const YAxis = dynamic(() => import("recharts").then(m => m.YAxis), { ssr: false });
-const Tooltip = dynamic(() => import("recharts").then(m => m.Tooltip), { ssr: false });
-const AreaChart = dynamic(() => import("recharts").then(m => m.AreaChart), { ssr: false });
-const Area = dynamic(() => import("recharts").then(m => m.Area), { ssr: false });
-const RadarChart = dynamic(() => import("recharts").then(m => m.RadarChart), { ssr: false });
-const Radar = dynamic(() => import("recharts").then(m => m.Radar), { ssr: false });
-const PolarGrid = dynamic(() => import("recharts").then(m => m.PolarGrid), { ssr: false });
-const PolarAngleAxis = dynamic(() => import("recharts").then(m => m.PolarAngleAxis), { ssr: false });
-const PolarRadiusAxis = dynamic(() => import("recharts").then(m => m.PolarRadiusAxis), { ssr: false });
+const StatsBattingChart = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } = mod;
+  return { default: ({ data }: { data: { name: string; runs: number }[] }) => (
+    <div className="h-36">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+          <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
+          <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 12 }} />
+          <Bar dataKey="runs" fill="#10b981" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )};
+}), { ssr: false });
+const StatsFormTrend = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } = mod;
+  return { default: ({ data }: { data: { name: string; impact: number }[] }) => (
+    <div className="h-48">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+          <defs>
+            <linearGradient id="impactGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
+          <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 12 }} />
+          <Area type="monotone" dataKey="impact" stroke="#3b82f6" fill="url(#impactGradient)" strokeWidth={2} dot={{ fill: "#3b82f6", r: 3 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  )};
+}), { ssr: false });
+const StatsRadarChart = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } = mod;
+  return { default: ({ data }: { data: { axis: string; value: number }[] }) => (
+    <div className="h-48">
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart data={data} cx="50%" cy="50%" outerRadius="70%">
+          <PolarGrid stroke="#334155" />
+          <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 11 }} />
+          <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
+          <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 3 }} />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  )};
+}), { ssr: false });
 
 function CPIRing({ score, size = 120 }: { score: number; size?: number }) {
   const radius = (size - 12) / 2;
@@ -246,18 +284,7 @@ export default function StatsPage() {
               <MiniStat label="100s" value={player.stats.hundreds} />
             </div>
           </div>
-          <div className="h-36">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={battingChartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 12 }}
-                />
-                <Bar dataKey="runs" fill="#10b981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {battingChartData.length > 0 && <StatsBattingChart data={battingChartData} />}
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
@@ -311,38 +338,12 @@ export default function StatsPage() {
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
         <div className="lg:col-span-2 bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
           <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-4">Form Trend</h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={formTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="impactGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#64748b", fontSize: 10 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 12 }}
-                />
-                <Area type="monotone" dataKey="impact" stroke="#3b82f6" fill="url(#impactGradient)" strokeWidth={2} dot={{ fill: "#3b82f6", r: 3 }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {formTrendData.length > 0 && <StatsFormTrend data={formTrendData} />}
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
           <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wide mb-4">CPI Breakdown</h3>
-          <div className="h-48">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} cx="50%" cy="50%" outerRadius="70%">
-                <PolarGrid stroke="#334155" />
-                <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-                <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
-                <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 3 }} />
-              </RadarChart>
-            </ResponsiveContainer>
-          </div>
+          {radarData.some(d => d.value > 0) && <StatsRadarChart data={radarData} />}
         </div>
       </div>
 
