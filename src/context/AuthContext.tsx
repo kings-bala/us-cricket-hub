@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getItem, setItem, removeItem } from "@/lib/storage";
-import { setApiUser, clearApiUser } from "@/lib/api-client";
+import { setApiUser, clearApiUser, setAccessToken, apiRequest } from "@/lib/api-client";
 import type { Academy, AcademyStaff } from "@/types";
 
 export type AuthUser = {
@@ -12,6 +12,14 @@ export type AuthUser = {
   playerId?: string;
   avatar?: string;
   academyId?: string;
+  authMode?: "cognito" | "demo";
+};
+
+export type AuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+  idToken: string;
+  expiresAt: number;
 };
 
 export type LoginRecord = {
@@ -95,8 +103,12 @@ function seedRisingStarAcademy() {
 
 type AuthContextType = {
   user: AuthUser | null;
-  login: (email: string, password: string) => string | null;
+  login: (email: string, password: string) => Promise<string | null>;
   logout: () => void;
+  register: (data: { email: string; password: string; fullName: string; role?: string }) => Promise<{ error?: string; needsVerification?: boolean }>;
+  verifyEmail: (email: string, code: string) => Promise<string | null>;
+  forgotPassword: (email: string) => Promise<string | null>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<string | null>;
   isLoading: boolean;
   getUsers: () => LoginRecord[];
   blockUser: (email: string) => void;
@@ -126,9 +138,24 @@ const SEED_ACCOUNTS: { email: string; password: string; user: AuthUser }[] = [
 ];
 
 const AuthContext = createContext<AuthContextType>({
-  user: null, login: () => "Not initialized", logout: () => {}, isLoading: true,
-  getUsers: () => [], blockUser: () => {}, unblockUser: () => {}, isUserBlocked: () => false, removeUser: () => {},
-  requestReinstatement: () => null, getReinstatementRequests: () => [], approveReinstatement: () => {}, denyReinstatement: () => {}, hasPendingRequest: () => false,
+  user: null,
+  login: async () => "Not initialized",
+  logout: () => {},
+  register: async () => ({ error: "Not initialized" }),
+  verifyEmail: async () => "Not initialized",
+  forgotPassword: async () => "Not initialized",
+  resetPassword: async () => "Not initialized",
+  isLoading: true,
+  getUsers: () => [],
+  blockUser: () => {},
+  unblockUser: () => {},
+  isUserBlocked: () => false,
+  removeUser: () => {},
+  requestReinstatement: () => null,
+  getReinstatementRequests: () => [],
+  approveReinstatement: () => {},
+  denyReinstatement: () => {},
+  hasPendingRequest: () => false,
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -140,11 +167,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved) {
       setUser(saved);
       setApiUser(saved.email, saved.name);
+      const tokens = getItem<AuthTokens | null>("auth_tokens", null);
+      if (tokens?.accessToken) {
+        setAccessToken(tokens.accessToken);
+      }
     }
     setIsLoading(false);
   }, []);
 
-  const login = (email: string, password: string): string | null => {
+  const login = async (email: string, password: string): Promise<string | null> => {
     if (isBlocked(email)) return "Your account has been suspended. Contact admin.";
 
     const profiles = getItem<{ basic: { email: string; password: string; fullName: string } }[]>("profiles", []);
@@ -157,6 +188,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         name: registered.basic.fullName,
         role: "player",
         playerId: `reg_${Date.now()}`,
+        authMode: "demo",
       };
       setUser(u);
       setItem("auth_user", u);
@@ -175,12 +207,123 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return null;
     }
 
-    return "Invalid email or password";
+    try {
+      const res = await apiRequest<{
+        accessToken?: string;
+        refreshToken?: string;
+        idToken?: string;
+        expiresIn?: number;
+        error?: string;
+      }>("/auth/login", {
+        method: "POST",
+        body: { email, password },
+      });
+
+      if (res.offline) {
+        return "Backend is offline. Use a demo account or try again later.";
+      }
+
+      if (!res.ok) {
+        return res.data?.error || "Invalid email or password";
+      }
+
+      const tokens: AuthTokens = {
+        accessToken: res.data.accessToken || "",
+        refreshToken: res.data.refreshToken || "",
+        idToken: res.data.idToken || "",
+        expiresAt: Date.now() + (res.data.expiresIn || 3600) * 1000,
+      };
+      setItem("auth_tokens", tokens);
+      setAccessToken(tokens.accessToken);
+
+      const meRes = await apiRequest<{
+        email?: string;
+        full_name?: string;
+        role?: string;
+        id?: string;
+        avatar_url?: string;
+        academy?: string;
+      }>("/auth/me", { token: tokens.accessToken });
+
+      const u: AuthUser = {
+        email: meRes.ok && meRes.data?.email ? meRes.data.email : email,
+        name: meRes.ok && meRes.data?.full_name ? meRes.data.full_name : email.split("@")[0],
+        role: (meRes.ok && meRes.data?.role ? meRes.data.role : "player") as AuthUser["role"],
+        playerId: meRes.ok && meRes.data?.id ? meRes.data.id : undefined,
+        avatar: meRes.ok && meRes.data?.avatar_url ? meRes.data.avatar_url : undefined,
+        academyId: meRes.ok && meRes.data?.academy ? meRes.data.academy : undefined,
+        authMode: "cognito",
+      };
+      setUser(u);
+      setItem("auth_user", u);
+      setApiUser(u.email, u.name);
+      saveLoginRecord(u);
+      return null;
+    } catch {
+      return "Invalid email or password";
+    }
+  };
+
+  const register = async (data: { email: string; password: string; fullName: string; role?: string }): Promise<{ error?: string; needsVerification?: boolean }> => {
+    try {
+      const res = await apiRequest<{ message?: string; userId?: string; error?: string }>("/auth/register", {
+        method: "POST",
+        body: { email: data.email, password: data.password, fullName: data.fullName, role: data.role || "player" },
+      });
+      if (res.offline) return { error: "Backend is offline. Registration requires an active connection." };
+      if (!res.ok) return { error: res.data?.error || "Registration failed" };
+      return { needsVerification: true };
+    } catch {
+      return { error: "Registration failed. Please try again." };
+    }
+  };
+
+  const verifyEmail = async (email: string, code: string): Promise<string | null> => {
+    try {
+      const res = await apiRequest<{ message?: string; error?: string }>("/auth/verify", {
+        method: "POST",
+        body: { email, code },
+      });
+      if (res.offline) return "Backend is offline. Try again later.";
+      if (!res.ok) return res.data?.error || "Verification failed";
+      return null;
+    } catch {
+      return "Verification failed. Please try again.";
+    }
+  };
+
+  const forgotPassword = async (email: string): Promise<string | null> => {
+    try {
+      const res = await apiRequest<{ message?: string; error?: string }>("/auth/forgot-password", {
+        method: "POST",
+        body: { email },
+      });
+      if (res.offline) return "Backend is offline. Try again later.";
+      if (!res.ok) return res.data?.error || "Failed to send reset code";
+      return null;
+    } catch {
+      return "Failed to send reset code. Please try again.";
+    }
+  };
+
+  const resetPassword = async (email: string, code: string, newPassword: string): Promise<string | null> => {
+    try {
+      const res = await apiRequest<{ message?: string; error?: string }>("/auth/reset-password", {
+        method: "POST",
+        body: { email, code, newPassword },
+      });
+      if (res.offline) return "Backend is offline. Try again later.";
+      if (!res.ok) return res.data?.error || "Password reset failed";
+      return null;
+    } catch {
+      return "Password reset failed. Please try again.";
+    }
   };
 
   const logout = () => {
     setUser(null);
     removeItem("auth_user");
+    removeItem("auth_tokens");
     clearApiUser();
   };
 
@@ -241,7 +384,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return getReinstatementRequests().some((r) => r.email.toLowerCase() === email.toLowerCase() && r.status === "pending");
   };
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading, getUsers, blockUser, unblockUser, isUserBlocked, removeUser, requestReinstatement, getReinstatementRequests: () => getReinstatementRequests(), approveReinstatement, denyReinstatement, hasPendingRequest }}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{
+      user, login, logout, register, verifyEmail, forgotPassword, resetPassword, isLoading,
+      getUsers, blockUser, unblockUser, isUserBlocked, removeUser,
+      requestReinstatement, getReinstatementRequests: () => getReinstatementRequests(), approveReinstatement, denyReinstatement, hasPendingRequest,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
