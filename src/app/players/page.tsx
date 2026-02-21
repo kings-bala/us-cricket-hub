@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus, calculateCPI } from "@/data/mock";
 
-const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
+const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false, loading: () => <div className="w-full h-full animate-pulse bg-slate-700/30 rounded-lg" /> });
 const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
 const Bar = dynamic(() => import("recharts").then(m => m.Bar), { ssr: false });
 const XAxis = dynamic(() => import("recharts").then(m => m.XAxis), { ssr: false });
@@ -359,16 +359,18 @@ function PlayersContent() {
                   <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
                 </div>
               </div>
-              <div className="h-28">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={profileBattingChart} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 11 }} />
-                    <Bar dataKey="runs" fill="#10b981" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+              {profileBattingChart.length > 0 && (
+                <div className="h-28">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={profileBattingChart} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                      <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+                      <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 11 }} />
+                      <Bar dataKey="runs" fill="#10b981" radius={[3, 3, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
             </div>
 
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
@@ -384,19 +386,21 @@ function PlayersContent() {
                   <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bestBowling}</div><div className="text-[9px] text-slate-500">Best</div></div>
                 </div>
               </div>
-              <div className="mt-2">
-                <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
-                <div className="h-32">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={profileRadarData} cx="50%" cy="50%" outerRadius="65%">
-                      <PolarGrid stroke="#334155" />
-                      <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 10 }} />
-                      <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
-                      <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 2 }} />
-                    </RadarChart>
-                  </ResponsiveContainer>
+              {profileRadarData.some(d => d.value > 0) && (
+                <div className="mt-2">
+                  <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
+                  <div className="h-32">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <RadarChart data={profileRadarData} cx="50%" cy="50%" outerRadius="65%">
+                        <PolarGrid stroke="#334155" />
+                        <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+                        <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
+                        <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 2 }} />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
