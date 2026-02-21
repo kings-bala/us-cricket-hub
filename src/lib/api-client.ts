@@ -1,5 +1,25 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
+let currentUserEmail = "";
+let currentUserName = "";
+
+export function setApiUser(email: string, name: string): void {
+  currentUserEmail = email;
+  currentUserName = name;
+}
+
+export function clearApiUser(): void {
+  currentUserEmail = "";
+  currentUserName = "";
+}
+
+function getUserHeaders(): Record<string, string> {
+  const h: Record<string, string> = {};
+  if (currentUserEmail) h["X-User-Email"] = currentUserEmail;
+  if (currentUserName) h["X-User-Name"] = currentUserName;
+  return h;
+}
+
 type RequestOptions = {
   method?: string;
   body?: unknown;
@@ -45,7 +65,7 @@ export async function apiRequest<T>(path: string, options: RequestOptions = {}):
     return { ok: false, data: null as T, offline: true };
   }
   const { method = "GET", body, token } = options;
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const headers: Record<string, string> = { "Content-Type": "application/json", ...getUserHeaders() };
   if (token) headers["Authorization"] = `Bearer ${token}`;
   try {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -106,7 +126,7 @@ export async function flushSyncQueue(token?: string): Promise<number> {
     const failed: SyncItem[] = [];
     for (const item of queue) {
       try {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        const headers: Record<string, string> = { "Content-Type": "application/json", ...getUserHeaders() };
         if (token) headers["Authorization"] = `Bearer ${token}`;
         const res = await fetch(`${API_BASE}${item.path}`, {
           method: item.method,
