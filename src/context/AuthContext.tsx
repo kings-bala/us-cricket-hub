@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { getItem, setItem, removeItem } from "@/lib/storage";
+import { setApiUser, clearApiUser } from "@/lib/api-client";
 import type { Academy, AcademyStaff } from "@/types";
 
 export type AuthUser = {
@@ -136,7 +137,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const saved = getItem<AuthUser | null>("auth_user", null);
-    if (saved) setUser(saved);
+    if (saved) {
+      setUser(saved);
+      setApiUser(saved.email, saved.name);
+    }
     setIsLoading(false);
   }, []);
 
@@ -156,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       };
       setUser(u);
       setItem("auth_user", u);
+      setApiUser(u.email, u.name);
       saveLoginRecord(u);
       return null;
     }
@@ -165,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (seed.user.academyId === "academy_risingstar") seedRisingStarAcademy();
       setUser(seed.user);
       setItem("auth_user", seed.user);
+      setApiUser(seed.user.email, seed.user.name);
       saveLoginRecord(seed.user);
       return null;
     }
@@ -175,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     removeItem("auth_user");
+    clearApiUser();
   };
 
   const getUsers = (): LoginRecord[] => getLoginLog();
