@@ -20,6 +20,7 @@ import {
 import { estimateBallSpeed, classifyPace, type SpeedEstimate } from "@/lib/ball-speed";
 import { detectActionClips, getClipSummary, type ActionClip } from "@/lib/auto-clip";
 import VideoDrawingTools from "@/components/VideoDrawingTools";
+import { apiRequest } from "@/lib/api-client";
 
 type AnalysisType = "batting" | "bowling" | "fielding";
 
@@ -144,6 +145,20 @@ export default function AnalyzePage() {
     const saved = saveAnalysis(videoFile.name, result);
     setHistory((prev) => [saved, ...prev]);
     setActiveTab("results");
+
+    const ext = videoFile.name.split(".").pop() || "mp4";
+    apiRequest<{ uploadUrl?: string; key?: string }>("/users/video-upload", {
+      method: "POST",
+      body: { extension: ext, contentType: videoFile.type || "video/mp4" },
+    }).then((uploadRes) => {
+      if (uploadRes.ok && uploadRes.data?.uploadUrl) {
+        fetch(uploadRes.data.uploadUrl, {
+          method: "PUT",
+          body: videoFile,
+          headers: { "Content-Type": videoFile.type || "video/mp4" },
+        }).catch(() => {});
+      }
+    });
   }, [videoFile, analysisType, processVideo, bowlingHand]);
 
   const handleSeekToFrame = useCallback((timestamp: number) => {
