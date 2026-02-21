@@ -53,6 +53,8 @@ const MOCK_STUDENT_FEES: StudentFee[] = [
   { studentId: "p8", studentName: "Rahul Desai", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
   { studentId: "p12", studentName: "Aarav Gupta", avatar: "", feeType: "2on1", amount: 30, dueDate: "2026-02-22", status: "paid", paidDate: "2026-02-22", receiptId: "REC-2026-0222" },
   { studentId: "p13", studentName: "Navjot Gill", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
+  { studentId: "p10", studentName: "Neel Sharma", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
+  { studentId: "p10", studentName: "Neel Sharma", avatar: "", feeType: "1on1", amount: 40, dueDate: "2026-03-05", status: "upcoming" },
 ];
 
 const MOCK_PAYMENTS: PaymentRecord[] = [
@@ -62,6 +64,7 @@ const MOCK_PAYMENTS: PaymentRecord[] = [
   { id: "pay_4", studentName: "Arjun Patel", feeType: "monthly", amount: 75, date: "2026-01-28", status: "succeeded", receiptId: "REC-2026-0128", method: "Amex ****5678" },
   { id: "pay_5", studentName: "Rashid Mohammed", feeType: "quarterly", amount: 200, date: "2026-01-01", status: "succeeded", receiptId: "REC-2026-0101", method: "Visa ****9012" },
   { id: "pay_6", studentName: "Navjot Gill", feeType: "monthly", amount: 75, date: "2026-01-28", status: "succeeded", receiptId: "REC-2026-0128B", method: "Visa ****3456" },
+  { id: "pay_7", studentName: "Neel Sharma", feeType: "monthly", amount: 75, date: "2026-01-28", status: "succeeded", receiptId: "REC-2026-0128C", method: "Visa ****7890" },
 ];
 
 const statusConfig: Record<StudentFee["status"], { label: string; color: string; bg: string }> = {
@@ -81,15 +84,44 @@ const feeTypeLabels: Record<FeeType, string> = {
 export default function PaymentsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin" || user?.role === "academy_admin";
+  const hasAcademy = !!user?.academyId;
   const [activeTab, setActiveTab] = useState<"overview" | "students" | "history" | "settings">(isAdmin ? "overview" : "overview");
   const [selectedFee, setSelectedFee] = useState<StudentFee | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showReceipt, setShowReceipt] = useState<PaymentRecord | null>(null);
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg font-semibold">Please sign in to view payments</p>
+          <Link href="/auth" className="mt-4 inline-block text-sm px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors">Sign In</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin && !hasAcademy) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
+            <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <p className="text-lg font-semibold">Academy Members Only</p>
+          <p className="text-sm text-slate-400 mt-2">Payments are available for players enrolled in an academy. Ask your academy admin for an invite code to join.</p>
+          <Link href="/" className="mt-4 inline-block text-sm px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">&larr; Back to Home</Link>
+        </div>
+      </div>
+    );
+  }
+
   const myFees = useMemo(() => {
     if (isAdmin) return MOCK_STUDENT_FEES;
-    return MOCK_STUDENT_FEES.filter(f => f.studentId === "p1");
-  }, [isAdmin]);
+    return MOCK_STUDENT_FEES.filter(f => f.studentId === user.playerId);
+  }, [isAdmin, user.playerId]);
 
   const totalCollected = useMemo(() => MOCK_PAYMENTS.reduce((sum, p) => sum + (p.status === "succeeded" ? p.amount : 0), 0), []);
   const totalDue = useMemo(() => myFees.filter(f => f.status === "due" || f.status === "overdue").reduce((sum, f) => sum + f.amount, 0), [myFees]);
@@ -193,7 +225,7 @@ export default function PaymentsPage() {
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
                   {isAdmin ? "Total Collected" : "Total Paid"}
                 </p>
-                <p className="text-2xl font-bold text-emerald-400 mt-1">${isAdmin ? totalCollected : MOCK_PAYMENTS.filter(p => p.studentName === "Arjun Patel").reduce((s, p) => s + p.amount, 0)}</p>
+                <p className="text-2xl font-bold text-emerald-400 mt-1">${isAdmin ? totalCollected : MOCK_PAYMENTS.filter(p => p.studentName === user.name).reduce((s, p) => s + p.amount, 0)}</p>
                 <p className="text-[10px] text-slate-500 mt-1">{isAdmin ? "This billing cycle" : "All time"}</p>
               </div>
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
@@ -441,7 +473,7 @@ export default function PaymentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {(isAdmin ? MOCK_PAYMENTS : MOCK_PAYMENTS.filter(p => p.studentName === "Arjun Patel")).map(payment => (
+                {(isAdmin ? MOCK_PAYMENTS : MOCK_PAYMENTS.filter(p => p.studentName === user.name)).map(payment => (
                   <tr key={payment.id} className="border-b border-slate-700/30 hover:bg-slate-800/30 transition-colors">
                     <td className="px-5 py-3 text-sm text-slate-400">{payment.date}</td>
                     {isAdmin && <td className="px-5 py-3 text-sm text-white">{payment.studentName}</td>}

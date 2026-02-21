@@ -233,7 +233,8 @@ function NavbarInner() {
   }, [persona, isAdmin]);
 
   const useFlat = activeRole === "player";
-  const flatLinks = roleFlatLinks[activeRole];
+  const baseFlatLinks = roleFlatLinks[activeRole];
+  const flatLinks = (useFlat && user?.academyId) ? [...baseFlatLinks, { href: "/payments", label: "Payments" }] : baseFlatLinks;
   const groups = personaGroups[activeRole];
   const pathname = usePathname();
   const search = useSearchParams();

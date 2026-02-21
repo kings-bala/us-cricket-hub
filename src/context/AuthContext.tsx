@@ -123,11 +123,12 @@ type AuthContextType = {
 };
 
 const SEED_ACCOUNTS: { email: string; password: string; user: AuthUser }[] = [
-  { email: "arjun@cricverse360.com", password: "player123", user: { email: "arjun@cricverse360.com", name: "Arjun Patel", role: "player", playerId: "p1", avatar: "/avatars/player1.jpg" } },
-  { email: "jake@cricverse360.com", password: "player123", user: { email: "jake@cricverse360.com", name: "Jake Thompson", role: "player", playerId: "p2", avatar: "/avatars/player2.jpg" } },
-  { email: "rashid@cricverse360.com", password: "player123", user: { email: "rashid@cricverse360.com", name: "Rashid Mohammed", role: "player", playerId: "p3", avatar: "/avatars/player3.jpg" } },
-  { email: "rahul@cricverse360.com", password: "player123", user: { email: "rahul@cricverse360.com", name: "Rahul Desai", role: "player", playerId: "p8", avatar: "/avatars/player8.jpg" } },
+  { email: "arjun@cricverse360.com", password: "player123", user: { email: "arjun@cricverse360.com", name: "Arjun Patel", role: "player", playerId: "p1", avatar: "/avatars/player1.jpg", academyId: "academy_risingstar" } },
+  { email: "jake@cricverse360.com", password: "player123", user: { email: "jake@cricverse360.com", name: "Jake Thompson", role: "player", playerId: "p2", avatar: "/avatars/player2.jpg", academyId: "academy_risingstar" } },
+  { email: "rashid@cricverse360.com", password: "player123", user: { email: "rashid@cricverse360.com", name: "Rashid Mohammed", role: "player", playerId: "p3", avatar: "/avatars/player3.jpg", academyId: "academy_risingstar" } },
+  { email: "rahul@cricverse360.com", password: "player123", user: { email: "rahul@cricverse360.com", name: "Rahul Desai", role: "player", playerId: "p8", avatar: "/avatars/player8.jpg", academyId: "academy_risingstar" } },
   { email: "vikram.singh.cricket@gmail.com", password: "Cricket2026!", user: { email: "vikram.singh.cricket@gmail.com", name: "Vikram Singh", role: "player", playerId: "p9" } },
+  { email: "neel@risingstar.com", password: "player123", user: { email: "neel@risingstar.com", name: "Neel Sharma", role: "player", playerId: "p10", academyId: "academy_risingstar" } },
   { email: "admin@cricverse360.com", password: "admin123", user: { email: "admin@cricverse360.com", name: "Master Admin", role: "admin" } },
   { email: "academy@cricverse360.com", password: "academy123", user: { email: "academy@cricverse360.com", name: "NorCal Cricket Academy", role: "academy_admin", academyId: "academy_demo" } },
   { email: "risingstar@cricverse360.com", password: "risingstar123", user: { email: "risingstar@cricverse360.com", name: "Rising Star Cricket Academy", role: "academy_admin", academyId: "academy_risingstar" } },
