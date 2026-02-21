@@ -47,7 +47,7 @@ export default function ScoutingPage() {
 
       <div className="grid lg:grid-cols-4 gap-4 mb-6">
         {t20Teams.slice(0, 4).map((team) => (
-          <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+          <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-purple-500/50 transition-all cursor-pointer" onClick={() => { setRegion("All"); setAgeGroup("All"); setRole("All"); }}>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
                 {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
