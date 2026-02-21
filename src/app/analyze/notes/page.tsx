@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
+import { apiRequest } from "@/lib/api-client";
 
 interface CoachNote {
   id: string;
@@ -54,6 +55,15 @@ export default function NotesPage() {
     const updated = [note, ...notes];
     setNotes(updated);
     saveNotes(updated);
+    apiRequest("/analysis", {
+      method: "POST",
+      body: {
+        analysisType: "coach_note",
+        scores: { category: noteCategory },
+        feedback: newNote.trim(),
+        videoRef: selected.fileName,
+      },
+    });
     setNewNote("");
   }, [newNote, selected, noteCategory, notes]);
 

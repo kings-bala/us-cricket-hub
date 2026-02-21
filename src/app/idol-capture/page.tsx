@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { legends, skillColors, type Skill, type Legend, type Routine } from "@/data/legends";
+import { apiRequest } from "@/lib/api-client";
 
 export default function IdolCapturePage() {
   const [search, setSearch] = useState("");
@@ -30,6 +31,20 @@ export default function IdolCapturePage() {
         setSavedIds(saved);
       }
     } catch {}
+    apiRequest<{ selections?: Record<string, string> }>("/idol/selections").then((res) => {
+      if (res.ok && res.data?.selections) {
+        const ids = res.data.selections;
+        const restored: Record<Skill, Legend | null> = { Batting: null, Bowling: null, Fielding: null, "Wicket-Keeping": null };
+        for (const [skill, legendId] of Object.entries(ids)) {
+          const legend = legends.find((l) => l.id === legendId);
+          if (legend) restored[skill as Skill] = legend;
+        }
+        setSelected(restored);
+        const json = JSON.stringify(ids);
+        setSavedIds(json);
+        try { localStorage.setItem("idol-selections", json); } catch {}
+      }
+    });
   }, []);
 
   const filtered = useMemo(() => {
@@ -57,6 +72,10 @@ export default function IdolCapturePage() {
     setSavedIds(currentIds);
     setSaveFlash(true);
     setTimeout(() => setSaveFlash(false), 2000);
+    apiRequest("/idol/selections", {
+      method: "POST",
+      body: { selections: JSON.parse(currentIds) },
+    });
   };
 
   const selectIdol = (legend: Legend, skill: Skill) => {

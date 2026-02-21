@@ -13,6 +13,7 @@ import type {
 import { parseCricClubsText, parseUrlMeta } from "@/lib/cricclubs-parser";
 import { getItem, setItem } from "@/lib/storage";
 import { useAuth } from "@/context/AuthContext";
+import { apiRequest, setApiUser } from "@/lib/api-client";
 import type { Academy } from "@/types";
 
 type Step = 1 | 2 | 3 | 4;
@@ -194,6 +195,13 @@ export default function RegisterPage() {
         setShowPasteModal(true);
       } else if (data.stats) {
         applyStats(data.stats);
+        if (basic.email.trim()) {
+          setApiUser(basic.email, basic.fullName || basic.email);
+          apiRequest("/stats/cricclubs-sync", {
+            method: "POST",
+            body: { cricclubsUrl: cric.cricClubsUrl, stats: data.stats },
+          });
+        }
         setFetchStatus("success");
         setFetchMessage("Stats imported successfully!");
       } else {
@@ -220,6 +228,13 @@ export default function RegisterPage() {
       const data = await res.json();
       if (data.stats) {
         applyStats(data.stats as Record<string, string>);
+        if (basic.email.trim()) {
+          setApiUser(basic.email, basic.fullName || basic.email);
+          apiRequest("/stats/cricclubs-sync", {
+            method: "POST",
+            body: { cricclubsUrl: cric.cricClubsUrl, stats: data.stats },
+          });
+        }
         if (data.stats.playerName && !basic.fullName.trim()) {
           setBasic((prev) => ({ ...prev, fullName: data.stats.playerName }));
         }
@@ -243,6 +258,13 @@ export default function RegisterPage() {
       stats.league = meta.league;
     }
     applyStats(stats as Record<string, string>);
+    if (basic.email.trim()) {
+      setApiUser(basic.email, basic.fullName || basic.email);
+      apiRequest("/stats/cricclubs-sync", {
+        method: "POST",
+        body: { cricclubsUrl: cric.cricClubsUrl, stats },
+      });
+    }
     setShowPasteModal(false);
     setPasteText("");
     if (pasteSource === "cricheroes") {
