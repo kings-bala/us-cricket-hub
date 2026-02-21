@@ -9,6 +9,7 @@ import StatCard from "@/components/StatCard";
 import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
 import { useAuth } from "@/context/AuthContext";
 import { getItem } from "@/lib/storage";
+import { apiRequest } from "@/lib/api-client";
 import type { Player } from "@/types";
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
@@ -519,6 +520,10 @@ function PlayersContent() {
           const updated = [entry, ...currentLogs];
           setSessionLogs(updated);
           localStorage.setItem(LOG_KEY, JSON.stringify(updated));
+          apiRequest("/sessions", {
+            method: "POST",
+            body: { sessionType: type, sessionData: { date, duration, notes } },
+          });
         };
 
         const deleteSessionLog = (id: string) => {
