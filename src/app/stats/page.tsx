@@ -363,7 +363,7 @@ export default function StatsPage() {
               <ProgressBar label="Vertical Jump" value={combine.verticalJump} max={80} unit=" cm" />
               <ProgressBar label="Fielding Efficiency" value={combine.fieldingEfficiency} max={100} unit="%" />
               <ProgressBar label="Throw Accuracy" value={combine.throwAccuracy} max={100} unit="%" />
-              <ProgressBar label="Reaction Time" value={Math.max(0, 0.5 - combine.reactionTime)} max={0.3} unit="s" />
+              <ProgressBar label="Reaction Time" value={Math.round(Math.max(0, 0.5 - combine.reactionTime) * 100) / 100} max={0.3} unit="s" />
             </div>
             <div className="mt-3 text-[10px] text-slate-500">
               Assessed: {combine.assessmentDate} &middot; Next: {combine.nextAssessmentDate}
