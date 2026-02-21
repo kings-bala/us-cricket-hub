@@ -312,14 +312,7 @@ function PlayersContent() {
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-slate-800/80 via-slate-800/50 to-slate-800/80 border border-slate-700/50 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row items-center gap-5">
-              <div className="flex-shrink-0 flex items-center gap-4">
-                {player.avatar ? (
-                  <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
-                    {player.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                )}
+              <div className="flex-shrink-0">
                 <CPIRing score={profileCpi.overall} size={100} />
               </div>
               <div className="flex-1 text-center md:text-left">
@@ -335,7 +328,14 @@ function PlayersContent() {
                   <span className="text-xs text-slate-500">Rank #{profileCpi.nationalRank || "—"}</span>
                 </div>
               </div>
-              <div className="flex-shrink-0 hidden md:block">
+              <div className="flex-shrink-0 hidden md:flex flex-col items-center gap-2">
+                {player.avatar ? (
+                  <img src={player.avatar} alt={player.name} className="w-20 h-20 rounded-full object-cover border-2 border-emerald-500" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
+                    {player.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
                 <Link href="/stats" className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Full Dashboard &rarr;</Link>
               </div>
             </div>
