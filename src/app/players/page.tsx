@@ -3,7 +3,20 @@
 import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus } from "@/data/mock";
+import dynamic from "next/dynamic";
+import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus, calculateCPI } from "@/data/mock";
+
+const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
+const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
+const Bar = dynamic(() => import("recharts").then(m => m.Bar), { ssr: false });
+const XAxis = dynamic(() => import("recharts").then(m => m.XAxis), { ssr: false });
+const YAxis = dynamic(() => import("recharts").then(m => m.YAxis), { ssr: false });
+const Tooltip = dynamic(() => import("recharts").then(m => m.Tooltip), { ssr: false });
+const RadarChart = dynamic(() => import("recharts").then(m => m.RadarChart), { ssr: false });
+const Radar = dynamic(() => import("recharts").then(m => m.Radar), { ssr: false });
+const PolarGrid = dynamic(() => import("recharts").then(m => m.PolarGrid), { ssr: false });
+const PolarAngleAxis = dynamic(() => import("recharts").then(m => m.PolarAngleAxis), { ssr: false });
+const PolarRadiusAxis = dynamic(() => import("recharts").then(m => m.PolarRadiusAxis), { ssr: false });
 import { legends, skillColors, type Skill, type Routine } from "@/data/legends";
 import StatCard from "@/components/StatCard";
 import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
@@ -11,6 +24,59 @@ import { useAuth } from "@/context/AuthContext";
 import { getItem } from "@/lib/storage";
 import { apiRequest } from "@/lib/api-client";
 import type { Player } from "@/types";
+
+function CPIRing({ score, size = 100 }: { score: number; size?: number }) {
+  const radius = (size - 10) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  const color = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : score >= 40 ? "#3b82f6" : "#ef4444";
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#1e293b" strokeWidth="6" />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth="6" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-xl font-bold text-white">{score}</span>
+        <span className="text-[9px] text-slate-400 uppercase tracking-wider">CPI</span>
+      </div>
+    </div>
+  );
+}
+
+function FormBadge({ status }: { status: string }) {
+  const config: Record<string, { bg: string; text: string; glow: string }> = {
+    "Red Hot": { bg: "bg-red-500/20", text: "text-red-400", glow: "shadow-red-500/20 shadow-lg" },
+    "In Form": { bg: "bg-emerald-500/20", text: "text-emerald-400", glow: "shadow-emerald-500/20 shadow-lg" },
+    "Steady": { bg: "bg-amber-500/20", text: "text-amber-400", glow: "" },
+    "Cold": { bg: "bg-slate-600/50", text: "text-slate-400", glow: "" },
+  };
+  const c = config[status] || config["Cold"];
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text} ${c.glow}`}>
+      {status === "Red Hot" && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />}
+      {status === "In Form" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+      {status}
+    </span>
+  );
+}
+
+function ProfileProgressBar({ label, value, max, unit }: { label: string; value: number; max: number; unit?: string }) {
+  const pct = Math.min((value / max) * 100, 100);
+  const color = pct >= 75 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
+  const textColor = pct >= 75 ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-red-400";
+  return (
+    <div>
+      <div className="flex justify-between mb-1">
+        <span className="text-xs text-slate-400">{label}</span>
+        <span className={`text-xs font-semibold ${textColor}`}>{value}{unit}</span>
+      </div>
+      <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
 
 const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
   "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
@@ -204,33 +270,170 @@ function PlayersContent() {
     .filter((item) => item.playerId === player.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const profileMatches = useMemo(() => playerMatchHistory[player.id] || [], [player.id]);
+  const profileCpi = useMemo(() => calculateCPI(player, profileMatches), [player, profileMatches]);
+  const profileForm = useMemo(() => getFormStatus(profileMatches, player.role), [profileMatches, player.role]);
+  const profileCombine = useMemo(() => playerCombineData[player.id], [player.id]);
+  const profileBattingChart = useMemo(() => [...profileMatches].reverse().slice(-5).map(m => ({ name: m.opponent.split(" ")[0], runs: m.runsScored })), [profileMatches]);
+  const profileRadarData = useMemo(() => [
+    { axis: "Match", value: profileCpi.matchPerformance },
+    { axis: "Athletic", value: profileCpi.athleticMetrics },
+    { axis: "Form", value: profileCpi.formIndex },
+    { axis: "Consist.", value: profileCpi.consistency },
+  ], [profileCpi]);
+  const profileAiInsights = useMemo(() => {
+    const insights: string[] = [];
+    if (profileMatches.length >= 2) {
+      const recent3 = profileMatches.slice(0, 3);
+      const older = profileMatches.slice(3);
+      if (recent3.length && older.length) {
+        const recentAvg = recent3.reduce((s, m) => s + m.runsScored, 0) / recent3.length;
+        const olderAvg = older.reduce((s, m) => s + m.runsScored, 0) / older.length;
+        const diff = Math.round(((recentAvg - olderAvg) / Math.max(olderAvg, 1)) * 100);
+        if (Math.abs(diff) >= 10) insights.push(`Batting avg ${diff > 0 ? "up" : "down"} ${Math.abs(diff)}% over last 3 matches`);
+      }
+      const motm = profileMatches.filter(m => m.manOfMatch).length;
+      if (motm >= 2) insights.push(`${motm} MOTM awards in last ${profileMatches.length} innings`);
+    }
+    if (profileForm === "Red Hot") insights.push("Currently in Red Hot form");
+    if (profileCpi.overall >= 75) insights.push(`Elite CPI of ${profileCpi.overall}`);
+    if (profileCombine) {
+      if (profileCombine.yoYoScore >= 19) insights.push(`Yo-Yo ${profileCombine.yoYoScore} — top-tier endurance`);
+      if (profileCombine.bowlingSpeed && profileCombine.bowlingSpeed >= 140) insights.push(`Express pace: ${profileCombine.bowlingSpeed} km/h`);
+    }
+    if (insights.length === 0) insights.push("Keep logging sessions to unlock AI insights");
+    return insights;
+  }, [profileMatches, profileForm, profileCpi, profileCombine]);
+
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
       {tab === "profile" && (
         <div className="space-y-6">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-            <div className="flex items-center gap-4">
-              {player.avatar ? (
-                <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" />
-              ) : (
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
-                  {player.name.split(" ").map((n) => n[0]).join("")}
+          <div className="bg-gradient-to-r from-slate-800/80 via-slate-800/50 to-slate-800/80 border border-slate-700/50 rounded-2xl p-6">
+            <div className="flex flex-col md:flex-row items-center gap-5">
+              <div className="flex-shrink-0 flex items-center gap-4">
+                {player.avatar ? (
+                  <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                    {player.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
+                <CPIRing score={profileCpi.overall} size={100} />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-1">
+                  <h2 className="text-xl font-bold text-white">{player.name}</h2>
+                  <FormBadge status={profileForm} />
                 </div>
-              )}
-              <div>
-                <h2 className="text-xl font-bold text-white">{player.name}</h2>
-                <p className="text-sm text-slate-400">{player.role} &middot; {player.ageGroup} &middot; {player.country}</p>
-                <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full mt-1 inline-block">{player.profileTier} Profile</span>
+                <p className="text-sm text-slate-400">{player.role} &middot; {player.battingStyle} &middot; {player.ageGroup} &middot; {player.country}</p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${player.profileTier === "Elite" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : player.profileTier === "Premium" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-600/50 text-slate-400 border border-slate-600"}`}>{player.profileTier}</span>
+                  {player.verified && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Verified</span>}
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300">{player.stats.matches} Matches</span>
+                  <span className="text-xs text-slate-500">Rank #{profileCpi.nationalRank || "—"}</span>
+                </div>
+              </div>
+              <div className="flex-shrink-0 hidden md:block">
+                <Link href="/stats" className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Full Dashboard &rarr;</Link>
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard label="Matches" value={player.stats.matches} color="emerald" />
-            <StatCard label="Runs" value={player.stats.runs} color="blue" />
-            <StatCard label="Average" value={player.stats.battingAverage} color="purple" />
-            <StatCard label="Wickets" value={player.stats.wickets} color="amber" />
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Batting</h3>
+                <span className="text-[10px] text-slate-500">Last {profileMatches.length} innings</span>
+              </div>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="text-center">
+                  <div className="text-3xl font-black text-emerald-400">{player.stats.runs.toLocaleString()}</div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-500">Runs</div>
+                </div>
+                <div className="flex-1 grid grid-cols-4 gap-1">
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.battingAverage}</div><div className="text-[9px] text-slate-500">Avg</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.strikeRate}</div><div className="text-[9px] text-slate-500">SR</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.fifties}</div><div className="text-[9px] text-slate-500">50s</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
+                </div>
+              </div>
+              <div className="h-28">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={profileBattingChart} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+                    <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 11 }} />
+                    <Bar dataKey="runs" fill="#10b981" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wide mb-3">Bowling</h3>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="text-center">
+                  <div className="text-3xl font-black text-red-400">{player.stats.wickets}</div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-500">Wickets</div>
+                </div>
+                <div className="flex-1 grid grid-cols-3 gap-1">
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bowlingAverage || "-"}</div><div className="text-[9px] text-slate-500">Avg</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.economy || "-"}</div><div className="text-[9px] text-slate-500">Econ</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bestBowling}</div><div className="text-[9px] text-slate-500">Best</div></div>
+                </div>
+              </div>
+              <div className="mt-2">
+                <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
+                <div className="h-32">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart data={profileRadarData} cx="50%" cy="50%" outerRadius="65%">
+                      <PolarGrid stroke="#334155" />
+                      <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+                      <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
+                      <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 2 }} />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {profileCombine && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wide">Combine Assessment</h3>
+                {profileCombine.verifiedAthlete && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Verified</span>}
+              </div>
+              <div className="grid md:grid-cols-2 gap-x-6 gap-y-2">
+                <ProfileProgressBar label="Yo-Yo Test" value={profileCombine.yoYoScore} max={22} />
+                <ProfileProgressBar label="Sprint 20m" value={Math.max(0, 4.5 - profileCombine.sprint20m)} max={1.5} unit="s" />
+                {profileCombine.batSpeed && <ProfileProgressBar label="Bat Speed" value={profileCombine.batSpeed} max={140} unit=" km/h" />}
+                {profileCombine.bowlingSpeed && <ProfileProgressBar label="Bowling Speed" value={profileCombine.bowlingSpeed} max={160} unit=" km/h" />}
+                <ProfileProgressBar label="Vertical Jump" value={profileCombine.verticalJump} max={80} unit=" cm" />
+                <ProfileProgressBar label="Fielding Eff." value={profileCombine.fieldingEfficiency} max={100} unit="%" />
+                <ProfileProgressBar label="Throw Accuracy" value={profileCombine.throwAccuracy} max={100} unit="%" />
+                <ProfileProgressBar label="Reaction Time" value={Math.round(Math.max(0, 0.5 - profileCombine.reactionTime) * 100) / 100} max={0.3} unit="s" />
+              </div>
+            </div>
+          )}
+
+          <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-md bg-indigo-500/20 flex items-center justify-center">
+                <svg className="w-3 h-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 00.659 1.591L19 14.5" /></svg>
+              </div>
+              <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wide">AI Insights</h3>
+            </div>
+            <div className="space-y-2">
+              {profileAiInsights.map((insight, i) => (
+                <div key={i} className="flex items-start gap-2 p-2 bg-slate-900/40 rounded-lg border border-slate-700/30">
+                  <svg className="w-3 h-3 text-indigo-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  <p className="text-xs text-slate-300 leading-relaxed">{insight}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
