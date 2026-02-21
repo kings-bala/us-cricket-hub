@@ -184,7 +184,7 @@ export default function StatsPage() {
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
-          <Link href="/players" className="text-xs text-emerald-400 hover:text-emerald-300 whitespace-nowrap">View All Players</Link>
+          <Link href="/players?tab=profile" className="text-xs text-emerald-400 hover:text-emerald-300 whitespace-nowrap">My Profile</Link>
         </div>
       </div>
 
