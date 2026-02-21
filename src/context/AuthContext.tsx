@@ -69,7 +69,15 @@ function getReinstatementRequests(): ReinstatementRequest[] {
 
 function seedRisingStarAcademy() {
   const academies = getItem<Academy[]>("academies", []);
-  if (academies.some((a) => a.id === "academy_risingstar")) return;
+  const existing = academies.find((a) => a.id === "academy_risingstar");
+  const playerEmails = ["arjun@cricverse360.com", "jake@cricverse360.com", "rashid@cricverse360.com", "rahul@cricverse360.com", "neel@risingstar.com"];
+  if (existing) {
+    if (existing.playerEmails.length === 0) {
+      existing.playerEmails = playerEmails;
+      setItem("academies", academies);
+    }
+    return;
+  }
   academies.push({
     id: "academy_risingstar",
     name: "Rising Star Cricket Academy",
@@ -81,7 +89,7 @@ function seedRisingStarAcademy() {
     joinCode: "RSCA26",
     seatPlan: "pro",
     maxSeats: 50,
-    playerEmails: [],
+    playerEmails,
     coachEmails: ["yashwant@risingstar.com", "aji@risingstar.com", "mandar@risingstar.com", "vraj@risingstar.com"],
     createdAt: new Date().toISOString(),
   });
@@ -129,7 +137,10 @@ const SEED_ACCOUNTS: { email: string; password: string; user: AuthUser }[] = [
   { email: "rahul@cricverse360.com", password: "player123", user: { email: "rahul@cricverse360.com", name: "Rahul Desai", role: "player", playerId: "p8", avatar: "/avatars/player8.jpg", academyId: "academy_risingstar" } },
   { email: "vikram.singh.cricket@gmail.com", password: "Cricket2026!", user: { email: "vikram.singh.cricket@gmail.com", name: "Vikram Singh", role: "player", playerId: "p9" } },
   { email: "neel@risingstar.com", password: "player123", user: { email: "neel@risingstar.com", name: "Neel Sharma", role: "player", playerId: "p10", academyId: "academy_risingstar" } },
+  { email: "yashwant@risingstar.com", password: "coach123", user: { email: "yashwant@risingstar.com", name: "Coach Yashwant", role: "coach", academyId: "academy_risingstar" } },
+  { email: "aji@risingstar.com", password: "coach123", user: { email: "aji@risingstar.com", name: "Coach Aji", role: "coach", academyId: "academy_risingstar" } },
   { email: "admin@cricverse360.com", password: "admin123", user: { email: "admin@cricverse360.com", name: "Master Admin", role: "admin" } },
+  { email: "superadmin@cricverse360.com", password: "Super@2026", user: { email: "superadmin@cricverse360.com", name: "Super Admin", role: "admin" } },
   { email: "academy@cricverse360.com", password: "academy123", user: { email: "academy@cricverse360.com", name: "NorCal Cricket Academy", role: "academy_admin", academyId: "academy_demo" } },
   { email: "risingstar@cricverse360.com", password: "risingstar123", user: { email: "risingstar@cricverse360.com", name: "Rising Star Cricket Academy", role: "academy_admin", academyId: "academy_risingstar" } },
   { email: "agent@cricverse360.com", password: "agent123", user: { email: "agent@cricverse360.com", name: "Ravi Mehta", role: "agent" } },
