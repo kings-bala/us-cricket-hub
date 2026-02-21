@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import Link from "next/link";
 import { getItem, setItem } from "@/lib/storage";
+import { apiRequest } from "@/lib/api-client";
 import { useLivePoseDetection } from "@/hooks/useLivePoseDetection";
 import { validateCricketPose } from "@/lib/cricket-analysis";
 import { estimateBallSpeed, classifyPace, type SpeedEstimate } from "@/lib/ball-speed";
@@ -225,6 +226,18 @@ export default function NetSessionTracker() {
     if (session.deliveries.length === 0) return;
     saveSession(session);
     setPastSessions(getSessions());
+    apiRequest("/sessions", {
+      method: "POST",
+      body: {
+        sessionType: "net",
+        sessionData: {
+          id: session.id,
+          date: session.date,
+          deliveryCount: session.deliveries.length,
+          deliveries: session.deliveries,
+        },
+      },
+    });
     setSession({ id: `ns_${Date.now()}`, date: new Date().toISOString(), deliveries: [] });
     setPitchSpot(null);
     setWagonSpot(null);
