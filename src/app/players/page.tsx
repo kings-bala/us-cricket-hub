@@ -312,7 +312,14 @@ function PlayersContent() {
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-slate-800/80 via-slate-800/50 to-slate-800/80 border border-slate-700/50 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row items-center gap-5">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 flex items-center gap-4">
+                {player.avatar ? (
+                  <img src={player.avatar} alt={player.name} className="w-16 h-16 rounded-full object-cover border-2 border-emerald-500" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                    {player.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
                 <CPIRing score={profileCpi.overall} size={100} />
               </div>
               <div className="flex-1 text-center md:text-left">
