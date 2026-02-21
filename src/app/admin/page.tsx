@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiRequest } from "@/lib/api-client";
 import type { LoginRecord, ReinstatementRequest } from "@/context/AuthContext";
+import type { Academy } from "@/types";
+import { getItem, setItem } from "@/lib/storage";
 
 type BackendUser = {
   id: string;
@@ -41,12 +43,21 @@ export default function AdminDashboard() {
   const [requests, setRequests] = useState<ReinstatementRequest[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<"users" | "audit">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "audit" | "academies">("users");
+  const [academies, setAcademies] = useState<Academy[]>([]);
+  const [showAddAcademy, setShowAddAcademy] = useState(false);
+  const [newAcademy, setNewAcademy] = useState({ name: "", location: "", adminEmail: "", headCoach: "", maxSeats: 30 });
+  const [deleteAcademy, setDeleteAcademy] = useState<Academy | null>(null);
+
+  const refreshAcademies = useCallback(() => {
+    setAcademies(getItem<Academy[]>("academies", []));
+  }, []);
 
   const refresh = useCallback(() => {
     setUsers(getUsers());
     setRequests(getReinstatementRequests());
-  }, [getUsers, getReinstatementRequests]);
+    refreshAcademies();
+  }, [getUsers, getReinstatementRequests, refreshAcademies]);
 
   const fetchBackendData = useCallback(async () => {
     const [usersRes, statsRes, auditRes] = await Promise.all([
@@ -223,6 +234,7 @@ export default function AdminDashboard() {
 
         <div className="flex gap-2">
           <button onClick={() => setActiveTab("users")} className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${activeTab === "users" ? "bg-emerald-500 text-white" : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"}`}>Users</button>
+          <button onClick={() => setActiveTab("academies")} className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${activeTab === "academies" ? "bg-emerald-500 text-white" : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"}`}>Academies {academies.length > 0 && <span className="ml-1 text-xs opacity-70">({academies.length})</span>}</button>
           <button onClick={() => setActiveTab("audit")} className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${activeTab === "audit" ? "bg-emerald-500 text-white" : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"}`}>Audit Log {auditLog.length > 0 && <span className="ml-1 text-xs opacity-70">({auditLog.length})</span>}</button>
         </div>
 
@@ -254,6 +266,61 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <p className="text-xs text-slate-500 shrink-0">{new Date(entry.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "academies" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">Academy Management</h2>
+              <button onClick={() => setShowAddAcademy(true)} className="px-4 py-2 text-sm rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-colors">+ Add Academy</button>
+            </div>
+            {academies.length === 0 ? (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+                <p className="text-slate-400 text-sm">No academies registered yet.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {academies.map((a) => (
+                  <div key={a.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-lg font-bold text-emerald-400">
+                          {a.name.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-white">{a.name}</p>
+                          <p className="text-xs text-slate-400">{a.location}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => setDeleteAcademy(a)} className="text-xs px-2 py-1 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors">Remove</button>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="bg-slate-900/50 rounded-lg p-2">
+                        <p className="text-xs text-slate-500">Players</p>
+                        <p className="text-sm font-bold text-white">{a.playerEmails.length} / {a.maxSeats}</p>
+                      </div>
+                      <div className="bg-slate-900/50 rounded-lg p-2">
+                        <p className="text-xs text-slate-500">Coaches</p>
+                        <p className="text-sm font-bold text-white">{a.coachEmails.length}</p>
+                      </div>
+                      <div className="bg-slate-900/50 rounded-lg p-2">
+                        <p className="text-xs text-slate-500">Admin</p>
+                        <p className="text-sm text-white truncate">{a.adminEmail}</p>
+                      </div>
+                      <div className="bg-slate-900/50 rounded-lg p-2">
+                        <p className="text-xs text-slate-500">Join Code</p>
+                        <p className="text-sm font-mono text-emerald-400">{a.joinCode}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${a.seatPlan === "pro" ? "bg-purple-500/10 text-purple-400 border-purple-500/20" : a.seatPlan === "enterprise" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-blue-500/10 text-blue-400 border-blue-500/20"}`}>{a.seatPlan}</span>
+                      <span className="text-xs text-slate-500">Created {new Date(a.createdAt).toLocaleDateString()}</span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -471,6 +538,89 @@ export default function AdminDashboard() {
                 {confirmAction.action === "block" && "Suspend"}
                 {confirmAction.action === "unblock" && "Restore"}
                 {confirmAction.action === "remove" && "Remove"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAddAcademy && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-lg p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-white">Add New Academy</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Academy Name *</label>
+                <input type="text" value={newAcademy.name} onChange={(e) => setNewAcademy({ ...newAcademy, name: e.target.value })} placeholder="e.g. Bay Area Cricket Academy" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Location *</label>
+                <input type="text" value={newAcademy.location} onChange={(e) => setNewAcademy({ ...newAcademy, location: e.target.value })} placeholder="e.g. San Francisco, CA" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Admin Email *</label>
+                <input type="email" value={newAcademy.adminEmail} onChange={(e) => setNewAcademy({ ...newAcademy, adminEmail: e.target.value })} placeholder="admin@academy.com" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Head Coach</label>
+                <input type="text" value={newAcademy.headCoach} onChange={(e) => setNewAcademy({ ...newAcademy, headCoach: e.target.value })} placeholder="Coach name" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Max Seats</label>
+                <input type="number" value={newAcademy.maxSeats} onChange={(e) => setNewAcademy({ ...newAcademy, maxSeats: Number(e.target.value) })} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={() => { setShowAddAcademy(false); setNewAcademy({ name: "", location: "", adminEmail: "", headCoach: "", maxSeats: 30 }); }} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button
+                disabled={!newAcademy.name || !newAcademy.location || !newAcademy.adminEmail}
+                onClick={() => {
+                  const all = getItem<Academy[]>("academies", []);
+                  const id = "academy_" + newAcademy.name.toLowerCase().replace(/[^a-z0-9]+/g, "_").slice(0, 20) + "_" + Date.now().toString(36);
+                  const code = newAcademy.name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 4) + Math.floor(Math.random() * 90 + 10);
+                  all.push({ id, name: newAcademy.name, location: newAcademy.location, logo: "", headCoach: newAcademy.headCoach || "TBD", contactEmail: newAcademy.adminEmail, adminEmail: newAcademy.adminEmail, joinCode: code, seatPlan: "starter", maxSeats: newAcademy.maxSeats || 30, playerEmails: [], coachEmails: [], createdAt: new Date().toISOString() });
+                  setItem("academies", all);
+                  refreshAcademies();
+                  setShowAddAcademy(false);
+                  setNewAcademy({ name: "", location: "", adminEmail: "", headCoach: "", maxSeats: 30 });
+                }}
+                className="px-5 py-2 text-sm font-medium rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Create Academy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteAcademy && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">Remove Academy</h3>
+                <p className="text-sm text-slate-400">{deleteAcademy.name}</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-300">This will permanently remove this academy and all its data. {deleteAcademy.playerEmails.length} players and {deleteAcademy.coachEmails.length} coaches will lose their academy association.</p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button onClick={() => setDeleteAcademy(null)} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition-colors">Cancel</button>
+              <button
+                onClick={() => {
+                  const all = getItem<Academy[]>("academies", []);
+                  const updated = all.filter(a => a.id !== deleteAcademy.id);
+                  setItem("academies", updated);
+                  refreshAcademies();
+                  setDeleteAcademy(null);
+                }}
+                className="px-5 py-2 text-sm font-medium rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors"
+              >
+                Remove Academy
               </button>
             </div>
           </div>
