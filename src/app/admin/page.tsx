@@ -4,20 +4,60 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiRequest } from "@/lib/api-client";
 import type { LoginRecord, ReinstatementRequest } from "@/context/AuthContext";
+
+type BackendUser = {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  academy: string | null;
+  created_at: string;
+};
+
+type AuditEntry = {
+  id: string;
+  admin_id: string;
+  action: string;
+  target_id: string;
+  details: Record<string, string> | null;
+  created_at: string;
+};
+
+type DashboardStats = {
+  totalUsers: number;
+  totalSessions: number;
+  totalAnalyses: number;
+};
 
 export default function AdminDashboard() {
   const { user, getUsers, blockUser, unblockUser, isUserBlocked, removeUser, getReinstatementRequests, approveReinstatement, denyReinstatement } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<LoginRecord[]>([]);
+  const [backendUsers, setBackendUsers] = useState<BackendUser[]>([]);
   const [search, setSearch] = useState("");
-  const [confirmAction, setConfirmAction] = useState<{ email: string; action: "block" | "unblock" | "remove" } | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ email: string; userId?: string; action: "block" | "unblock" | "remove" } | null>(null);
   const [requests, setRequests] = useState<ReinstatementRequest[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [auditLog, setAuditLog] = useState<AuditEntry[]>([]);
+  const [activeTab, setActiveTab] = useState<"users" | "audit">("users");
 
   const refresh = useCallback(() => {
     setUsers(getUsers());
     setRequests(getReinstatementRequests());
   }, [getUsers, getReinstatementRequests]);
+
+  const fetchBackendData = useCallback(async () => {
+    const [usersRes, statsRes, auditRes] = await Promise.all([
+      apiRequest<BackendUser[]>("/admin/users"),
+      apiRequest<DashboardStats>("/admin/dashboard"),
+      apiRequest<AuditEntry[]>("/admin/audit-log"),
+    ]);
+    if (usersRes.ok && Array.isArray(usersRes.data)) setBackendUsers(usersRes.data);
+    if (statsRes.ok && statsRes.data) setStats(statsRes.data);
+    if (auditRes.ok && Array.isArray(auditRes.data)) setAuditLog(auditRes.data);
+  }, []);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {
@@ -25,32 +65,61 @@ export default function AdminDashboard() {
       return;
     }
     refresh();
-  }, [user, router, refresh]);
+    fetchBackendData();
+  }, [user, router, refresh, fetchBackendData]);
 
   if (!user || user.role !== "admin") return null;
 
-  const filtered = users.filter(
+
+  const handleAction = async () => {
+    if (!confirmAction) return;
+    const userId = confirmAction.userId || backendUsers.find((u) => u.email === confirmAction.email)?.id;
+    if (confirmAction.action === "block") {
+      blockUser(confirmAction.email);
+      if (userId) {
+        await apiRequest(`/admin/users/${userId}/block`, { method: "PUT", body: { blocked: true } });
+      }
+    } else if (confirmAction.action === "unblock") {
+      unblockUser(confirmAction.email);
+      if (userId) {
+        await apiRequest(`/admin/users/${userId}/block`, { method: "PUT", body: { blocked: false } });
+      }
+    } else if (confirmAction.action === "remove") {
+      removeUser(confirmAction.email);
+      if (userId) {
+        await apiRequest(`/admin/users/${userId}/block`, { method: "PUT", body: { blocked: true } });
+      }
+    }
+    setConfirmAction(null);
+    refresh();
+    fetchBackendData();
+  };
+
+  const mergedUsers = backendUsers.length > 0
+    ? backendUsers.map((bu) => {
+        const local = users.find((u) => u.email.toLowerCase() === bu.email.toLowerCase());
+        return {
+          email: bu.email,
+          name: bu.full_name || (local ? local.name : bu.email),
+          role: bu.role || (local ? local.role : "player"),
+          loginAt: local?.loginAt || bu.created_at,
+          lastActive: local?.lastActive || bu.created_at,
+          id: bu.id,
+        };
+      })
+    : users.map((u) => ({ ...u, id: "" }));
+
+  const totalUsers = stats?.totalUsers ?? mergedUsers.length;
+  const activeUsers = stats ? totalUsers - (mergedUsers.filter((u) => isUserBlocked(u.email)).length) : mergedUsers.filter((u) => !isUserBlocked(u.email)).length;
+  const blockedUsers = mergedUsers.filter((u) => isUserBlocked(u.email)).length;
+  const totalSessions = stats?.totalSessions ?? 0;
+  const totalAnalyses = stats?.totalAnalyses ?? 0;
+
+  const filtered = mergedUsers.filter(
     (u) =>
       u.email.toLowerCase().includes(search.toLowerCase()) ||
       u.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const handleAction = () => {
-    if (!confirmAction) return;
-    if (confirmAction.action === "block") {
-      blockUser(confirmAction.email);
-    } else if (confirmAction.action === "unblock") {
-      unblockUser(confirmAction.email);
-    } else if (confirmAction.action === "remove") {
-      removeUser(confirmAction.email);
-    }
-    setConfirmAction(null);
-    refresh();
-  };
-
-  const totalUsers = users.length;
-  const activeUsers = users.filter((u) => !isUserBlocked(u.email)).length;
-  const blockedUsers = users.filter((u) => isUserBlocked(u.email)).length;
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-8">
@@ -124,9 +193,75 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{totalSessions}</p>
+                <p className="text-xs text-slate-400">Total Sessions</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{totalAnalyses}</p>
+                <p className="text-xs text-slate-400">Total Analyses</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl">
+        <div className="flex gap-2">
+          <button onClick={() => setActiveTab("users")} className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${activeTab === "users" ? "bg-emerald-500 text-white" : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"}`}>Users</button>
+          <button onClick={() => setActiveTab("audit")} className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${activeTab === "audit" ? "bg-emerald-500 text-white" : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"}`}>Audit Log {auditLog.length > 0 && <span className="ml-1 text-xs opacity-70">({auditLog.length})</span>}</button>
+        </div>
+
+        {activeTab === "audit" && (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl">
+            <div className="p-5 border-b border-slate-700/50">
+              <h2 className="text-lg font-semibold text-white">Audit Log</h2>
+              <p className="text-xs text-slate-500 mt-1">Admin actions synced from backend database</p>
+            </div>
+            {auditLog.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="text-slate-400 text-sm">No audit entries yet. Actions like blocking users will appear here.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-700/30">
+                {auditLog.map((entry) => (
+                  <div key={entry.id} className="px-5 py-3 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${
+                        entry.action.includes("block") ? "bg-red-500/20 text-red-400" :
+                        entry.action.includes("unblock") ? "bg-emerald-500/20 text-emerald-400" :
+                        "bg-blue-500/20 text-blue-400"
+                      }`}>
+                        {entry.action.includes("block") ? "B" : entry.action.includes("role") ? "R" : "A"}
+                      </div>
+                      <div>
+                        <p className="text-sm text-white">{entry.action.replace(/_/g, " ")}</p>
+                        <p className="text-xs text-slate-500">by {entry.admin_id} {entry.details && Object.keys(entry.details).length > 0 ? `• ${JSON.stringify(entry.details)}` : ""}</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-slate-500 shrink-0">{new Date(entry.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "users" && <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl">
           <div className="p-5 border-b border-slate-700/50 flex items-center justify-between gap-4">
             <h2 className="text-lg font-semibold text-white whitespace-nowrap">User Activity Log</h2>
             <div className="relative flex-1 max-w-sm">
@@ -205,21 +340,21 @@ export default function AdminDashboard() {
                             <div className="flex items-center justify-end gap-2">
                               {blocked ? (
                                 <button
-                                  onClick={() => setConfirmAction({ email: u.email, action: "unblock" })}
+                                  onClick={() => setConfirmAction({ email: u.email, userId: u.id, action: "unblock" })}
                                   className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 transition-colors"
                                 >
                                   Restore
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => setConfirmAction({ email: u.email, action: "block" })}
+                                  onClick={() => setConfirmAction({ email: u.email, userId: u.id, action: "block" })}
                                   className="text-xs px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 transition-colors"
                                 >
                                   Suspend
                                 </button>
                               )}
                               <button
-                                onClick={() => setConfirmAction({ email: u.email, action: "remove" })}
+                                onClick={() => setConfirmAction({ email: u.email, userId: u.id, action: "remove" })}
                                 className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
                               >
                                 Remove
@@ -234,7 +369,7 @@ export default function AdminDashboard() {
               </table>
             </div>
           )}
-        </div>
+        </div>}
 
         {requests.filter((r) => r.status === "pending").length > 0 && (
           <div className="bg-slate-800/50 border border-amber-500/30 rounded-xl">
