@@ -5,11 +5,12 @@ import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 
 type FeeType = "monthly" | "quarterly" | "1on1" | "2on1";
+type PlayerLevel = "Beginner" | "Intermediate" | "Advanced";
 
 interface FeeStructure {
   id: FeeType;
   label: string;
-  amount: number;
+  amounts: Record<PlayerLevel, number>;
   description: string;
   interval: string;
 }
@@ -37,11 +38,18 @@ interface PaymentRecord {
   method: string;
 }
 
+const LEVELS: PlayerLevel[] = ["Beginner", "Intermediate", "Advanced"];
+const levelColors: Record<PlayerLevel, string> = {
+  Beginner: "text-blue-400 bg-blue-500/20 border-blue-500/30",
+  Intermediate: "text-amber-400 bg-amber-500/20 border-amber-500/30",
+  Advanced: "text-emerald-400 bg-emerald-500/20 border-emerald-500/30",
+};
+
 const FEE_STRUCTURES: FeeStructure[] = [
-  { id: "monthly", label: "Monthly Training", amount: 75, description: "Full access to group training sessions, 4x per week", interval: "month" },
-  { id: "quarterly", label: "Quarterly Package", amount: 200, description: "3-month training package with combine assessment included", interval: "quarter" },
-  { id: "1on1", label: "1:1 Private Session", amount: 40, description: "One-on-one coaching session with certified coach (1 hour)", interval: "session" },
-  { id: "2on1", label: "2:1 Group Session", amount: 30, description: "Two students per coach session for focused training (1 hour)", interval: "session" },
+  { id: "monthly", label: "Monthly Training", amounts: { Beginner: 50, Intermediate: 75, Advanced: 100 }, description: "Full access to group training sessions, 4x per week", interval: "month" },
+  { id: "quarterly", label: "Quarterly Package", amounts: { Beginner: 130, Intermediate: 200, Advanced: 275 }, description: "3-month training package with combine assessment included", interval: "quarter" },
+  { id: "1on1", label: "1:1 Private Session", amounts: { Beginner: 30, Intermediate: 40, Advanced: 55 }, description: "One-on-one coaching session with certified coach (1 hour)", interval: "session" },
+  { id: "2on1", label: "2:1 Group Session", amounts: { Beginner: 20, Intermediate: 30, Advanced: 40 }, description: "Two students per coach session for focused training (1 hour)", interval: "session" },
 ];
 
 const MOCK_STUDENT_FEES: StudentFee[] = [
@@ -251,16 +259,35 @@ export default function PaymentsPage() {
 
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Fee Schedule</h3>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {FEE_STRUCTURES.map(fee => (
-                  <div key={fee.id} className="bg-slate-900/50 border border-slate-700/30 rounded-xl p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">{fee.label}</span>
-                    </div>
-                    <p className="text-2xl font-bold text-white">${fee.amount}<span className="text-xs text-slate-500 font-normal">/{fee.interval}</span></p>
-                    <p className="text-xs text-slate-400 mt-2">{fee.description}</p>
-                  </div>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left text-xs uppercase tracking-wider text-slate-400 pb-3 pr-4">Fee Type</th>
+                      {LEVELS.map(l => (
+                        <th key={l} className="text-center text-xs uppercase tracking-wider pb-3 px-3">
+                          <span className={`px-2 py-0.5 rounded-full border ${levelColors[l]}`}>{l}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {FEE_STRUCTURES.map(fee => (
+                      <tr key={fee.id} className="border-b border-slate-700/30">
+                        <td className="py-3 pr-4">
+                          <p className="text-sm font-semibold text-white">{fee.label}</p>
+                          <p className="text-xs text-slate-400">{fee.description}</p>
+                        </td>
+                        {LEVELS.map(l => (
+                          <td key={l} className="py-3 px-3 text-center">
+                            <span className="text-lg font-bold text-white">${fee.amounts[l]}</span>
+                            <span className="text-xs text-slate-500">/{fee.interval}</span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -542,21 +569,28 @@ export default function PaymentsPage() {
 
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Fee Amounts</h3>
-              <p className="text-xs text-slate-400 mb-4">Customize fee amounts for your academy. Changes apply to new invoices only.</p>
-              <div className="grid md:grid-cols-2 gap-4">
+              <p className="text-xs text-slate-400 mb-4">Customize fee amounts by player level. Changes apply to new invoices only.</p>
+              <div className="space-y-4">
                 {FEE_STRUCTURES.map(fee => (
-                  <div key={fee.id} className="flex items-center justify-between bg-slate-900/50 border border-slate-700/30 rounded-xl p-4">
-                    <div>
+                  <div key={fee.id} className="bg-slate-900/50 border border-slate-700/30 rounded-xl p-4">
+                    <div className="mb-3">
                       <p className="text-sm font-semibold text-white">{fee.label}</p>
                       <p className="text-xs text-slate-400">{fee.description}</p>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-slate-500">$</span>
-                      <input
-                        type="number"
-                        defaultValue={fee.amount}
-                        className="w-20 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white text-right focus:outline-none focus:border-emerald-500"
-                      />
+                    <div className="grid grid-cols-3 gap-3">
+                      {LEVELS.map(level => (
+                        <div key={level}>
+                          <label className={`block text-xs mb-1 font-medium ${levelColors[level].split(" ")[0]}`}>{level}</label>
+                          <div className="flex items-center gap-1">
+                            <span className="text-slate-500">$</span>
+                            <input
+                              type="number"
+                              defaultValue={fee.amounts[level]}
+                              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white text-right focus:outline-none focus:border-emerald-500"
+                            />
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
