@@ -24,15 +24,15 @@ const MODELS = ["gemini-2.0-flash", "gemini-2.0-flash-lite"];
 
 export async function POST(req: NextRequest) {
   try {
-    const { message, analysisContext } = await req.json();
+    const { message, analysisContext, userApiKey } = await req.json();
     if (!message || typeof message !== "string") {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
-    const apiKey = process.env.GOOGLE_AI_API_KEY;
+    const apiKey = userApiKey || process.env.GOOGLE_AI_API_KEY;
     if (!apiKey) {
       return NextResponse.json(
-        { error: "no_api_key", message: "Gemini API key not configured. Add GOOGLE_AI_API_KEY to environment." },
+        { error: "no_api_key", message: "No API key available. Add your free Gemini API key in settings." },
         { status: 200 }
       );
     }
