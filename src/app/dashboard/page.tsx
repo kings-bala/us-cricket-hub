@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useCatalog, useCatalogMulti } from "@/hooks/useCatalog";
+import { calculateCPI, getFormStatus } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 import { UserRole, Player } from "@/types";
 import { useAuth } from "@/context/AuthContext";
@@ -208,9 +209,22 @@ function PlayerDashboard() {
 }
 
 function AgentDashboard() {
-  const { data } = useCatalogMulti("agents", "players");
+  const { data } = useCatalogMulti("agents", "players", "match_history");
   const agent = data.agents[0];
   const agentPlayers = data.players.filter((p) => agent.playerIds.includes(p.id));
+  const matchHistory = data.match_history;
+  const [expandedPlayer, setExpandedPlayer] = useState<string | null>(null);
+
+  const totalRuns = agentPlayers.reduce((s, p) => s + p.stats.runs, 0);
+  const totalWickets = agentPlayers.reduce((s, p) => s + p.stats.wickets, 0);
+  const avgStrikeRate = agentPlayers.length ? Math.round(agentPlayers.reduce((s, p) => s + p.stats.strikeRate, 0) / agentPlayers.length * 10) / 10 : 0;
+
+  const formColors: Record<string, string> = {
+    "Red Hot": "bg-red-500/20 text-red-400 border-red-500/30",
+    "In Form": "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+    "Steady": "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    "Cold": "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  };
 
   return (
     <div className="space-y-6">
@@ -221,26 +235,168 @@ function AgentDashboard() {
         <StatCard label="Rating" value={agent.rating} color="amber" />
       </div>
 
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <StatCard label="Total Runs (Stable)" value={totalRuns} color="emerald" />
+        <StatCard label="Total Wickets (Stable)" value={totalWickets} color="red" />
+        <StatCard label="Avg Strike Rate" value={avgStrikeRate} color="blue" />
+      </div>
+
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Your Stable</h3>
+        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Player Stats &amp; AI Analysis</h3>
         <div className="space-y-3">
-          {agentPlayers.map((p) => (
-            <Link key={p.id} href={`/players/${p.id}`} className="flex items-center justify-between hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                  {p.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">{p.name}</p>
-                  <p className="text-xs text-slate-400">{p.role} &middot; {p.ageGroup}</p>
-                </div>
+          {agentPlayers.map((p) => {
+            const matches = matchHistory[p.id] || [];
+            const cpi = calculateCPI(p, matches);
+            const form = getFormStatus(matches, p.role);
+            const isExpanded = expandedPlayer === p.id;
+            const last5 = matches.slice(0, 5);
+            const recentAvg = last5.length ? Math.round(last5.reduce((s, m) => s + m.runsScored, 0) / last5.length) : 0;
+            const recentWickets = last5.reduce((s, m) => s + m.wicketsTaken, 0);
+
+            const insights: string[] = [];
+            if (cpi.overall >= 75) insights.push(`Elite CPI (${cpi.overall}) - ready for top-tier league placement`);
+            else if (cpi.overall >= 60) insights.push(`Strong CPI (${cpi.overall}) - competitive for mid-tier leagues`);
+            else insights.push(`CPI ${cpi.overall} - needs development before league placement`);
+
+            if (form === "Red Hot") insights.push("Currently in exceptional form - ideal time for trial/showcase");
+            else if (form === "In Form") insights.push("Performing consistently - good candidate for upcoming drafts");
+            else if (form === "Cold") insights.push("Form dip detected - recommend targeted coaching before exposure");
+
+            if (p.role === "Bowler" || p.role === "All-Rounder") {
+              if (p.stats.economy > 0 && p.stats.economy <= 6) insights.push(`Excellent economy rate (${p.stats.economy}) - strong selling point`);
+              if (p.fitnessData.bowlingSpeed && p.fitnessData.bowlingSpeed >= 140) insights.push(`Pace ${p.fitnessData.bowlingSpeed} km/h - franchise-level speed`);
+            }
+            if (p.stats.battingAverage >= 40) insights.push(`Batting average ${p.stats.battingAverage} - premium value`);
+            if (p.verified) insights.push("Profile verified - scout-ready");
+
+            return (
+              <div key={p.id} className="bg-slate-900/50 rounded-xl border border-slate-700/50 overflow-hidden">
+                <button onClick={() => setExpandedPlayer(isExpanded ? null : p.id)} className="w-full flex items-center justify-between p-4 hover:bg-slate-700/20 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                      {p.name.split(" ").map((n) => n[0]).join("")}
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-white">{p.name}</p>
+                      <p className="text-xs text-slate-400">{p.role} &middot; {p.ageGroup} &middot; {p.country}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs px-2 py-1 rounded-full border ${formColors[form] || "bg-slate-700/50 text-slate-300"}`}>{form}</span>
+                    <span className="text-xs text-slate-400">CPI <span className="text-white font-bold">{cpi.overall}</span></span>
+                    <span className="text-slate-500">{isExpanded ? "▲" : "▼"}</span>
+                  </div>
+                </button>
+                {isExpanded && (
+                  <div className="px-4 pb-4 space-y-4 border-t border-slate-700/50 pt-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">Matches</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.matches}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">Runs</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.runs}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">Wickets</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.wickets}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">Bat Avg</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.battingAverage}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">SR</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.strikeRate}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">Economy</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.economy || "-"}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">50s / 100s</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.fifties} / {p.stats.hundreds}</p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-2 text-center">
+                        <p className="text-xs text-slate-500">Best Bowling</p>
+                        <p className="text-sm font-semibold text-white">{p.stats.bestBowling}</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs text-slate-400 mb-2 uppercase tracking-wide">CPI Breakdown</h4>
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { label: "Match Perf", value: cpi.matchPerformance, color: "emerald" },
+                          { label: "Athletic", value: cpi.athleticMetrics, color: "blue" },
+                          { label: "Form", value: cpi.formIndex, color: "purple" },
+                          { label: "Consistency", value: cpi.consistency, color: "amber" },
+                        ].map((c) => (
+                          <div key={c.label} className="text-center">
+                            <div className="relative w-12 h-12 mx-auto mb-1">
+                              <svg className="w-12 h-12 -rotate-90" viewBox="0 0 48 48">
+                                <circle cx="24" cy="24" r="20" fill="none" stroke="#334155" strokeWidth="4" />
+                                <circle cx="24" cy="24" r="20" fill="none" stroke={c.color === "emerald" ? "#10b981" : c.color === "blue" ? "#3b82f6" : c.color === "purple" ? "#a855f7" : "#f59e0b"} strokeWidth="4" strokeDasharray={`${c.value * 1.256} 125.6`} strokeLinecap="round" />
+                              </svg>
+                              <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">{c.value}</span>
+                            </div>
+                            <p className="text-[10px] text-slate-500">{c.label}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {last5.length > 0 && (
+                      <div>
+                        <h4 className="text-xs text-slate-400 mb-2 uppercase tracking-wide">Last 5 Matches</h4>
+                        <div className="flex gap-1">
+                          {last5.map((m, i) => {
+                            const perf = p.role === "Bowler" ? m.wicketsTaken * 20 : m.runsScored;
+                            const maxVal = p.role === "Bowler" ? 100 : 150;
+                            const height = Math.max(8, (perf / maxVal) * 100);
+                            return (
+                              <div key={m.matchId} className="flex-1 flex flex-col items-center gap-1">
+                                <div className="w-full bg-slate-700/50 rounded-sm relative" style={{ height: "48px" }}>
+                                  <div className={`absolute bottom-0 left-0 right-0 rounded-sm ${i === 0 ? "bg-blue-500" : "bg-blue-500/60"}`} style={{ height: `${Math.min(height, 100)}%` }} />
+                                </div>
+                                <span className="text-[9px] text-slate-500">{p.role === "Bowler" ? `${m.wicketsTaken}w` : m.runsScored}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="flex justify-between mt-2 text-xs text-slate-500">
+                          <span>Avg last 5: <span className="text-white">{recentAvg} runs</span></span>
+                          <span>Wickets last 5: <span className="text-white">{recentWickets}</span></span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <h4 className="text-xs text-slate-400 mb-2 uppercase tracking-wide">AI Insights</h4>
+                      <div className="space-y-1.5">
+                        {insights.map((insight, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs">
+                            <span className="text-blue-400 mt-0.5 shrink-0">●</span>
+                            <span className="text-slate-300">{insight}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Link href={`/players/${p.id}`} className="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-lg border border-emerald-500/30 hover:bg-emerald-500/30 transition-colors">
+                        Full Profile →
+                      </Link>
+                      <Link href={`/stats`} className="text-xs bg-blue-500/20 text-blue-400 px-3 py-1.5 rounded-lg border border-blue-500/30 hover:bg-blue-500/30 transition-colors">
+                        Deep Stats →
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div className="text-right">
-                <p className="text-sm text-white">{p.stats.runs} runs</p>
-                <p className="text-xs text-slate-400">{p.stats.matches} matches</p>
-              </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
 
