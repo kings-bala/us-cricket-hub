@@ -10,24 +10,18 @@ interface ChatMessage {
   timestamp: string;
 }
 
-const API_KEY_STORAGE = "cv360_gemini_key";
-
 export default function CoachPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [analyses, setAnalyses] = useState<SavedAnalysis[]>([]);
   const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
-  const [apiKey, setApiKey] = useState("");
-  const [showKeyInput, setShowKeyInput] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const h = getHistory();
     setAnalyses(h);
     if (h.length > 0) setSelectedAnalysis(h[0]);
-    const saved = localStorage.getItem(API_KEY_STORAGE);
-    if (saved) setApiKey(saved);
   }, []);
 
   useEffect(() => {
@@ -43,7 +37,6 @@ export default function CoachPage() {
 
     try {
       const body: Record<string, unknown> = { message: userMsg.content };
-      if (apiKey) body.userApiKey = apiKey;
       if (selectedAnalysis) {
         body.analysisContext = {
           type: selectedAnalysis.summary.type,
@@ -61,9 +54,11 @@ export default function CoachPage() {
       const data = await res.json();
 
       if (data.error === "no_api_key") {
-        setMessages((prev) => [...prev, { role: "assistant", content: "AI Coach is not configured yet. Please add GOOGLE_AI_API_KEY to your Vercel environment variables.", timestamp: new Date().toISOString() }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "AI Coach is being set up. Please check back soon!", timestamp: new Date().toISOString() }]);
+      } else if (data.error === "rate_limited") {
+        setMessages((prev) => [...prev, { role: "assistant", content: "AI Coach is taking a break right now due to high demand. Please try again in a few hours!", timestamp: new Date().toISOString() }]);
       } else if (data.error) {
-        setMessages((prev) => [...prev, { role: "assistant", content: `Sorry, I encountered an error: ${data.message}. Please try again.`, timestamp: new Date().toISOString() }]);
+        setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again in a moment.", timestamp: new Date().toISOString() }]);
       } else {
         setMessages((prev) => [...prev, { role: "assistant", content: data.reply, timestamp: new Date().toISOString() }]);
       }
@@ -72,16 +67,7 @@ export default function CoachPage() {
     } finally {
       setLoading(false);
     }
-  }, [input, loading, selectedAnalysis, apiKey]);
-
-  const saveApiKey = useCallback((key: string) => {
-    setApiKey(key);
-    if (key) {
-      localStorage.setItem(API_KEY_STORAGE, key);
-    } else {
-      localStorage.removeItem(API_KEY_STORAGE);
-    }
-  }, []);
+  }, [input, loading, selectedAnalysis]);
 
   const quickQuestions = [
     "How do I improve my cover drive?",
@@ -130,50 +116,6 @@ export default function CoachPage() {
                     </div>
                   </button>
                 ))}
-              </div>
-            )}
-          </div>
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">API Key</h3>
-            {apiKey ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                  <span className="text-xs text-emerald-400">Your key is set</span>
-                </div>
-                <button onClick={() => setShowKeyInput(!showKeyInput)} className="text-xs text-slate-400 hover:text-white">
-                  {showKeyInput ? "Hide" : "Change key"}
-                </button>
-                {showKeyInput && (
-                  <div className="space-y-2">
-                    <input
-                      type="password"
-                      value={apiKey}
-                      onChange={(e) => saveApiKey(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500"
-                    />
-                    <button onClick={() => { saveApiKey(""); setShowKeyInput(false); }} className="text-xs text-red-400 hover:text-red-300">Remove key</button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-xs text-slate-500">Add your free Gemini API key for unlimited coaching.</p>
-                <button onClick={() => setShowKeyInput(!showKeyInput)} className="text-xs text-purple-400 hover:text-purple-300 font-medium">
-                  {showKeyInput ? "Hide" : "Add API Key"}
-                </button>
-                {showKeyInput && (
-                  <div className="space-y-2">
-                    <input
-                      type="password"
-                      placeholder="AIzaSy..."
-                      value={apiKey}
-                      onChange={(e) => saveApiKey(e.target.value)}
-                      className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-purple-500"
-                    />
-                    <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-xs text-slate-500 hover:text-purple-400 underline block">Get free key from Google AI Studio</a>
-                  </div>
-                )}
               </div>
             )}
           </div>
