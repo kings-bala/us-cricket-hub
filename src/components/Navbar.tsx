@@ -152,16 +152,26 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     ]},
   ],
   academy_admin: [
-    { title: "Academy", id: "academy", links: [
+    { title: "Dashboard", id: "dashboard", links: [
       { href: "/academy", label: "Dashboard", desc: "Academy overview" },
+    ]},
+    { title: "Roster", id: "roster", links: [
       { href: "/academy/roster", label: "Roster", desc: "Manage players" },
+    ]},
+    { title: "Staff", id: "staff", links: [
       { href: "/academy/staff", label: "Staff", desc: "Coaches & support staff" },
+    ]},
+    { title: "Attendance", id: "attendance", links: [
       { href: "/academy/attendance", label: "Attendance", desc: "Mark daily attendance" },
+    ]},
+    { title: "Invite", id: "invite", links: [
       { href: "/academy/invite", label: "Invite", desc: "Invite players" },
+    ]},
+    { title: "Reports", id: "reports", links: [
       { href: "/academy/reports", label: "Reports", desc: "Progress reports" },
     ]},
     { title: "Payments", id: "payments", links: [
-      { href: "/payments", label: "Fee Management", desc: "Collect fees & track payments" },
+      { href: "/payments", label: "Payments", desc: "Collect fees & track payments" },
     ]},
   ],
 };
