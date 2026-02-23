@@ -122,46 +122,35 @@ export default function LeaderboardPage() {
   const isPlayer = user?.role === "player";
 
   const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const lbRes = await apiRequest<{ leaderboard: LeaderboardEntry[]; myRank: LeaderboardEntry | null }>(`/energy/leaderboard?scope=${scope}`);
-      const apiData = lbRes.ok ? lbRes.data?.leaderboard || [] : [];
-      const hasRealActivity = apiData.some((e) => e.total_ce > 0);
-      if (hasRealActivity) {
-        setLeaderboard(apiData);
-      } else {
-        const sorted = [...SEED_LEADERBOARD].sort((a, b) => scope === "weekly" ? b.weekly_ce - a.weekly_ce : b.total_ce - a.total_ce);
-        setLeaderboard(sorted);
-      }
-    } catch {
-      const sorted = [...SEED_LEADERBOARD].sort((a, b) => scope === "weekly" ? b.weekly_ce - a.weekly_ce : b.total_ce - a.total_ce);
-      setLeaderboard(sorted);
+    const sorted = [...SEED_LEADERBOARD].sort((a, b) => scope === "weekly" ? b.weekly_ce - a.weekly_ce : b.total_ce - a.total_ce);
+    setLeaderboard(sorted);
+    if (user) {
+      setMyEnergy(getSeedEnergyForUser(user.email));
+      setMyBadges(getSeedBadgesForUser(user.email));
     }
+    setLoading(false);
+
+    const timeout = <T,>(p: Promise<T>, ms: number): Promise<T | null> =>
+      Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+
+    try {
+      const lbRes = await timeout(apiRequest<{ leaderboard: LeaderboardEntry[]; myRank: LeaderboardEntry | null }>(`/energy/leaderboard?scope=${scope}`), 4000);
+      if (lbRes && lbRes.ok) {
+        const apiData = lbRes.data?.leaderboard || [];
+        if (apiData.some((e) => e.total_ce > 0)) setLeaderboard(apiData);
+      }
+    } catch { /* keep seed data */ }
 
     if (user) {
       try {
-        const eRes = await apiRequest<EnergyData>("/energy/me");
-        if (eRes.ok && eRes.data?.total_ce !== undefined) {
-          setMyEnergy(eRes.data);
-        } else {
-          setMyEnergy(getSeedEnergyForUser(user.email));
-        }
-      } catch {
-        setMyEnergy(getSeedEnergyForUser(user.email));
-      }
-
+        const eRes = await timeout(apiRequest<EnergyData>("/energy/me"), 3000);
+        if (eRes && eRes.ok && eRes.data?.total_ce !== undefined) setMyEnergy(eRes.data);
+      } catch { /* keep seed */ }
       try {
-        const bRes = await apiRequest<Badge[]>("/energy/my-badges");
-        if (bRes.ok && Array.isArray(bRes.data) && bRes.data.length > 0) {
-          setMyBadges(bRes.data.map((b) => b.id));
-        } else {
-          setMyBadges(getSeedBadgesForUser(user.email));
-        }
-      } catch {
-        setMyBadges(getSeedBadgesForUser(user.email));
-      }
+        const bRes = await timeout(apiRequest<Badge[]>("/energy/my-badges"), 3000);
+        if (bRes && bRes.ok && Array.isArray(bRes.data) && bRes.data.length > 0) setMyBadges(bRes.data.map((b) => b.id));
+      } catch { /* keep seed */ }
     }
-    setLoading(false);
   }, [scope, user]);
 
   useEffect(() => { loadData(); }, [loadData]);
