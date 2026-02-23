@@ -330,8 +330,15 @@ function PlayersContent() {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      {tab === "profile" && (
+      {(tab === "profile" || tab === "mystats") && (
         <div className="space-y-6">
+          <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/50 rounded-xl p-1 mb-2">
+            <Link href="/players?tab=profile" className={`flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium transition-colors ${tab === "profile" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>My Profile</Link>
+            <Link href="/players?tab=mystats" className={`flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium transition-colors ${tab === "mystats" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>My Stats</Link>
+            <Link href="/stats" className="flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">Full Dashboard</Link>
+          </div>
+
+          {tab === "profile" && (<>
           <div className="bg-gradient-to-r from-slate-800/80 via-slate-800/50 to-slate-800/80 border border-slate-700/50 rounded-2xl p-6">
             <div className="flex flex-col md:flex-row items-center gap-5">
               <div className="flex-shrink-0">
@@ -503,10 +510,9 @@ function PlayersContent() {
             <p className="text-sm text-slate-400 mb-3">Get professional video analysis, verified speed-gun data, and priority visibility to scouts.</p>
             <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">Upgrade Now - $9.99/mo</button>
           </div>
-        </div>
-      )}
+          </>)}
 
-      {tab === "mystats" && (() => {
+          {tab === "mystats" && (() => {
         const ranked = generateCPIRankings();
         const playerCPI = ranked.find((p) => p.id === player.id);
         const combine = playerCombineData[player.id];
@@ -623,6 +629,8 @@ function PlayersContent() {
           </div>
         );
       })()}
+        </div>
+      )}
 
       {tab === "training" && (() => {
         const trainingSubTabs = [
