@@ -88,6 +88,8 @@ export default function AnalyzePage() {
     };
   }, [videoUrl]);
 
+  const [analysisStep, setAnalysisStep] = useState("");
+
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -100,6 +102,8 @@ export default function AnalyzePage() {
       setSummary(null);
       setFrameResults([]);
       setSelectedKeyFrame(null);
+      setAnalysisStep("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
     },
     [videoUrl]
   );
@@ -110,10 +114,15 @@ export default function AnalyzePage() {
     const video = videoRef.current;
     const canvas = canvasRef.current;
 
+    setAnalysisStep("Detecting body pose frame by frame...");
     const poseFrames = await processVideo(video, canvas, 3);
 
-    if (poseFrames.length === 0) return;
+    if (poseFrames.length === 0) {
+      setAnalysisStep("");
+      return;
+    }
 
+    setAnalysisStep("Analyzing technique angles and positions...");
     let hand = bowlingHand;
     if (analysisType === "bowling") {
       const detected = detectBowlingHand(poseFrames.map((f) => f.landmarks));
@@ -129,6 +138,7 @@ export default function AnalyzePage() {
     );
     setFrameResults(analyzed);
 
+    setAnalysisStep("Generating your performance summary...");
     const result = summarizeAnalysis(analyzed, analysisType);
     setSummary(result);
 
@@ -142,6 +152,7 @@ export default function AnalyzePage() {
     const clips = detectActionClips(poseFrames);
     setActionClips(clips);
 
+    setAnalysisStep("");
     const saved = saveAnalysis(videoFile.name, result);
     setHistory((prev) => [saved, ...prev]);
     setActiveTab("results");
@@ -471,7 +482,19 @@ export default function AnalyzePage() {
                 </span>
               </div>
               <p className="text-white font-medium">Analyzing your {analysisType} technique...</p>
-              <p className="text-sm text-slate-400 mt-1">AI is detecting body pose frame by frame</p>
+              <p className="text-sm text-slate-400 mt-1">{analysisStep || "Preparing video for analysis..."}</p>
+              <div className="mt-4 flex justify-center gap-6 text-xs text-slate-500">
+                {[
+                  { label: "Pose Detection", done: progress > 0 },
+                  { label: "Technique Analysis", done: analysisStep.includes("Analyzing technique") || analysisStep.includes("Generating") },
+                  { label: "Summary", done: analysisStep.includes("Generating") },
+                ].map((step) => (
+                  <div key={step.label} className="flex items-center gap-1.5">
+                    <div className={`w-2 h-2 rounded-full ${step.done ? "bg-emerald-500" : "bg-slate-600"}`} />
+                    <span className={step.done ? "text-emerald-400" : ""}>{step.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

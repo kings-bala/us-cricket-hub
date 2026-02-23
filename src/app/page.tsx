@@ -37,6 +37,34 @@ export default function Home() {
       </section>
 
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <h2 className="text-2xl font-bold text-white mb-2">Your CricVerse360 Toolkit</h2>
+        <p className="text-slate-400 mb-8">Everything you need to track, train, and grow as a cricketer</p>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { title: "My Profile", desc: "See your batting and bowling stats, strengths, weaknesses, and fitness scores all in one place. Know exactly where you stand.", icon: "📊", href: "/players?tab=profile", tag: "Your Stats" },
+            { title: "Training", desc: "Track your practice sessions, get personalized drills, and follow fitness plans designed to improve your game.", icon: "💪", href: "/players?tab=training", tag: "Stay Fit" },
+            { title: "AI Video Analysis", desc: "Upload a video of your batting or bowling and get instant AI feedback on your technique. Works right in your browser.", icon: "🎥", href: "/analyze", tag: "AI-Powered" },
+            { title: "Store", desc: "Find the right gear for your game. Bats, pads, shoes, and more from trusted brands without wasting time.", icon: "🛒", href: "/players?tab=store", tag: "Gear Up" },
+            { title: "Payments", desc: "Keep track of your academy fees, payment history, and receipts. Everything in one place.", icon: "💳", href: "/payments", tag: "Fees" },
+            { title: "Pro Scouting", desc: "Get discovered by scouts, agents, and T20 franchise owners looking for the next big talent.", icon: "🔍", href: "/scouting", tag: "Get Noticed" },
+          ].map((item) => (
+            <Link key={item.title} href={item.href}>
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/50 transition-all duration-200 h-full group">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-2xl">{item.icon}</span>
+                  <div>
+                    <h3 className="text-base font-semibold text-white group-hover:text-emerald-400 transition-colors">{item.title}</h3>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded-full">{item.tag}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400">{item.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <h2 className="text-2xl font-bold text-white mb-2">How It Works</h2>
         <p className="text-slate-400 mb-8">Six pillars connecting the global cricket ecosystem</p>
         <div className="grid md:grid-cols-3 lg:grid-cols-6 gap-6">

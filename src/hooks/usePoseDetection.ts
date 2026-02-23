@@ -40,6 +40,7 @@ export function usePoseDetection(): UsePoseDetectionReturn {
   const [error, setError] = useState<string | null>(null);
   const [frames, setFrames] = useState<PoseFrame[]>([]);
   const poseLandmarkerRef = useRef<unknown>(null);
+  const lastTimestampRef = useRef(0);
 
   const initPoseLandmarker = useCallback(async () => {
     if (poseLandmarkerRef.current) return poseLandmarkerRef.current;
@@ -123,9 +124,10 @@ export function usePoseDetection(): UsePoseDetectionReturn {
 
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+          const ts = lastTimestampRef.current + Math.round(time * 1000) + 1;
           const result = typedLandmarker.detectForVideo(
             video,
-            Math.round(time * 1000)
+            ts
           );
 
           if (result.landmarks && result.landmarks.length > 0) {
@@ -138,6 +140,7 @@ export function usePoseDetection(): UsePoseDetectionReturn {
           setProgress(Math.round(((i + 1) / totalFrames) * 100));
         }
 
+        lastTimestampRef.current += Math.round(duration * 1000) + 1000;
         setFrames(collectedFrames);
         setIsProcessing(false);
         video.currentTime = 0;
