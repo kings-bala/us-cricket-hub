@@ -83,17 +83,10 @@ function NavDropdown({ label, links, open, setOpen, id }: NavDropdownProps) {
 const personaGroups: Record<UserRole, NavGroup[]> = {
   player: [
     { title: "My Profile", id: "myprofile", links: [
-      { href: "/players?tab=profile", label: "Profile", desc: "Your profile & settings" },
-      { href: "/players?tab=mystats", label: "My Stats", desc: "Performance statistics" },
+      { href: "/players?tab=profile", label: "My Profile", desc: "Your profile & settings" },
     ]},
     { title: "Training", id: "training", links: [
-      { href: "/players?tab=training&sub=routines", label: "Routines", desc: "Idol-based training routines" },
-      { href: "/players?tab=training&sub=drills", label: "Drill Library", desc: "Curated coaching drills" },
-      { href: "/players?tab=training&sub=planner", label: "Training Plan", desc: "Weekly schedule builder" },
-      { href: "/players?tab=training&sub=log", label: "Session Log", desc: "Log your practice sessions" },
-      { href: "/players?tab=training&sub=progress", label: "Progress", desc: "Track improvement over time" },
-      { href: "/players?tab=training&sub=notes", label: "Coach Notes", desc: "Add notes & export reports" },
-      { href: "/coaches", label: "Find Coach", desc: "Connect with a coach" },
+      { href: "/players?tab=training", label: "Training", desc: "Practice & routines" },
     ]},
     { title: "Full Track AI", id: "ai", links: [
       { href: "/analyze", label: "Full Track AI", desc: "Video + AI insights" },
