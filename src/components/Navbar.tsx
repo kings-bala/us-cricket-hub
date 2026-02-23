@@ -104,6 +104,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Store", id: "store", links: [
       { href: "/store", label: "Merchandise Store", desc: "Cricket gear & equipment" },
     ]},
+    { title: "Leaderboard", id: "leaderboard", links: [
+      { href: "/leaderboard", label: "Leaderboard", desc: "Cricket Energy rankings" },
+    ]},
   ],
   agent: [
     { title: "Stats", id: "stats", links: [
@@ -148,6 +151,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "My Academy Stats", id: "mystats", links: [
       { href: "/academy/stats", label: "My Academy Stats", desc: "Academy stats hub" },
     ]},
+    { title: "Leaderboard", id: "leaderboard", links: [
+      { href: "/leaderboard", label: "Leaderboard", desc: "Cricket Energy rankings" },
+    ]},
     { title: "Pro Scouting", id: "scouting", links: [
       { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
     ]},
@@ -176,6 +182,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/players?tab=mystats", label: "My Stats" },
     { href: "/players?tab=training", label: "Training" },
     { href: "/analyze", label: "Full Track AI" },
+    { href: "/leaderboard", label: "Leaderboard" },
     { href: "/players?tab=store", label: "Store" },
   ],
   agent: [
@@ -197,6 +204,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
   coach: [
     { href: "/academy/attendance", label: "Attendance" },
     { href: "/academy/stats", label: "My Academy Stats" },
+    { href: "/leaderboard", label: "Leaderboard" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/analyze", label: "AI Analysis" },
   ],
