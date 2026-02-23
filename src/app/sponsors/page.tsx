@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { sponsors, availableSponsorships, tournaments } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
 
 const typeIcons: Record<string, string> = {
   leaderboard: "📊",
@@ -18,6 +18,10 @@ const typeColors: Record<string, string> = {
 };
 
 export default function SponsorsPage() {
+  const { data } = useCatalogMulti("sponsors", "available_sponsorships", "tournaments");
+  const sponsors = data.sponsors;
+  const availableSponsorships = data.available_sponsorships;
+  const tournaments = data.tournaments;
   const upcomingTournaments = tournaments.filter((t) => t.status === "upcoming");
   const [inquiryTarget, setInquiryTarget] = useState<{ name: string; type: string } | null>(null);
   const [inquiryEmail, setInquiryEmail] = useState("");

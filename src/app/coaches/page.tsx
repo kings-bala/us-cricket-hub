@@ -2,12 +2,13 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { coaches } from "@/data/mock";
+import { useCatalog } from "@/hooks/useCatalog";
 import { Region } from "@/types";
 
 type Specialization = "Batting" | "Bowling" | "Fielding" | "Wicket-Keeping" | "All-Round" | "Fitness";
 
 export default function CoachesPage() {
+  const { data: coaches } = useCatalog("coaches");
   const [search, setSearch] = useState("");
   const [region, setRegion] = useState<Region | "All">("All");
   const [specialization, setSpecialization] = useState<Specialization | "All">("All");

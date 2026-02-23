@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { agents, players } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
 
 export default function AgentsPage() {
+  const { data } = useCatalogMulti("agents", "players");
+  const agents = data.agents;
+  const players = data.players;
   const [requestAgent, setRequestAgent] = useState<string | null>(null);
   const [requestMsg, setRequestMsg] = useState("");
   const [requestsSent, setRequestsSent] = useState<Record<string, boolean>>({});

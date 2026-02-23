@@ -4,7 +4,8 @@ import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus, calculateCPI } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
+import { generateCPIRankings, getFormStatus, calculateCPI } from "@/data/mock";
 
 const ProfileBattingChart = dynamic(() => import("recharts").then(mod => {
   const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } = mod;
@@ -118,6 +119,12 @@ export default function PlayersPage() {
 }
 
 function PlayersContent() {
+  const { data: catalog } = useCatalogMulti("players", "tournaments", "performance_feed", "combine_data", "match_history");
+  const players = catalog.players;
+  const tournaments = catalog.tournaments;
+  const performanceFeedItems = catalog.performance_feed;
+  const playerCombineData = catalog.combine_data;
+  const playerMatchHistory = catalog.match_history;
   const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
   const [trainingTab, setTrainingTab] = useState<"routines" | "drills" | "planner" | "log" | "progress" | "notes">("routines");
   const [drillCategory, setDrillCategory] = useState<"all" | "batting" | "bowling" | "fielding" | "fitness">("all");
@@ -287,15 +294,15 @@ function PlayersContent() {
       }
     }
     return players[0];
-  }, [user?.email]);
+  }, [user?.email, players]);
   const playerFeed = [...performanceFeedItems]
     .filter((item) => item.playerId === player.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const profileMatches = useMemo(() => playerMatchHistory[player.id] || [], [player.id]);
+  const profileMatches = useMemo(() => playerMatchHistory[player.id] || [], [player.id, playerMatchHistory]);
   const profileCpi = useMemo(() => calculateCPI(player, profileMatches), [player, profileMatches]);
   const profileForm = useMemo(() => getFormStatus(profileMatches, player.role), [profileMatches, player.role]);
-  const profileCombine = useMemo(() => playerCombineData[player.id], [player.id]);
+  const profileCombine = useMemo(() => playerCombineData[player.id], [player.id, playerCombineData]);
   const profileBattingChart = useMemo(() => [...profileMatches].reverse().slice(-5).map(m => ({ name: m.opponent.split(" ")[0], runs: m.runsScored })), [profileMatches]);
   const profileRadarData = useMemo(() => [
     { axis: "Match", value: profileCpi.matchPerformance },

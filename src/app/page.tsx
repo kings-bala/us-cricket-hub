@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { players, tournaments, t20Leagues, coaches } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
 import HeroSlider from "@/components/HeroSlider";
 
 export default function Home() {
-  const topPlayers = [...players].sort((a, b) => b.stats.runs - a.stats.runs).slice(0, 4);
+  const { data } = useCatalogMulti("players", "tournaments", "leagues", "coaches");
+  const players = data.players;
+  const tournaments = data.tournaments;
+  const t20Leagues = data.leagues;
+  const coaches = data.coaches;
   const upcomingTournaments = tournaments.filter((t) => t.status === "upcoming").slice(0, 3);
 
   return (

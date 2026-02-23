@@ -3,7 +3,8 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { players, playerMatchHistory, playerCombineData, calculateCPI, getFormStatus } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
+import { calculateCPI, getFormStatus } from "@/data/mock";
 
 const StatsBattingChart = dynamic(() => import("recharts").then(mod => {
   const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } = mod;
@@ -132,11 +133,15 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 }
 
 export default function StatsPage() {
-  const [selectedId, setSelectedId] = useState(players[0].id);
+  const { data: catalog } = useCatalogMulti("players", "match_history", "combine_data");
+  const players = catalog.players;
+  const playerMatchHistory = catalog.match_history;
+  const playerCombineData = catalog.combine_data;
+  const [selectedId, setSelectedId] = useState(players[0]?.id ?? "p1");
 
-  const player = useMemo(() => players.find(p => p.id === selectedId) || players[0], [selectedId]);
-  const matches = useMemo(() => playerMatchHistory[selectedId] || [], [selectedId]);
-  const combine = useMemo(() => playerCombineData[selectedId], [selectedId]);
+  const player = useMemo(() => players.find(p => p.id === selectedId) || players[0], [selectedId, players]);
+  const matches = useMemo(() => playerMatchHistory[selectedId] || [], [selectedId, playerMatchHistory]);
+  const combine = useMemo(() => playerCombineData[selectedId], [selectedId, playerCombineData]);
   const cpi = useMemo(() => calculateCPI(player, matches), [player, matches]);
   const form = useMemo(() => getFormStatus(matches, player.role), [matches, player.role]);
 
