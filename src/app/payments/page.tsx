@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import Link from "next/link";
 
@@ -97,6 +97,36 @@ export default function PaymentsPage() {
   const [selectedFee, setSelectedFee] = useState<StudentFee | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showReceipt, setShowReceipt] = useState<PaymentRecord | null>(null);
+  const [feeAmounts, setFeeAmounts] = useState<Record<FeeType, Record<PlayerLevel, number>>>(() => {
+    const defaults: Record<FeeType, Record<PlayerLevel, number>> = {} as Record<FeeType, Record<PlayerLevel, number>>;
+    FEE_STRUCTURES.forEach(f => { defaults[f.id] = { ...f.amounts }; });
+    return defaults;
+  });
+  const [feeSaveMsg, setFeeSaveMsg] = useState("");
+  const [reminderMsg, setReminderMsg] = useState("");
+
+  const flashReminderMsg = useCallback((msg: string) => {
+    setReminderMsg(msg);
+    setTimeout(() => setReminderMsg(""), 2500);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem("cricverse360_fee_amounts");
+    if (saved) {
+      try { setFeeAmounts(JSON.parse(saved)); } catch {}
+    }
+  }, []);
+
+  const handleFeeChange = useCallback((feeId: FeeType, level: PlayerLevel, value: number) => {
+    setFeeAmounts(prev => ({ ...prev, [feeId]: { ...prev[feeId], [level]: value } }));
+  }, []);
+
+  const saveFeeAmounts = useCallback(() => {
+    localStorage.setItem("cricverse360_fee_amounts", JSON.stringify(feeAmounts));
+    setFeeSaveMsg("Saved!");
+    setTimeout(() => setFeeSaveMsg(""), 2000);
+  }, [feeAmounts]);
 
   if (!user) {
     return (
@@ -179,9 +209,33 @@ export default function PaymentsPage() {
     setSelectedFee(null);
   };
 
-  const sendReminder = (fee: StudentFee) => {
-    alert(`Reminder sent to ${fee.studentName}'s parent for $${fee.amount} ${feeTypeLabels[fee.feeType]} fee due ${fee.dueDate}`);
-  };
+  const sendReminder = useCallback(async (fee: StudentFee) => {
+    const backendUrl = typeof window !== "undefined" ? localStorage.getItem("cricverse360_api") : null;
+    if (!backendUrl) {
+      flashReminderMsg("Backend not configured. Set API URL in Settings.");
+      return;
+    }
+    try {
+      const res = await fetch(`${backendUrl}/payments/send-reminder`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: fee.studentId,
+          studentName: fee.studentName,
+          feeType: fee.feeType,
+          amount: fee.amount,
+          dueDate: fee.dueDate,
+        }),
+      });
+      if (res.ok) {
+        flashReminderMsg(`Reminder sent to ${fee.studentName}`);
+      } else {
+        flashReminderMsg("Failed to send reminder.");
+      }
+    } catch {
+      flashReminderMsg("Failed to send reminder.");
+    }
+  }, [flashReminderMsg]);
 
   const tabs = isAdmin
     ? [
@@ -280,7 +334,7 @@ export default function PaymentsPage() {
                         </td>
                         {LEVELS.map(l => (
                           <td key={l} className="py-3 px-3 text-center">
-                            <span className="text-lg font-bold text-white">${fee.amounts[l]}</span>
+                            <span className="text-lg font-bold text-white">${feeAmounts[fee.id]?.[l] ?? fee.amounts[l]}</span>
                             <span className="text-xs text-slate-500">/{fee.interval}</span>
                           </td>
                         ))}
@@ -340,12 +394,13 @@ export default function PaymentsPage() {
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Quick Actions</h3>
+                  {reminderMsg && <span className="text-xs text-slate-400">{reminderMsg}</span>}
                 </div>
                 <div className="grid md:grid-cols-3 gap-3">
                   <button
                     onClick={() => {
                       const overdue = myFees.filter(f => f.status === "overdue");
-                      if (overdue.length === 0) { alert("No overdue fees!"); return; }
+                      if (overdue.length === 0) { flashReminderMsg("No overdue fees."); return; }
                       overdue.forEach(f => sendReminder(f));
                     }}
                     className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-colors"
@@ -363,7 +418,7 @@ export default function PaymentsPage() {
                   <button
                     onClick={() => {
                       const due = myFees.filter(f => f.status === "due");
-                      if (due.length === 0) { alert("No fees due!"); return; }
+                      if (due.length === 0) { flashReminderMsg("No fees due."); return; }
                       due.forEach(f => sendReminder(f));
                     }}
                     className="flex items-center gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl hover:bg-amber-500/20 transition-colors"
@@ -585,7 +640,8 @@ export default function PaymentsPage() {
                             <span className="text-slate-500">$</span>
                             <input
                               type="number"
-                              defaultValue={fee.amounts[level]}
+                              value={feeAmounts[fee.id]?.[level] ?? fee.amounts[level]}
+                              onChange={e => handleFeeChange(fee.id, level, Number(e.target.value))}
                               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white text-right focus:outline-none focus:border-emerald-500"
                             />
                           </div>
@@ -595,9 +651,12 @@ export default function PaymentsPage() {
                   </div>
                 ))}
               </div>
-              <button className="mt-4 text-xs px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors">
-                Save Changes
-              </button>
+              <div className="flex items-center gap-3 mt-4">
+                <button onClick={saveFeeAmounts} className="text-xs px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-colors">
+                  Save Changes
+                </button>
+                {feeSaveMsg && <span className="text-xs text-emerald-400 font-medium">{feeSaveMsg}</span>}
+              </div>
             </div>
 
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
