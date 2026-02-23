@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useState, useRef, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { UserRole } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 
@@ -82,15 +82,9 @@ function NavDropdown({ label, links, open, setOpen, id }: NavDropdownProps) {
 
 const personaGroups: Record<UserRole, NavGroup[]> = {
   player: [
-    { title: "Essentials", id: "essentials", links: [
-      { href: "/dashboard", label: "My Profile", desc: "Your profile & settings" },
-      { href: "/performance-feed", label: "Performance Feed", desc: "Live insights" },
-      { href: "/analyze", label: "Full Track AI", desc: "Video + AI insights" },
-    ]},
-    { title: "Stats", id: "stats", links: [
-      { href: "/players", label: "Cricinfo", desc: "Stats & records" },
-      { href: "/rankings", label: "CPI Metrics", desc: "Cricket Performance Index" },
-      { href: "/combine", label: "Combine Assessment", desc: "Athletic testing" },
+    { title: "My Profile", id: "myprofile", links: [
+      { href: "/players?tab=profile", label: "Profile", desc: "Your profile & settings" },
+      { href: "/players?tab=mystats", label: "My Stats", desc: "Performance statistics" },
     ]},
     { title: "Training", id: "training", links: [
       { href: "/players?tab=training&sub=routines", label: "Routines", desc: "Idol-based training routines" },
@@ -101,11 +95,14 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
       { href: "/players?tab=training&sub=notes", label: "Coach Notes", desc: "Add notes & export reports" },
       { href: "/coaches", label: "Find Coach", desc: "Connect with a coach" },
     ]},
-    { title: "Store", id: "store", links: [
-      { href: "/store", label: "Merchandise Store", desc: "Cricket gear & equipment" },
+    { title: "Full Track AI", id: "ai", links: [
+      { href: "/analyze", label: "Full Track AI", desc: "Video + AI insights" },
     ]},
     { title: "Leaderboard", id: "leaderboard", links: [
       { href: "/leaderboard", label: "Leaderboard", desc: "Cricket Energy rankings" },
+    ]},
+    { title: "Store", id: "store", links: [
+      { href: "/players?tab=store", label: "Store", desc: "Cricket gear & equipment" },
     ]},
   ],
   agent: [
@@ -179,7 +176,6 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
 const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
   player: [
     { href: "/players?tab=profile", label: "My Profile" },
-    { href: "/players?tab=mystats", label: "My Stats" },
     { href: "/players?tab=training", label: "Training" },
     { href: "/analyze", label: "Full Track AI" },
     { href: "/leaderboard", label: "Leaderboard" },
@@ -240,13 +236,11 @@ function NavbarInner() {
     if (isAdmin) { try { localStorage.setItem("persona", persona); } catch {} }
   }, [persona, isAdmin]);
 
-  const useFlat = activeRole === "player";
-  const baseFlatLinks = roleFlatLinks[activeRole];
-  const flatLinks = (useFlat && user?.academyId) ? [...baseFlatLinks, { href: "/payments", label: "Payments" }] : baseFlatLinks;
-  const groups = personaGroups[activeRole];
+  const baseGroups = personaGroups[activeRole];
+  const groups = (activeRole === "player" && user?.academyId)
+    ? [...baseGroups, { title: "Payments", id: "payments", links: [{ href: "/payments", label: "Payments", desc: "Fee management" }] }]
+    : baseGroups;
   const pathname = usePathname();
-  const search = useSearchParams();
-  const currentPlayerTab = pathname && pathname.startsWith("/players") ? (search.get("tab") || "profile") : null;
   const showTabs = !!user;
 
   return (
@@ -260,25 +254,7 @@ function NavbarInner() {
             <span className="font-bold text-lg hidden sm:block">CricVerse360</span>
           </Link>
 
-                    {showTabs && user && useFlat && (
-                      <div className="hidden md:flex items-center gap-4">
-                        {flatLinks.map((l) => {
-                          const isActive = !!currentPlayerTab && l.href.includes(`tab=${currentPlayerTab}`);
-                          return (
-                            <Link
-                              key={l.href}
-                              href={l.href}
-                              className={`text-sm px-1.5 pb-0.5 border-b-2 transition-colors ${
-                                isActive ? "text-white border-emerald-500" : "text-slate-300 border-transparent hover:text-white"
-                              }`}
-                            >
-                              {l.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {showTabs && user && !useFlat && (
+                    {showTabs && user && (
                       <div className="hidden md:flex items-center gap-5">
                         {groups.map((g) =>
                           g.links.length === 1 ? (
@@ -349,21 +325,7 @@ function NavbarInner() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-4">
-            {showTabs && user && useFlat && (
-              <div className="space-y-1">
-                {flatLinks.map((l) => (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="block py-1.5 text-sm text-slate-300 hover:text-white pl-2 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
-                  >
-                    {l.label}
-                  </Link>
-                ))}
-              </div>
-            )}
-            {showTabs && user && !useFlat && (
+            {showTabs && user && (
               <div className="space-y-3">
                 {groups.map((g) => (
                   <div key={g.id}>
