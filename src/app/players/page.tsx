@@ -370,16 +370,6 @@ function PlayersContent() {
             </div>
           </div>
 
-          <Link
-            href="/players?tab=mystats"
-            className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl px-5 py-3 hover:bg-emerald-500/20 transition-colors group"
-          >
-            <span className="text-lg">📊</span>
-            <span className="text-sm font-semibold text-emerald-400 group-hover:text-emerald-300">My Stats</span>
-            <span className="text-xs text-slate-500">View your detailed performance statistics, CPI breakdown, and match history</span>
-            <span className="ml-auto text-emerald-400 text-lg group-hover:translate-x-1 transition-transform">&rarr;</span>
-          </Link>
-
           <div className="grid md:grid-cols-2 gap-4">
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
