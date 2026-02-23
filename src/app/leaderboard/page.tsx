@@ -125,8 +125,10 @@ export default function LeaderboardPage() {
     setLoading(true);
     try {
       const lbRes = await apiRequest<{ leaderboard: LeaderboardEntry[]; myRank: LeaderboardEntry | null }>(`/energy/leaderboard?scope=${scope}`);
-      if (lbRes.ok && lbRes.data?.leaderboard?.length > 0) {
-        setLeaderboard(lbRes.data.leaderboard);
+      const apiData = lbRes.ok ? lbRes.data?.leaderboard || [] : [];
+      const hasRealActivity = apiData.some((e) => e.total_ce > 0);
+      if (hasRealActivity) {
+        setLeaderboard(apiData);
       } else {
         const sorted = [...SEED_LEADERBOARD].sort((a, b) => scope === "weekly" ? b.weekly_ce - a.weekly_ce : b.total_ce - a.total_ce);
         setLeaderboard(sorted);
