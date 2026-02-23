@@ -30,7 +30,7 @@ export default function AcademyRosterPage() {
     const academies = getItem<Academy[]>("academies", []);
     const mine = academies.find(
       (a) => a.adminEmail.toLowerCase() === user.email.toLowerCase() || a.id === user.academyId
-    );
+    ) || (user.role === "admin" ? academies[0] : undefined);
     if (mine) setAcademy(mine);
   }, [user]);
 

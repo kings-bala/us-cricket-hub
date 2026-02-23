@@ -181,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (saved) {
       setUser(saved);
       setApiUser(saved.email, saved.name);
+      if (saved.role === "admin") seedRisingStarAcademy();
       const tokens = getItem<AuthTokens | null>("auth_tokens", null);
       if (tokens?.accessToken) {
         setAccessToken(tokens.accessToken);
