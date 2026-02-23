@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { performanceFeedItems } from "@/data/mock";
+import { useCatalog } from "@/hooks/useCatalog";
 
 type FeedType = "all" | "top-score" | "best-bowling" | "fastest-innings" | "form-spike" | "hot-prospect" | "rank-movement";
 
@@ -16,6 +16,7 @@ const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }
 };
 
 export default function PerformanceFeedPage() {
+  const { data: performanceFeedItems } = useCatalog("performance_feed");
   const [typeFilter, setTypeFilter] = useState<FeedType>("all");
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState("");

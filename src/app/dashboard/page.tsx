@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { players, agents, t20Teams, tournaments, sponsors, coaches, performanceFeedItems } from "@/data/mock";
+import { useCatalog, useCatalogMulti } from "@/hooks/useCatalog";
 import StatCard from "@/components/StatCard";
 import { UserRole, Player } from "@/types";
 import { useAuth } from "@/context/AuthContext";
@@ -27,9 +27,9 @@ const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }
   "rank-movement": { icon: "R", color: "text-cyan-400", bg: "bg-cyan-500/20" },
 };
 
-function resolvePlayer(email: string | undefined): Player {
+function resolvePlayer(allPlayers: Player[], email: string | undefined): Player {
   if (email) {
-    const seed = players.find(
+    const seed = allPlayers.find(
       (p) =>
         p.id ===
         [
@@ -84,13 +84,15 @@ function resolvePlayer(email: string | undefined): Player {
       };
     }
   }
-  return players[0];
+  return allPlayers[0];
 }
 
 function PlayerDashboard() {
+  const { data } = useCatalogMulti("players", "performance_feed", "tournaments");
+  const tournaments = data.tournaments;
   const { user } = useAuth();
-  const player = resolvePlayer(user?.email);
-  const recentFeed = [...performanceFeedItems]
+  const player = resolvePlayer(data.players, user?.email);
+  const recentFeed = [...data.performance_feed]
     .filter((item) => item.playerId === player.id)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -206,8 +208,9 @@ function PlayerDashboard() {
 }
 
 function AgentDashboard() {
-  const agent = agents[0];
-  const agentPlayers = players.filter((p) => agent.playerIds.includes(p.id));
+  const { data } = useCatalogMulti("agents", "players");
+  const agent = data.agents[0];
+  const agentPlayers = data.players.filter((p) => agent.playerIds.includes(p.id));
 
   return (
     <div className="space-y-6">
@@ -264,8 +267,9 @@ function AgentDashboard() {
 }
 
 function OwnerDashboard() {
-  const team = t20Teams[0];
-  const draftEligible = players.filter((p) => (p.ageGroup === "U19" || p.ageGroup === "U21") && p.verified);
+  const { data } = useCatalogMulti("teams", "players");
+  const team = data.teams[0];
+  const draftEligible = data.players.filter((p) => (p.ageGroup === "U19" || p.ageGroup === "U21") && p.verified);
 
   return (
     <div className="space-y-6">
@@ -323,8 +327,9 @@ function OwnerDashboard() {
 }
 
 function CoachDashboard() {
-  const coach = coaches[0];
-  const myPlayers = players.slice(0, 6);
+  const { data } = useCatalogMulti("coaches", "players");
+  const coach = data.coaches[0];
+  const myPlayers = data.players.slice(0, 6);
   return (
     <div className="space-y-6">
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
@@ -367,7 +372,8 @@ function CoachDashboard() {
 }
 
 function SponsorDashboard() {
-  const sponsor = sponsors[0];
+  const { data: catData } = useCatalog("sponsors");
+  const sponsor = catData[0];
 
   return (
     <div className="space-y-6">

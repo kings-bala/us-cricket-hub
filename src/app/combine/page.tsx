@@ -2,10 +2,14 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { players, playerCombineData, regionColors } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
+import { regionColors } from "@/data/mock";
 import { PlayerRole, Region } from "@/types";
 
 export default function CombinePage() {
+  const { data } = useCatalogMulti("players", "combine_data");
+  const players = data.players;
+  const playerCombineData = data.combine_data;
   const [search, setSearch] = useState("");
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [region, setRegion] = useState<Region | "All">("All");

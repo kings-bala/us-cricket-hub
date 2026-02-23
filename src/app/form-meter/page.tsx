@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { generateCPIRankings, playerMatchHistory, regionColors } from "@/data/mock";
+import { useCatalog } from "@/hooks/useCatalog";
+import { generateCPIRankings, regionColors } from "@/data/mock";
 import { FormStatus, PlayerRole, Region } from "@/types";
 
 const formStatusConfig: Record<FormStatus, { color: string; bg: string; border: string; label: string }> = {
@@ -13,6 +14,7 @@ const formStatusConfig: Record<FormStatus, { color: string; bg: string; border: 
 };
 
 export default function FormMeterPage() {
+  const { data: playerMatchHistory } = useCatalog("match_history");
   const [formFilter, setFormFilter] = useState<FormStatus | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");
   const [region, setRegion] = useState<Region | "All">("All");

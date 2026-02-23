@@ -2,10 +2,14 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
+import { useCatalogMulti } from "@/hooks/useCatalog";
+import { regionColors, roleIcons } from "@/data/mock";
 import { AgeGroup, Region, PlayerRole, BowlingStyle } from "@/types";
 
 export default function ScoutingPage() {
+  const { data } = useCatalogMulti("players", "teams");
+  const players = data.players;
+  const t20Teams = data.teams;
   const [region, setRegion] = useState<Region | "All">("All");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");
