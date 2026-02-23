@@ -207,6 +207,11 @@ export default function StatsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/50 rounded-xl p-1 mb-6">
+        <Link href="/players?tab=profile" className="flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">My Profile</Link>
+        <Link href="/players?tab=mystats" className="flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">My Stats</Link>
+        <Link href="/stats" className="flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 transition-colors">Full Dashboard</Link>
+      </div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-white">Player Intelligence Dashboard</h1>
@@ -222,7 +227,6 @@ export default function StatsPage() {
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>
-          <Link href="/players?tab=profile" className="text-xs text-emerald-400 hover:text-emerald-300 whitespace-nowrap">My Profile</Link>
         </div>
       </div>
 
