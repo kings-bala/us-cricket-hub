@@ -35,10 +35,49 @@ export default function StreamingPage() {
   ]);
   const [chatInput, setChatInput] = useState("");
   const [filter, setFilter] = useState<"all" | "live" | "upcoming">("all");
+  const [showGoLive, setShowGoLive] = useState(false);
+  const [goLiveForm, setGoLiveForm] = useState({ title: "", team1: "", team2: "", platform: "youtube" as "youtube" | "twitch", streamUrl: "" });
+  const [userStreams, setUserStreams] = useState<Stream[]>([]);
+  const [myLiveStream, setMyLiveStream] = useState<Stream | null>(null);
 
-  const liveStreams = MOCK_STREAMS.filter(s => s.isLive);
-  const upcomingStreams = MOCK_STREAMS.filter(s => !s.isLive && s.scheduledAt);
-  const filteredStreams = filter === "live" ? liveStreams : filter === "upcoming" ? upcomingStreams : MOCK_STREAMS;
+  const allStreams = [...userStreams, ...MOCK_STREAMS];
+  const liveStreams = allStreams.filter(s => s.isLive);
+  const upcomingStreams = allStreams.filter(s => !s.isLive && s.scheduledAt);
+  const filteredStreams = filter === "live" ? liveStreams : filter === "upcoming" ? upcomingStreams : allStreams;
+
+  const startStream = () => {
+    if (!goLiveForm.title.trim() || !goLiveForm.team1.trim() || !goLiveForm.team2.trim()) return;
+    const embedUrl = goLiveForm.streamUrl.trim()
+      ? goLiveForm.streamUrl.includes("youtube.com/watch?v=")
+        ? goLiveForm.streamUrl.replace("watch?v=", "embed/")
+        : goLiveForm.streamUrl.includes("youtu.be/")
+          ? `https://www.youtube.com/embed/${goLiveForm.streamUrl.split("youtu.be/")[1]}`
+          : goLiveForm.streamUrl
+      : "https://www.youtube.com/embed/dQw4w9WgXcQ";
+    const newStream: Stream = {
+      id: `user-${Date.now()}`,
+      title: goLiveForm.title.trim(),
+      streamerName: user?.name || "You",
+      platform: goLiveForm.platform,
+      embedUrl,
+      isLive: true,
+      viewerCount: Math.floor(Math.random() * 50) + 5,
+      matchInfo: { teams: `${goLiveForm.team1.trim()} vs ${goLiveForm.team2.trim()}`, score: "0/0", overs: "0.0" },
+    };
+    setUserStreams(prev => [newStream, ...prev]);
+    setMyLiveStream(newStream);
+    setSelectedStream(newStream);
+    setShowGoLive(false);
+    setGoLiveForm({ title: "", team1: "", team2: "", platform: "youtube", streamUrl: "" });
+  };
+
+  const stopStream = () => {
+    if (!myLiveStream) return;
+    setUserStreams(prev => prev.filter(s => s.id !== myLiveStream.id));
+    setMyLiveStream(null);
+    const fallback = MOCK_STREAMS.find(s => s.isLive) || null;
+    setSelectedStream(fallback);
+  };
 
   const sendChat = () => {
     if (!chatInput.trim()) return;
@@ -64,10 +103,16 @@ export default function StreamingPage() {
           </div>
           <div className="flex items-center gap-2">
             <Link href="/dashboard" className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">&larr; Dashboard</Link>
-            {isStreamer && (
-              <button className="text-xs px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors flex items-center gap-1">
+            {isStreamer && !myLiveStream && (
+              <button onClick={() => setShowGoLive(true)} className="text-xs px-3 py-1.5 rounded-lg bg-red-500 hover:bg-red-600 text-white font-medium transition-colors flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 Go Live
+              </button>
+            )}
+            {myLiveStream && (
+              <button onClick={stopStream} className="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-red-400 font-medium transition-colors flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                End Stream
               </button>
             )}
           </div>
@@ -209,6 +254,92 @@ export default function StreamingPage() {
           </div>
         </div>
       </div>
+      {showGoLive && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => setShowGoLive(false)}>
+          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-md p-6 mx-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                Go Live
+              </h2>
+              <button onClick={() => setShowGoLive(false)} className="text-slate-400 hover:text-white text-xl">&times;</button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Stream Title *</label>
+                <input
+                  type="text"
+                  value={goLiveForm.title}
+                  onChange={e => setGoLiveForm(f => ({ ...f, title: e.target.value }))}
+                  placeholder="e.g. RSCL T20 Match - Day 3"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Team 1 *</label>
+                  <input
+                    type="text"
+                    value={goLiveForm.team1}
+                    onChange={e => setGoLiveForm(f => ({ ...f, team1: e.target.value }))}
+                    placeholder="e.g. Lions"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Team 2 *</label>
+                  <input
+                    type="text"
+                    value={goLiveForm.team2}
+                    onChange={e => setGoLiveForm(f => ({ ...f, team2: e.target.value }))}
+                    placeholder="e.g. Tigers"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Platform</label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setGoLiveForm(f => ({ ...f, platform: "youtube" }))}
+                    className={`flex-1 text-xs py-2 rounded-lg border transition-colors ${
+                      goLiveForm.platform === "youtube" ? "border-red-500 bg-red-500/10 text-red-400" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                    }`}
+                  >
+                    YouTube
+                  </button>
+                  <button
+                    onClick={() => setGoLiveForm(f => ({ ...f, platform: "twitch" }))}
+                    className={`flex-1 text-xs py-2 rounded-lg border transition-colors ${
+                      goLiveForm.platform === "twitch" ? "border-purple-500 bg-purple-500/10 text-purple-400" : "border-slate-700 text-slate-400 hover:border-slate-600"
+                    }`}
+                  >
+                    Twitch
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Stream URL (optional)</label>
+                <input
+                  type="text"
+                  value={goLiveForm.streamUrl}
+                  onChange={e => setGoLiveForm(f => ({ ...f, streamUrl: e.target.value }))}
+                  placeholder="https://youtube.com/watch?v=... or leave blank for demo"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+              <button
+                onClick={startStream}
+                disabled={!goLiveForm.title.trim() || !goLiveForm.team1.trim() || !goLiveForm.team2.trim()}
+                className="w-full py-2.5 rounded-lg bg-red-500 hover:bg-red-600 disabled:bg-slate-700 disabled:text-slate-500 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2"
+              >
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                Start Streaming
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
