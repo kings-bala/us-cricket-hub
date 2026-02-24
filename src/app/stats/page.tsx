@@ -133,6 +133,7 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 
 export default function StatsPage() {
   const [selectedId, setSelectedId] = useState(players[0].id);
+  const [showCpiFormula, setShowCpiFormula] = useState(false);
 
   const player = useMemo(() => players.find(p => p.id === selectedId) || players[0], [selectedId]);
   const matches = useMemo(() => playerMatchHistory[selectedId] || [], [selectedId]);
@@ -168,7 +169,8 @@ export default function StatsPage() {
   ], [cpi]);
 
   const aiInsights = useMemo(() => {
-    const insights: string[] = [];
+    const strengths: string[] = [];
+    const improvements: string[] = [];
     if (matches.length >= 2) {
       const recent3 = matches.slice(0, 3);
       const older = matches.slice(3);
@@ -176,28 +178,50 @@ export default function StatsPage() {
         const recentAvgRuns = recent3.reduce((s, m) => s + m.runsScored, 0) / recent3.length;
         const olderAvgRuns = older.reduce((s, m) => s + m.runsScored, 0) / older.length;
         const runsDiff = Math.round(((recentAvgRuns - olderAvgRuns) / Math.max(olderAvgRuns, 1)) * 100);
-        if (Math.abs(runsDiff) >= 10) {
-          insights.push(`Batting average ${runsDiff > 0 ? "up" : "down"} ${Math.abs(runsDiff)}% over last 3 matches`);
+        if (runsDiff >= 10) {
+          strengths.push(`Batting average up ${runsDiff}% over last 3 matches`);
+        } else if (runsDiff <= -10) {
+          improvements.push(`Batting average down ${Math.abs(runsDiff)}% — review stance and footwork in nets`);
         }
         const recentSR = recent3.reduce((s, m) => s + (m.ballsFaced > 0 ? (m.runsScored / m.ballsFaced * 100) : 0), 0) / recent3.length;
         const olderSR = older.reduce((s, m) => s + (m.ballsFaced > 0 ? (m.runsScored / m.ballsFaced * 100) : 0), 0) / older.length;
         const srDiff = Math.round(recentSR - olderSR);
-        if (Math.abs(srDiff) >= 5) {
-          insights.push(`Strike rate ${srDiff > 0 ? "improved" : "dropped"} by ${Math.abs(srDiff)} points recently`);
+        if (srDiff >= 5) {
+          strengths.push(`Strike rate improved by ${srDiff} points recently`);
+        } else if (srDiff <= -5) {
+          improvements.push(`Strike rate dropped by ${Math.abs(srDiff)} points — work on boundary-hitting drills`);
+        }
+        if (recentSR < 80 && player.role !== "Bowler") {
+          improvements.push(`Strike rate below 80 (${Math.round(recentSR)}) — practice aggressive shot selection`);
         }
       }
       const motm = matches.filter(m => m.manOfMatch).length;
-      if (motm >= 2) insights.push(`${motm} Man of the Match awards in last ${matches.length} innings`);
+      if (motm >= 2) strengths.push(`${motm} Man of the Match awards in last ${matches.length} innings`);
+      if (motm === 0) improvements.push("No match awards recently — focus on match-winning contributions");
     }
-    if (form === "Red Hot") insights.push("Currently in Red Hot form — riding a purple patch");
-    if (cpi.overall >= 75) insights.push(`CPI of ${cpi.overall} puts you in the elite bracket`);
+    if (form === "Red Hot") strengths.push("Currently in Red Hot form — riding a purple patch");
+    else if (form === "Cold") improvements.push("Form is cold — recommend extra net sessions and video analysis this week");
+    else if (form === "Steady") improvements.push("Form is steady but not exceptional — push for consistency in big moments");
+    if (cpi.overall >= 75) strengths.push(`CPI of ${cpi.overall} puts you in the elite bracket`);
+    else if (cpi.overall < 50) improvements.push(`CPI of ${cpi.overall} needs work — focus on match performance and fitness`);
+    if (cpi.consistency < 50) improvements.push("High variance between innings — work on mental consistency and routines");
+    if (cpi.athleticMetrics < 50) improvements.push("Athletic metrics below average — increase fitness training frequency");
     if (combine) {
-      if (combine.yoYoScore >= 19) insights.push(`Yo-Yo score of ${combine.yoYoScore} — top-tier endurance`);
-      if (combine.bowlingSpeed && combine.bowlingSpeed >= 140) insights.push(`Bowling at ${combine.bowlingSpeed} km/h — express pace`);
+      if (combine.yoYoScore >= 19) strengths.push(`Yo-Yo score of ${combine.yoYoScore} — top-tier endurance`);
+      else if (combine.yoYoScore < 16) improvements.push(`Yo-Yo score of ${combine.yoYoScore} is below standard — add interval running`);
+      if (combine.bowlingSpeed && combine.bowlingSpeed >= 140) strengths.push(`Bowling at ${combine.bowlingSpeed} km/h — express pace`);
+      if (combine.fieldingEfficiency < 70) improvements.push(`Fielding efficiency at ${combine.fieldingEfficiency}% — drill ground fielding daily`);
     }
-    if (insights.length === 0) insights.push("Keep logging sessions to unlock AI insights");
-    return insights;
-  }, [matches, form, cpi, combine]);
+    if (bowlingEconomy > 8 && player.role !== "Batsman") {
+      improvements.push(`Economy rate of ${bowlingEconomy} is high — focus on line & length consistency`);
+    } else if (bowlingEconomy > 0 && bowlingEconomy <= 5) {
+      strengths.push(`Excellent economy rate of ${bowlingEconomy} — very economical bowling`);
+    }
+    if (strengths.length === 0 && improvements.length === 0) {
+      strengths.push("Keep logging sessions to unlock AI insights");
+    }
+    return { strengths, improvements };
+  }, [matches, form, cpi, combine, player.role, bowlingEconomy]);
 
   const bowlingEconomy = useMemo(() => {
     const withOvers = matches.filter(m => m.oversBowled > 0);
@@ -348,6 +372,40 @@ export default function StatsPage() {
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
           <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wide mb-4">CPI Breakdown</h3>
           {radarData.some(d => d.value > 0) && <StatsRadarChart data={radarData} />}
+          <button
+            onClick={() => setShowCpiFormula(v => !v)}
+            className="w-full mt-3 text-xs text-purple-400 hover:text-purple-300 flex items-center justify-center gap-1 transition-colors"
+          >
+            <svg className={`w-3 h-3 transition-transform ${showCpiFormula ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+            {showCpiFormula ? "Hide" : "How is CPI calculated?"}
+          </button>
+          {showCpiFormula && (
+            <div className="mt-3 p-4 bg-slate-900/60 rounded-xl border border-purple-500/20 text-xs space-y-2">
+              <p className="text-purple-300 font-semibold">CPI = Match Performance (40%) + Athletic Metrics (30%) + Form Index (20%) + Consistency (10%)</p>
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <div className="p-2 bg-slate-800/50 rounded-lg">
+                  <p className="text-slate-400">Match Performance</p>
+                  <p className="text-white font-semibold">{cpi.matchPerformance} <span className="text-slate-500 font-normal">x 0.4 = {Math.round(cpi.matchPerformance * 0.4)}</span></p>
+                </div>
+                <div className="p-2 bg-slate-800/50 rounded-lg">
+                  <p className="text-slate-400">Athletic Metrics</p>
+                  <p className="text-white font-semibold">{cpi.athleticMetrics} <span className="text-slate-500 font-normal">x 0.3 = {Math.round(cpi.athleticMetrics * 0.3)}</span></p>
+                </div>
+                <div className="p-2 bg-slate-800/50 rounded-lg">
+                  <p className="text-slate-400">Form Index</p>
+                  <p className="text-white font-semibold">{cpi.formIndex} <span className="text-slate-500 font-normal">x 0.2 = {Math.round(cpi.formIndex * 0.2)}</span></p>
+                </div>
+                <div className="p-2 bg-slate-800/50 rounded-lg">
+                  <p className="text-slate-400">Consistency</p>
+                  <p className="text-white font-semibold">{cpi.consistency} <span className="text-slate-500 font-normal">x 0.1 = {Math.round(cpi.consistency * 0.1)}</span></p>
+                </div>
+              </div>
+              <p className="text-slate-400 pt-1 border-t border-slate-700/50">Total: {Math.round(cpi.matchPerformance * 0.4)} + {Math.round(cpi.athleticMetrics * 0.3)} + {Math.round(cpi.formIndex * 0.2)} + {Math.round(cpi.consistency * 0.1)} = <span className="text-purple-400 font-semibold">{cpi.overall}</span></p>
+              <p className="text-[10px] text-slate-500 italic">Based on last 5 matches + fitness data</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -386,16 +444,36 @@ export default function StatsPage() {
             <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wide">AI Insights</h3>
           </div>
           <div className="space-y-3">
-            {aiInsights.map((insight, i) => (
-              <div key={i} className="flex items-start gap-3 p-3 bg-slate-900/40 rounded-xl border border-slate-700/30">
-                <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center mt-0.5">
-                  <svg className="w-3 h-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </div>
-                <p className="text-sm text-slate-300 leading-relaxed">{insight}</p>
-              </div>
-            ))}
+            {aiInsights.strengths.length > 0 && (
+              <>
+                <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wide">Strengths</p>
+                {aiInsights.strengths.map((insight, i) => (
+                  <div key={`s-${i}`} className="flex items-start gap-3 p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-emerald-300 leading-relaxed">{insight}</p>
+                  </div>
+                ))}
+              </>
+            )}
+            {aiInsights.improvements.length > 0 && (
+              <>
+                <p className="text-xs font-semibold text-amber-400 uppercase tracking-wide mt-2">Areas to Improve</p>
+                {aiInsights.improvements.map((insight, i) => (
+                  <div key={`i-${i}`} className="flex items-start gap-3 p-3 bg-amber-500/5 rounded-xl border border-amber-500/20">
+                    <div className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-amber-300 leading-relaxed">{insight}</p>
+                  </div>
+                ))}
+              </>
+            )}
           </div>
           <div className="mt-4 pt-3 border-t border-slate-700/30">
             <p className="text-[10px] text-slate-500 italic">Insights generated from last {matches.length} match performances + combine data</p>
