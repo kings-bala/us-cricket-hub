@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { players } from "@/data/mock";
 
 type Product = {
   id: string;
@@ -27,9 +29,35 @@ const productsData: Product[] = [
 
 const categories: Product["category"][] = ["Bats", "Balls", "Gloves", "Pads", "Helmets", "Bags", "Kits", "Accessories"];
 
+const roleRecommendations: Record<string, Product["category"][]> = {
+  Batsman: ["Bats", "Gloves", "Pads"],
+  Bowler: ["Balls", "Accessories"],
+  "All-Rounder": ["Bats", "Balls", "Gloves", "Accessories"],
+  "Wicket Keeper": ["Gloves", "Pads", "Helmets"],
+};
+
 export default function StorePage() {
+  const { user } = useAuth();
+  const playerRole = players.find(p => p.name.toLowerCase().includes((user?.name || "").split(" ")[0]?.toLowerCase()))?.role || "All-Rounder";
+  const recCats = roleRecommendations[playerRole] || ["Bats", "Balls", "Gloves"];
+  const recommended = productsData.filter(p => recCats.includes(p.category)).slice(0, 4);
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<Product["category"] | "All">("All");
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardStep, setWizardStep] = useState(0);
+  const [wizardAnswers, setWizardAnswers] = useState<string[]>([]);
+  const wizardQuestions = [
+    { q: "What's your primary role?", opts: ["Batsman", "Bowler", "All-Rounder", "Wicket Keeper"] },
+    { q: "What's your level?", opts: ["Beginner", "Intermediate", "Advanced", "Professional"] },
+    { q: "What's your budget?", opts: ["Under $50", "$50-$150", "$150-$300", "$300+"] },
+  ];
+  const wizardResults = useMemo(() => {
+    if (wizardAnswers.length < 3) return [];
+    const roleCats = roleRecommendations[wizardAnswers[0]] || ["Bats", "Balls"];
+    const budgetMax = wizardAnswers[2] === "Under $50" ? 50 : wizardAnswers[2] === "$50-$150" ? 150 : wizardAnswers[2] === "$150-$300" ? 300 : 9999;
+    const budgetMin = wizardAnswers[2] === "$300+" ? 300 : 0;
+    return productsData.filter(p => roleCats.includes(p.category) && p.price >= budgetMin && p.price <= budgetMax);
+  }, [wizardAnswers]);
 
   const products = useMemo(() => {
     let list = productsData;
@@ -47,6 +75,62 @@ export default function StorePage() {
           <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">Cricket bats, balls & equipment</span>
         </div>
         <p className="text-slate-400">Browse gear for every level from street to elite.</p>
+      </div>
+
+      <div className="bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl p-5 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Recommended for You</h2>
+            <p className="text-xs text-slate-500">Based on your role: {playerRole}</p>
+          </div>
+          <button onClick={() => { setWizardOpen(!wizardOpen); setWizardStep(0); setWizardAnswers([]); }} className="text-xs text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-lg transition-colors">
+            {wizardOpen ? "Close" : "Not sure what to get?"}
+          </button>
+        </div>
+        {wizardOpen ? (
+          <div className="bg-slate-900/50 rounded-xl p-4">
+            {wizardStep < 3 ? (
+              <div>
+                <p className="text-sm text-white font-medium mb-3">{wizardQuestions[wizardStep].q}</p>
+                <div className="flex flex-wrap gap-2">
+                  {wizardQuestions[wizardStep].opts.map(opt => (
+                    <button key={opt} onClick={() => { setWizardAnswers([...wizardAnswers.slice(0, wizardStep), opt]); setWizardStep(wizardStep + 1); }} className="text-xs bg-slate-700/50 hover:bg-emerald-500/20 text-slate-300 hover:text-emerald-400 px-3 py-1.5 rounded-lg border border-slate-600/50 hover:border-emerald-500/30 transition-all">{opt}</button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-emerald-400 font-medium mb-2">We recommend:</p>
+                {wizardResults.length > 0 ? (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {wizardResults.map(p => (
+                      <div key={p.id} className="bg-slate-800/80 rounded-lg p-3 border border-emerald-500/20">
+                        <p className="text-xs text-white font-medium truncate">{p.name}</p>
+                        <p className="text-xs text-emerald-400 font-semibold">${p.price}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">No exact matches — try adjusting your budget.</p>
+                )}
+                <button onClick={() => { setWizardStep(0); setWizardAnswers([]); }} className="mt-2 text-xs text-slate-400 hover:text-white">Start Over</button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {recommended.map(p => (
+              <div key={p.id} className="bg-slate-800/50 rounded-xl p-3 border border-emerald-500/20 hover:border-emerald-500/40 transition-all">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">Coach Pick</span>
+                </div>
+                <p className="text-xs text-white font-medium truncate">{p.name}</p>
+                <p className="text-[10px] text-slate-500">{p.brand}</p>
+                <p className="text-sm text-emerald-400 font-semibold mt-1">${p.price}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
