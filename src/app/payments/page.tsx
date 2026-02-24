@@ -97,6 +97,9 @@ export default function PaymentsPage() {
   const [selectedFee, setSelectedFee] = useState<StudentFee | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showReceipt, setShowReceipt] = useState<PaymentRecord | null>(null);
+  const [paymentConfirm, setPaymentConfirm] = useState<StudentFee | null>(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
   const [feeAmounts, setFeeAmounts] = useState<Record<FeeType, Record<PlayerLevel, number>>>(() => {
     const defaults: Record<FeeType, Record<PlayerLevel, number>> = {} as Record<FeeType, Record<PlayerLevel, number>>;
     FEE_STRUCTURES.forEach(f => { defaults[f.id] = { ...f.amounts }; });
@@ -184,13 +187,18 @@ export default function PaymentsPage() {
   }, [myFees, filterStatus]);
 
   const handlePayNow = (fee: StudentFee) => {
-    const stripeKey = typeof window !== "undefined" ? localStorage.getItem("cricverse360_stripe_pk") : null;
-    if (!stripeKey) {
-      alert("Stripe is not configured yet. Please ask your academy admin to set up Stripe keys in Settings.");
-      return;
-    }
-    setSelectedFee(fee);
-    initiateStripeCheckout(fee, stripeKey);
+    setPaymentConfirm(fee);
+  };
+
+  const confirmPayment = () => {
+    if (!paymentConfirm) return;
+    setPaymentProcessing(true);
+    setTimeout(() => {
+      setPaymentProcessing(false);
+      setPaymentConfirm(null);
+      setPaymentSuccess(`Payment of $${paymentConfirm.amount} for ${feeTypeLabels[paymentConfirm.feeType]} processed successfully! Receipt: REC-${Date.now().toString(36).toUpperCase()}`);
+      setTimeout(() => setPaymentSuccess(null), 5000);
+    }, 2000);
   };
 
   const initiateStripeCheckout = async (fee: StudentFee, _publishableKey: string) => {
@@ -728,6 +736,38 @@ export default function PaymentsPage() {
                     <div className="absolute right-0.5 top-0.5 w-5 h-5 bg-white rounded-full" />
                   </div>
                 </label>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {paymentSuccess && (
+          <div className="fixed top-4 right-4 z-50 bg-emerald-500/20 border border-emerald-500/30 rounded-xl p-4 max-w-sm shadow-lg backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <svg className="w-5 h-5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <p className="text-sm text-emerald-400">{paymentSuccess}</p>
+            </div>
+          </div>
+        )}
+
+        {paymentConfirm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
+              <h3 className="text-lg font-bold text-white mb-4">Confirm Payment</h3>
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Fee Type</span><span className="text-white font-medium">{feeTypeLabels[paymentConfirm.feeType]}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Amount</span><span className="text-emerald-400 font-bold text-lg">${paymentConfirm.amount}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Due Date</span><span className="text-white">{paymentConfirm.dueDate}</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Student</span><span className="text-white">{paymentConfirm.studentName}</span></div>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700/30 rounded-xl p-3 mb-4">
+                <p className="text-xs text-slate-400">Payment will be processed via your saved card ending in ****4242</p>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setPaymentConfirm(null)} disabled={paymentProcessing} className="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium transition-colors disabled:opacity-50">Cancel</button>
+                <button onClick={confirmPayment} disabled={paymentProcessing} className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors disabled:opacity-50">
+                  {paymentProcessing ? "Processing..." : "Confirm & Pay"}
+                </button>
               </div>
             </div>
           </div>

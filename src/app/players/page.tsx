@@ -142,6 +142,7 @@ function PlayersContent() {
   const [sessionAiLoading, setSessionAiLoading] = useState<string | null>(null);
   const [noteAiResults, setNoteAiResults] = useState<Record<string, string>>({});
   const [noteAiLoading, setNoteAiLoading] = useState<string | null>(null);
+  const [expandedFeed, setExpandedFeed] = useState<string | null>(null);
   const [notesView, setNotesView] = useState<"my" | "coach">("my");
   const [coachInboxNotes] = useState<{ id: string; text: string; category: "technique" | "fitness" | "mental" | "general"; date: string; coachName: string; coachId: string }[]>([
     { id: "cn1", text: "Arjun shows excellent footwork against pace but needs to work on playing spin. Recommend 30 min daily spin drills.", category: "technique", date: "2026-02-10", coachName: "Suresh Menon", coachId: "c1" },
@@ -277,6 +278,7 @@ function PlayersContent() {
           stats: {
             matches: Number(c.totalMatches) || 0,
             innings: Number(c.totalMatches) || 0,
+            notOuts: 0,
             runs: Number(c.totalRuns) || 0,
             battingAverage: Number(c.battingAverage) || 0,
             strikeRate: Number(c.strikeRate) || 0,
@@ -392,12 +394,13 @@ function PlayersContent() {
                   <div className="text-3xl font-black text-emerald-400">{player.stats.runs.toLocaleString()}</div>
                   <div className="text-[9px] uppercase tracking-wider text-slate-500">Runs</div>
                 </div>
-                <div className="flex-1 grid grid-cols-4 gap-1">
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.battingAverage}</div><div className="text-[9px] text-slate-500">Avg</div></div>
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.strikeRate}</div><div className="text-[9px] text-slate-500">SR</div></div>
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.fifties}</div><div className="text-[9px] text-slate-500">50s</div></div>
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
-                </div>
+                  <div className="flex-1 grid grid-cols-5 gap-1">
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.notOuts}</div><div className="text-[9px] text-slate-500">NO</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.battingAverage}</div><div className="text-[9px] text-slate-500">Avg</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.strikeRate}</div><div className="text-[9px] text-slate-500">SR</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.fifties}</div><div className="text-[9px] text-slate-500">50s</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
+                  </div>
               </div>
               {profileBattingChart.length > 0 && <ProfileBattingChart data={profileBattingChart} />}
             </div>
@@ -489,7 +492,7 @@ function PlayersContent() {
               {playerFeed.map((item) => {
                 const config = feedTypeConfig[item.type];
                 return (
-                  <Link key={item.id} href={`/players/${item.playerId}`}>
+                  <div key={item.id} className="cursor-pointer" onClick={() => setExpandedFeed(expandedFeed === item.id ? null : item.id)}>
                     <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
                       <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
                         {config.icon}
@@ -500,7 +503,10 @@ function PlayersContent() {
                       </div>
                       <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
                     </div>
-                  </Link>
+                    {expandedFeed === item.id && (
+                      <div className="ml-11 mr-2 mt-1 mb-2 text-xs text-slate-400 bg-slate-800/50 border border-slate-700/30 rounded-lg px-3 py-2">{item.description}</div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -526,27 +532,27 @@ function PlayersContent() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <StatCard label="Matches" value={player.stats.matches} color="emerald" />
                 <StatCard label="Innings" value={player.stats.innings} color="blue" />
+                <StatCard label="Not Outs" value={player.stats.notOuts} color="cyan" />
                 <StatCard label="Runs" value={player.stats.runs} color="purple" />
-                <StatCard label="Average" value={player.stats.battingAverage} color="amber" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Average" value={player.stats.battingAverage} color="amber" />
                 <StatCard label="Strike Rate" value={player.stats.strikeRate} color="emerald" />
                 <StatCard label="50s / 100s" value={`${player.stats.fifties} / ${player.stats.hundreds}`} color="blue" />
                 <StatCard label="Wickets" value={player.stats.wickets} color="purple" />
-                <StatCard label="Bowl Avg" value={player.stats.bowlingAverage} color="amber" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Bowl Avg" value={player.stats.bowlingAverage} color="amber" />
                 <StatCard label="Economy" value={player.stats.economy} color="emerald" />
                 <StatCard label="Best Bowling" value={player.stats.bestBowling} color="blue" />
                 <StatCard label="Catches" value={player.stats.catches} color="purple" />
-                <StatCard label="Stumpings" value={player.stats.stumpings} color="amber" />
               </div>
             </div>
 
             {playerCPI && (
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">CPI Metrics</h3>
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide" title="Cricket Performance Index: 40% Match Performance + 30% Athletic Metrics + 20% Form Index + 10% Consistency">CPI Metrics <span className="inline-block w-3.5 h-3.5 text-[10px] text-slate-500 border border-slate-600 rounded-full text-center leading-[13px] cursor-help">?</span></h3>
                   <div className="flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${formStatus === "Red Hot" ? "bg-red-500/20 text-red-400 border-red-500/30" : formStatus === "In Form" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : formStatus === "Steady" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-blue-500/20 text-blue-400 border-blue-500/30"}`}>{formStatus}</span>
                     <span className="text-xs text-slate-500">Rank #{playerCPI.cpiScore.nationalRank}</span>

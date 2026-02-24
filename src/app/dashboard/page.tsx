@@ -64,6 +64,7 @@ function resolvePlayer(email: string | undefined): Player {
         stats: {
           matches: Number(c.totalMatches) || 0,
           innings: Number(c.totalMatches) || 0,
+          notOuts: 0,
           runs: Number(c.totalRuns) || 0,
           battingAverage: Number(c.battingAverage) || 0,
           strikeRate: Number(c.strikeRate) || 0,
@@ -101,6 +102,7 @@ function PlayerDashboard() {
     try { return JSON.parse(localStorage.getItem("cv360_event_reminders") || "{}"); } catch { return {}; }
   });
   const [reminderToast, setReminderToast] = useState<string | null>(null);
+  const [expandedFeed, setExpandedFeed] = useState<string | null>(null);
   const toggleReminder = (eventId: string, eventName: string) => {
     if (!reminders[eventId] && typeof Notification !== "undefined" && Notification.permission === "default") {
       Notification.requestPermission();
@@ -204,7 +206,7 @@ function PlayerDashboard() {
           {recentFeed.map((item) => {
             const config = feedTypeConfig[item.type];
             return (
-              <Link key={item.id} href={`/players/${item.playerId}`}>
+              <div key={item.id} className="cursor-pointer" onClick={() => setExpandedFeed(expandedFeed === item.id ? null : item.id)}>
                 <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
                   <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
                     {config.icon}
@@ -215,7 +217,10 @@ function PlayerDashboard() {
                   </div>
                   <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
                 </div>
-              </Link>
+                {expandedFeed === item.id && (
+                  <div className="ml-11 mr-2 mt-1 mb-2 text-xs text-slate-400 bg-slate-800/50 border border-slate-700/30 rounded-lg px-3 py-2">{item.description}</div>
+                )}
+              </div>
             );
           })}
         </div>

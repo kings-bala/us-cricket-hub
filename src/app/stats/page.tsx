@@ -94,15 +94,15 @@ function FormBadge({ status }: { status: string }) {
   );
 }
 
-function ProgressBar({ label, value, max, unit }: { label: string; value: number; max: number; unit?: string }) {
+function ProgressBar({ label, value, max, unit, title }: { label: string; value: number; max: number; unit?: string; title?: string }) {
   const pct = Math.min((value / max) * 100, 100);
   const color = pct >= 75 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
   const textColor = pct >= 75 ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-red-400";
 
   return (
-    <div>
+    <div title={title}>
       <div className="flex justify-between mb-1.5">
-        <span className="text-xs text-slate-400">{label}</span>
+        <span className="text-xs text-slate-400">{label}{title && <span className="inline-block ml-1 w-3 h-3 text-[9px] text-slate-600 border border-slate-700 rounded-full text-center leading-[11px] cursor-help">?</span>}</span>
         <span className={`text-xs font-semibold ${textColor}`}>{value}{unit}</span>
       </div>
       <div className="h-2 bg-slate-700/50 rounded-full overflow-hidden">
@@ -306,7 +306,8 @@ export default function StatsPage() {
           </div>
           <div className="flex items-start gap-6 mb-4">
             <HeroNumber value={player.stats.runs.toLocaleString()} label="Career Runs" color="emerald" />
-            <div className="flex-1 grid grid-cols-4 gap-2">
+            <div className="flex-1 grid grid-cols-5 gap-2">
+              <MiniStat label="NO" value={player.stats.notOuts} />
               <MiniStat label="Avg" value={player.stats.battingAverage} />
               <MiniStat label="SR" value={player.stats.strikeRate} />
               <MiniStat label="50s" value={player.stats.fifties} />
@@ -447,7 +448,7 @@ export default function StatsPage() {
         </div>
 
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
-          <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wide mb-4">CPI Breakdown</h3>
+          <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wide mb-4" title="Cricket Performance Index: 40% Match Performance + 30% Athletic Metrics + 20% Form Index + 10% Consistency">CPI Breakdown <span className="inline-block w-3.5 h-3.5 text-[10px] text-slate-500 border border-slate-600 rounded-full text-center leading-[13px] cursor-help">?</span></h3>
           {radarData.some(d => d.value > 0) && <StatsRadarChart data={radarData} />}
           <button
             onClick={() => setShowCpiFormula(v => !v)}
@@ -490,20 +491,20 @@ export default function StatsPage() {
         {combine && (
           <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wide">Combine Assessment</h3>
+              <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wide" title="Combine Assessment (CE): Standardized athletic evaluation measuring speed, agility, power, and cricket-specific skills">Combine Assessment <span className="inline-block w-3.5 h-3.5 text-[10px] text-slate-500 border border-slate-600 rounded-full text-center leading-[13px] cursor-help">?</span></h3>
               {combine.verifiedAthlete && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Verified</span>
               )}
             </div>
             <div className="space-y-3">
-              <ProgressBar label="Yo-Yo Test" value={combine.yoYoScore} max={22} />
-              <ProgressBar label="Sprint 20m" value={Math.max(0, 4.5 - combine.sprint20m)} max={1.5} unit="s" />
+              <ProgressBar label="Yo-Yo Test" value={combine.yoYoScore} max={22} title="Yo-Yo Intermittent Recovery Test: Measures aerobic endurance. Elite level: 19+" />
+              <ProgressBar label="Sprint 20m" value={Math.max(0, 4.5 - combine.sprint20m)} max={1.5} unit="s" title="20-meter sprint time: Measures explosive speed. Elite level: under 3.0s" />
               {combine.bowlingSpeed && <ProgressBar label="Bowling Speed" value={combine.bowlingSpeed} max={160} unit=" km/h" />}
               {combine.batSpeed && <ProgressBar label="Bat Speed" value={combine.batSpeed} max={140} unit=" km/h" />}
-              <ProgressBar label="Vertical Jump" value={combine.verticalJump} max={80} unit=" cm" />
-              <ProgressBar label="Fielding Efficiency" value={combine.fieldingEfficiency} max={100} unit="%" />
+              <ProgressBar label="Vertical Jump" value={combine.verticalJump} max={80} unit=" cm" title="Standing vertical jump height: Measures lower body explosive power. Elite: 60+ cm" />
+              <ProgressBar label="Fielding Efficiency" value={combine.fieldingEfficiency} max={100} unit="%" title="Fielding drills completion rate: Ground fielding, catching, and relay accuracy. Elite: 80%+" />
               <ProgressBar label="Throw Accuracy" value={combine.throwAccuracy} max={100} unit="%" />
-              <ProgressBar label="Reaction Time" value={Math.round(Math.max(0, 0.5 - combine.reactionTime) * 100) / 100} max={0.3} unit="s" />
+              <ProgressBar label="Reaction Time" value={Math.round(Math.max(0, 0.5 - combine.reactionTime) * 100) / 100} max={0.3} unit="s" title="Visual reaction time test: Measures reflexes for batting and fielding. Elite: under 0.25s" />
             </div>
             <div className="mt-3 text-[10px] text-slate-500">
               Assessed: {combine.assessmentDate} &middot; Next: {combine.nextAssessmentDate}
