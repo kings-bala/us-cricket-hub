@@ -138,6 +138,10 @@ function PlayersContent() {
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [noteFilter, setNoteFilter] = useState<string | null>(null);
+  const [sessionAiResults, setSessionAiResults] = useState<Record<string, string>>({});
+  const [sessionAiLoading, setSessionAiLoading] = useState<string | null>(null);
+  const [noteAiResults, setNoteAiResults] = useState<Record<string, string>>({});
+  const [noteAiLoading, setNoteAiLoading] = useState<string | null>(null);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -1250,8 +1254,35 @@ function PlayersContent() {
                           <p className="text-xs text-slate-500 mt-0.5">{new Date(log.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                           {log.notes && <p className="text-xs text-slate-400 mt-1">{log.notes}</p>}
                         </div>
-                        <button onClick={() => deleteSessionLog(log.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                        <div className="flex flex-col gap-1 items-end shrink-0">
+                          <button onClick={() => deleteSessionLog(log.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                          {log.notes && (
+                            <button
+                              disabled={sessionAiLoading === log.id}
+                              onClick={async () => {
+                                const cached = localStorage.getItem(`cv360_session_ai_${log.id}`);
+                                if (cached) { setSessionAiResults(p => ({ ...p, [log.id]: cached })); return; }
+                                setSessionAiLoading(log.id);
+                                try {
+                                  const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this training session and give improvement tips: Type: ${log.type}, Duration: ${log.duration}, Notes: ${log.notes}` }) });
+                                  const data = await res.json();
+                                  if (data.reply) { setSessionAiResults(p => ({ ...p, [log.id]: data.reply })); try { localStorage.setItem(`cv360_session_ai_${log.id}`, data.reply); } catch {} }
+                                } catch {} finally { setSessionAiLoading(null); }
+                              }}
+                              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                            >
+                              {sessionAiLoading === log.id ? "Analyzing..." : sessionAiResults[log.id] ? "Re-analyze" : "AI Analyze"}
+                            </button>
+                          )}
+                        </div>
                       </div>
+                      {sessionAiResults[log.id] && (
+                        <div className="ml-13 mt-2 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                          <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Analysis</p>
+                          <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{sessionAiResults[log.id]}</p>
+                        </div>
+                      )}
+                    </div>
                     ))}
                   </div>
                 ) : (
@@ -1524,9 +1555,33 @@ function PlayersContent() {
                                 {note.location && <span className="text-xs text-cyan-400/70">@ {note.location}</span>}
                                 {note.analysisId === "manual" && <span className="text-xs text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Manual</span>}
                               </div>
-                              <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors shrink-0">Delete</button>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  disabled={noteAiLoading === note.id}
+                                  onClick={async () => {
+                                    const cached = localStorage.getItem(`cv360_note_ai_${note.id}`);
+                                    if (cached) { setNoteAiResults(p => ({ ...p, [note.id]: cached })); return; }
+                                    setNoteAiLoading(note.id);
+                                    try {
+                                      const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this coaching note and suggest actionable drills: Category: ${note.category}, Note: ${note.text}` }) });
+                                      const data = await res.json();
+                                      if (data.reply) { setNoteAiResults(p => ({ ...p, [note.id]: data.reply })); try { localStorage.setItem(`cv360_note_ai_${note.id}`, data.reply); } catch {} }
+                                    } catch {} finally { setNoteAiLoading(null); }
+                                  }}
+                                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                                >
+                                  {noteAiLoading === note.id ? "Analyzing..." : noteAiResults[note.id] ? "Re-analyze" : "AI Analyze"}
+                                </button>
+                                <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                              </div>
                             </div>
                             <p className="text-sm text-slate-300">{note.text}</p>
+                            {noteAiResults[note.id] && (
+                              <div className="mt-3 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                                <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Drill Suggestions</p>
+                                <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{noteAiResults[note.id]}</p>
+                              </div>
+                            )}
                           </div>
                         ))
                       )}
