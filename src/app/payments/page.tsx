@@ -104,6 +104,18 @@ export default function PaymentsPage() {
   });
   const [feeSaveMsg, setFeeSaveMsg] = useState("");
   const [reminderMsg, setReminderMsg] = useState("");
+  const [autoPay, setAutoPay] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("cv360_auto_pay") === "true";
+  });
+  const [autoPayToast, setAutoPayToast] = useState("");
+  const toggleAutoPay = () => {
+    const next = !autoPay;
+    setAutoPay(next);
+    try { localStorage.setItem("cv360_auto_pay", String(next)); } catch {}
+    setAutoPayToast(next ? "Auto-pay enabled — your card will be charged on the due date" : "Auto-pay disabled");
+    setTimeout(() => setAutoPayToast(""), 3000);
+  };
 
   const flashReminderMsg = useCallback((msg: string) => {
     setReminderMsg(msg);
@@ -282,6 +294,42 @@ export default function PaymentsPage() {
 
         {activeTab === "overview" && (
           <div className="space-y-6">
+            {overdueCount > 0 && !isAdmin && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
+                <svg className="w-5 h-5 text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-red-400">You have {overdueCount} overdue payment{overdueCount > 1 ? "s" : ""}</p>
+                  <p className="text-xs text-slate-400">Please settle outstanding fees to avoid service interruption.</p>
+                </div>
+              </div>
+            )}
+
+            {!isAdmin && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {autoPay ? (
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center">
+                      <svg className="w-4 h-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-white">Auto-Pay {autoPay ? <span className="text-emerald-400 text-xs ml-1 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">Active</span> : null}</p>
+                    <p className="text-xs text-slate-400">{autoPay ? "Your card will be charged automatically on due dates" : "Enable to never miss a payment"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {autoPayToast && <span className="text-xs text-emerald-400">{autoPayToast}</span>}
+                  <button onClick={toggleAutoPay} className={`relative w-11 h-6 rounded-full transition-colors ${autoPay ? "bg-emerald-500" : "bg-slate-700"}`}>
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${autoPay ? "translate-x-5" : "translate-x-0"}`} />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
