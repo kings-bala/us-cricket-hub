@@ -142,6 +142,12 @@ function PlayersContent() {
   const [sessionAiLoading, setSessionAiLoading] = useState<string | null>(null);
   const [noteAiResults, setNoteAiResults] = useState<Record<string, string>>({});
   const [noteAiLoading, setNoteAiLoading] = useState<string | null>(null);
+  const [notesView, setNotesView] = useState<"my" | "coach">("my");
+  const [coachInboxNotes] = useState<{ id: string; text: string; category: "technique" | "fitness" | "mental" | "general"; date: string; coachName: string; coachId: string }[]>([
+    { id: "cn1", text: "Arjun shows excellent footwork against pace but needs to work on playing spin. Recommend 30 min daily spin drills.", category: "technique", date: "2026-02-10", coachName: "Suresh Menon", coachId: "c1" },
+    { id: "cn2", text: "Core strength needs improvement. Add planks and medicine ball exercises to weekly routine.", category: "fitness", date: "2026-02-08", coachName: "Suresh Menon", coachId: "c1" },
+    { id: "cn3", text: "Good temperament under pressure but tends to lose concentration after reaching 30+. Work on mental focus drills.", category: "mental", date: "2026-02-05", coachName: "James Wright", coachId: "c3" },
+  ]);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -1473,6 +1479,58 @@ function PlayersContent() {
                       <button onClick={exportCoachNotes} disabled={coachNotes.length === 0} className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${coachNotes.length > 0 ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30" : "bg-slate-700 text-slate-500 cursor-not-allowed border border-slate-700"}`}>Export</button>
                     </div>
                   </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setNotesView("my")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${notesView === "my" ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white"}`}>My Notes ({coachNotes.length})</button>
+                    <button onClick={() => setNotesView("coach")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${notesView === "coach" ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white"}`}>
+                      From Coach ({coachInboxNotes.length})
+                      {coachInboxNotes.length > 0 && notesView !== "coach" && <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />}
+                    </button>
+                  </div>
+                  {notesView === "coach" && (
+                    <div className="space-y-3">
+                      {coachInboxNotes.length === 0 ? (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                          <p className="text-xs text-slate-500">No notes from your coach yet.</p>
+                        </div>
+                      ) : (
+                        coachInboxNotes.map((cn) => (
+                          <div key={cn.id} className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px] font-bold">{cn.coachName.split(" ").map(n => n[0]).join("")}</div>
+                              <span className="text-xs text-indigo-400 font-medium">{cn.coachName}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[cn.category].bg} ${noteCategoryColors[cn.category].text}`}>{cn.category}</span>
+                              <span className="text-xs text-slate-600 ml-auto">{cn.date}</span>
+                              <span className="text-[9px] text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Read-only</span>
+                            </div>
+                            <p className="text-sm text-slate-300">{cn.text}</p>
+                            {noteAiResults[cn.id] && (
+                              <div className="mt-3 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                                <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Drill Suggestions</p>
+                                <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{noteAiResults[cn.id]}</p>
+                              </div>
+                            )}
+                            <button
+                              disabled={noteAiLoading === cn.id}
+                              onClick={async () => {
+                                const cached = localStorage.getItem(`cv360_note_ai_${cn.id}`);
+                                if (cached) { setNoteAiResults(p => ({ ...p, [cn.id]: cached })); return; }
+                                setNoteAiLoading(cn.id);
+                                try {
+                                  const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this coaching note and suggest actionable drills: Category: ${cn.category}, Note: ${cn.text}` }) });
+                                  const data = await res.json();
+                                  if (data.reply) { setNoteAiResults(p => ({ ...p, [cn.id]: data.reply })); try { localStorage.setItem(`cv360_note_ai_${cn.id}`, data.reply); } catch {} }
+                                } catch {} finally { setNoteAiLoading(null); }
+                              }}
+                              className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                            >
+                              {noteAiLoading === cn.id ? "Analyzing..." : noteAiResults[cn.id] ? "Re-analyze" : "AI Analyze"}
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                  {notesView === "my" && (<>
                   <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
                     <div className="flex gap-2 mb-3">
@@ -1588,6 +1646,7 @@ function PlayersContent() {
                     </div>
                   </div>
                 </div>
+                </>)}
               );
             })()}
           </div>
