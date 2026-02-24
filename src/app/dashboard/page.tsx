@@ -96,6 +96,21 @@ function PlayerDashboard() {
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [reminders, setReminders] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return JSON.parse(localStorage.getItem("cv360_event_reminders") || "{}"); } catch { return {}; }
+  });
+  const [reminderToast, setReminderToast] = useState<string | null>(null);
+  const toggleReminder = (eventId: string, eventName: string) => {
+    if (!reminders[eventId] && typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    const next = { ...reminders, [eventId]: !reminders[eventId] };
+    setReminders(next);
+    try { localStorage.setItem("cv360_event_reminders", JSON.stringify(next)); } catch {}
+    setReminderToast(next[eventId] ? `Reminder set for ${eventName}` : `Reminder removed for ${eventName}`);
+    setTimeout(() => setReminderToast(null), 2500);
+  };
 
   const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -159,11 +174,21 @@ function PlayerDashboard() {
           <div className="space-y-2">
             {tournaments.filter((t) => t.status === "upcoming").slice(0, 3).map((t) => (
               <div key={t.id} className="flex items-center justify-between text-sm">
-                <span className="text-slate-300">{t.name}</span>
-                <span className="text-xs text-slate-500">{t.startDate}</span>
+                <span className="text-slate-300 flex-1 truncate">{t.name}</span>
+                <span className="text-xs text-slate-500 mx-2 shrink-0">{t.startDate}</span>
+                <button onClick={() => toggleReminder(t.id, t.name)} className="shrink-0 p-1 rounded-lg hover:bg-slate-700/50 transition-colors" title={reminders[t.id] ? "Remove reminder" : "Remind me"}>
+                  {reminders[t.id] ? (
+                    <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 002 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-slate-600 hover:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                  )}
+                </button>
               </div>
             ))}
           </div>
+          {reminderToast && (
+            <div className="mt-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5 animate-pulse">{reminderToast}</div>
+          )}
         </div>
       </div>
 
