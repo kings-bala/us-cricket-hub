@@ -169,6 +169,12 @@ export default function StatsPage() {
     { axis: "Consistency", value: cpi.consistency },
   ], [cpi]);
 
+  const bowlingEconomy = useMemo(() => {
+    const withOvers = matches.filter(m => m.oversBowled > 0);
+    if (!withOvers.length) return 0;
+    return Math.round(withOvers.reduce((s, m) => s + m.runsConceded / m.oversBowled, 0) / withOvers.length * 10) / 10;
+  }, [matches]);
+
   const aiInsights = useMemo(() => {
     const strengths: string[] = [];
     const improvements: string[] = [];
@@ -223,12 +229,6 @@ export default function StatsPage() {
     }
     return { strengths, improvements };
   }, [matches, form, cpi, combine, player.role, bowlingEconomy]);
-
-  const bowlingEconomy = useMemo(() => {
-    const withOvers = matches.filter(m => m.oversBowled > 0);
-    if (!withOvers.length) return 0;
-    return Math.round(withOvers.reduce((s, m) => s + m.runsConceded / m.oversBowled, 0) / withOvers.length * 10) / 10;
-  }, [matches]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -398,7 +398,7 @@ export default function StatsPage() {
                   <div className="flex items-center gap-4">
                     <div className="text-right">
                       <p className="text-xs text-slate-300">{m.runsScored}/{m.ballsFaced}b &middot; SR {sr}</p>
-                      <p className="text-[10px] text-slate-500">{m.fours}x4 {m.sixes}x6 &middot; {m.wicketsTaken}w</p>
+                      <p className="text-[10px] text-slate-500">{m.wicketsTaken}w &middot; {m.catches}ct</p>
                     </div>
                     <svg className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -408,7 +408,7 @@ export default function StatsPage() {
                 {isOpen && (
                   <div className="mt-1 p-4 bg-slate-900/60 rounded-xl border border-cyan-500/20">
                     <div className="flex flex-wrap gap-4 mb-3 text-xs">
-                      <span className="text-slate-400">Dismissal: <span className="text-white">{m.howOut || "Not Out"}</span></span>
+                      <span className="text-slate-400">Wickets: <span className="text-white">{m.wicketsTaken}</span></span>
                       <span className="text-slate-400">Overs faced: <span className="text-white">{overs}</span></span>
                       {m.manOfMatch && <span className="text-amber-400 font-semibold">Man of the Match</span>}
                     </div>

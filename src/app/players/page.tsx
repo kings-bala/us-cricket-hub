@@ -1244,7 +1244,8 @@ function PlayersContent() {
                       <h3 className="text-sm font-semibold text-white">Recent Sessions ({currentLogs.length})</h3>
                     </div>
                     {currentLogs.slice(0, 20).map((log) => (
-                      <div key={log.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
+                      <div key={log.id} className="space-y-2">
+                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           log.type.includes("Bat") ? "bg-emerald-500/20" : log.type.includes("Bowl") ? "bg-blue-500/20" : log.type.includes("Field") ? "bg-amber-500/20" : log.type.includes("Match") ? "bg-red-500/20" : "bg-purple-500/20"
                         }`}>
@@ -1645,8 +1646,8 @@ function PlayersContent() {
                       )}
                     </div>
                   </div>
-                </div>
                 </>)}
+                </div>
               );
             })()}
           </div>
