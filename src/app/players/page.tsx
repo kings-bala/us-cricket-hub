@@ -124,6 +124,7 @@ function PlayersContent() {
   const [drillLevel, setDrillLevel] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
   const [sessionLogs, setSessionLogs] = useState<{ id: string; date: string; type: string; duration: string; notes: string }[]>([]);
   const [plannerDays, setPlannerDays] = useState<Record<string, string[]>>({});
+  const [weekOffset, setWeekOffset] = useState(0);
   const [progressFilter, setProgressFilter] = useState<"all" | "batting" | "bowling" | "fielding">("all");
   const [analysisHistory, setAnalysisHistory] = useState<SavedAnalysis[]>([]);
   const [coachNotes, setCoachNotes] = useState<{ id: string; analysisId: string; text: string; timestamp: string; category: "technique" | "fitness" | "mental" | "general"; date?: string; location?: string }[]>([]);
@@ -701,10 +702,30 @@ function PlayersContent() {
         };
         const lvlColors: Record<string, string> = { beginner: "text-emerald-400", intermediate: "text-amber-400", advanced: "text-red-400" };
 
-        const PLAN_KEY = "cricverse360_training_plan";
+        const getWeekKey = (offset: number) => {
+          const d = new Date();
+          d.setDate(d.getDate() + offset * 7);
+          const year = d.getFullYear();
+          const jan1 = new Date(year, 0, 1);
+          const weekNum = Math.ceil(((d.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+          return `${year}-W${String(weekNum).padStart(2, "0")}`;
+        };
+        const getWeekDateRange = (offset: number) => {
+          const now = new Date();
+          const dayOfWeek = now.getDay();
+          const monday = new Date(now);
+          monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + offset * 7);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
+        };
+        const weekKey = getWeekKey(weekOffset);
+        const PLAN_KEY = `cricverse360_training_plan_${weekKey}`;
         const LOG_KEY = "cricverse360_session_logs";
         const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
         const defaultActivities = ["Batting Nets", "Bowling Practice", "Fielding Drills", "Fitness & Conditioning", "Match Simulation", "Video Analysis", "Rest Day"];
+        const isPastWeek = weekOffset < 0;
 
         let storedPlan: Record<string, string[]> = {};
         try { const raw = localStorage.getItem(PLAN_KEY); if (raw) storedPlan = JSON.parse(raw); } catch {}
@@ -715,6 +736,7 @@ function PlayersContent() {
         const currentLogs = sessionLogs.length > 0 ? sessionLogs : storedLogs;
 
         const togglePlanActivity = (day: string, activity: string) => {
+          if (isPastWeek) return;
           const updated = { ...currentPlan };
           const dayActivities = updated[day] || [];
           if (dayActivities.includes(activity)) {
@@ -1086,6 +1108,31 @@ function PlayersContent() {
                   <h2 className="text-xl font-bold text-white mb-1">Weekly Training Plan</h2>
                   <p className="text-sm text-slate-400">Plan your weekly training schedule. Click activities to toggle them for each day.</p>
                 </div>
+                <div className="flex items-center justify-between bg-slate-800/50 border border-slate-700/50 rounded-xl p-3">
+                  <button onClick={() => { setWeekOffset(w => w - 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    Prev Week
+                  </button>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-white">{getWeekDateRange(weekOffset)}</p>
+                    <p className="text-[10px] text-slate-500">{weekOffset === 0 ? "This Week" : weekOffset > 0 ? `${weekOffset} week${weekOffset > 1 ? "s" : ""} ahead` : `${Math.abs(weekOffset)} week${Math.abs(weekOffset) > 1 ? "s" : ""} ago`}{isPastWeek ? " (archived)" : ""}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {weekOffset !== 0 && (
+                      <button onClick={() => { setWeekOffset(0); setPlannerDays({}); }} className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded-lg border border-emerald-500/30 transition-colors">This Week</button>
+                    )}
+                    <button onClick={() => { setWeekOffset(w => w + 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                      Next Week
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                </div>
+                {isPastWeek && (
+                  <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-10.364A9 9 0 1015.536 4.636" /></svg>
+                    <p className="text-xs text-slate-400">This is an archived week. Plans are read-only.</p>
+                  </div>
+                )}
                 <div className="overflow-x-auto">
                   <div className="min-w-[700px]">
                     <div className="grid grid-cols-8 gap-1 mb-2">
