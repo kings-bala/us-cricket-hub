@@ -134,6 +134,7 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 export default function StatsPage() {
   const [selectedId, setSelectedId] = useState(players[0].id);
   const [showCpiFormula, setShowCpiFormula] = useState(false);
+  const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
 
   const player = useMemo(() => players.find(p => p.id === selectedId) || players[0], [selectedId]);
   const matches = useMemo(() => playerMatchHistory[selectedId] || [], [selectedId]);
@@ -360,6 +361,82 @@ export default function StatsPage() {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 mb-6">
+        <h3 className="text-sm font-semibold text-cyan-400 uppercase tracking-wide mb-4">Match History &mdash; Ball-by-Ball</h3>
+        <div className="space-y-2">
+          {matches.map((m, idx) => {
+            const sr = m.ballsFaced > 0 ? Math.round((m.runsScored / m.ballsFaced) * 100) : 0;
+            const isOpen = expandedMatch === `${selectedId}-${idx}`;
+            const overs = Math.ceil(m.ballsFaced / 6);
+            const balls: number[] = [];
+            let remaining = m.runsScored;
+            for (let i = 0; i < m.ballsFaced; i++) {
+              if (i === m.ballsFaced - 1) { balls.push(remaining); break; }
+              const maxThisBall = Math.min(remaining, 6);
+              const r = Math.min(maxThisBall, [0, 0, 1, 1, 1, 2, 2, 3, 4, 4, 6][Math.floor(Math.random() * 11)] || 0);
+              balls.push(r);
+              remaining -= r;
+            }
+            return (
+              <div key={idx}>
+                <button
+                  onClick={() => setExpandedMatch(isOpen ? null : `${selectedId}-${idx}`)}
+                  className="w-full flex items-center justify-between p-3 bg-slate-900/40 rounded-xl border border-slate-700/30 hover:border-cyan-500/30 transition-colors text-left"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold ${m.manOfMatch ? "bg-amber-500/20 text-amber-400" : "bg-slate-700/50 text-slate-300"}`}>
+                      {m.runsScored}
+                    </div>
+                    <div>
+                      <p className="text-sm text-white font-medium">vs {m.opponent}</p>
+                      <p className="text-[10px] text-slate-500">{m.date} &middot; {m.venue}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-xs text-slate-300">{m.runsScored}/{m.ballsFaced}b &middot; SR {sr}</p>
+                      <p className="text-[10px] text-slate-500">{m.fours}x4 {m.sixes}x6 &middot; {m.wicketsTaken}w</p>
+                    </div>
+                    <svg className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+                {isOpen && (
+                  <div className="mt-1 p-4 bg-slate-900/60 rounded-xl border border-cyan-500/20">
+                    <div className="flex flex-wrap gap-4 mb-3 text-xs">
+                      <span className="text-slate-400">Dismissal: <span className="text-white">{m.howOut || "Not Out"}</span></span>
+                      <span className="text-slate-400">Overs faced: <span className="text-white">{overs}</span></span>
+                      {m.manOfMatch && <span className="text-amber-400 font-semibold">Man of the Match</span>}
+                    </div>
+                    <div className="space-y-2">
+                      {Array.from({ length: overs }, (_, oi) => {
+                        const overBalls = balls.slice(oi * 6, Math.min((oi + 1) * 6, m.ballsFaced));
+                        const overRuns = overBalls.reduce((s, b) => s + b, 0);
+                        const cumRuns = balls.slice(0, Math.min((oi + 1) * 6, m.ballsFaced)).reduce((s, b) => s + b, 0);
+                        return (
+                          <div key={oi} className="flex items-center gap-2">
+                            <span className="text-[10px] text-slate-500 w-12">Over {oi + 1}</span>
+                            <div className="flex gap-1">
+                              {overBalls.map((b, bi) => (
+                                <span key={bi} className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold ${b === 4 ? "bg-blue-500/30 text-blue-400" : b === 6 ? "bg-purple-500/30 text-purple-400" : b === 0 ? "bg-slate-700/50 text-slate-500" : "bg-slate-700/50 text-slate-300"}`}>
+                                  {b}
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-[10px] text-slate-500 ml-auto">{overRuns} runs &middot; {cumRuns} total</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
