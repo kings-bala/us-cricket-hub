@@ -53,14 +53,11 @@ export default function CoachPage() {
       const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data = await res.json();
 
-      if (data.error === "no_api_key") {
-        setMessages((prev) => [...prev, { role: "assistant", content: "AI Coach is being set up. Please check back soon!", timestamp: new Date().toISOString() }]);
-      } else if (data.error === "rate_limited") {
-        setMessages((prev) => [...prev, { role: "assistant", content: "AI Coach is taking a break right now due to high demand. Please try again in a few hours!", timestamp: new Date().toISOString() }]);
+      if (data.reply) {
+        const prefix = data.fallback ? "[Knowledge Base] " : "";
+        setMessages((prev) => [...prev, { role: "assistant", content: prefix + data.reply, timestamp: new Date().toISOString() }]);
       } else if (data.error) {
         setMessages((prev) => [...prev, { role: "assistant", content: "Something went wrong. Please try again in a moment.", timestamp: new Date().toISOString() }]);
-      } else {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply, timestamp: new Date().toISOString() }]);
       }
     } catch {
       setMessages((prev) => [...prev, { role: "assistant", content: "Network error. Please check your connection and try again.", timestamp: new Date().toISOString() }]);

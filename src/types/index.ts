@@ -48,6 +48,7 @@ export interface Player {
 export interface PlayerStats {
   matches: number;
   innings: number;
+  notOuts: number;
   runs: number;
   battingAverage: number;
   strikeRate: number;

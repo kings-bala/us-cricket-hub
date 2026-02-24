@@ -124,6 +124,7 @@ function PlayersContent() {
   const [drillLevel, setDrillLevel] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
   const [sessionLogs, setSessionLogs] = useState<{ id: string; date: string; type: string; duration: string; notes: string }[]>([]);
   const [plannerDays, setPlannerDays] = useState<Record<string, string[]>>({});
+  const [weekOffset, setWeekOffset] = useState(0);
   const [progressFilter, setProgressFilter] = useState<"all" | "batting" | "bowling" | "fielding">("all");
   const [analysisHistory, setAnalysisHistory] = useState<SavedAnalysis[]>([]);
   const [coachNotes, setCoachNotes] = useState<{ id: string; analysisId: string; text: string; timestamp: string; category: "technique" | "fitness" | "mental" | "general"; date?: string; location?: string }[]>([]);
@@ -137,6 +138,17 @@ function PlayersContent() {
   const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [noteFilter, setNoteFilter] = useState<string | null>(null);
+  const [sessionAiResults, setSessionAiResults] = useState<Record<string, string>>({});
+  const [sessionAiLoading, setSessionAiLoading] = useState<string | null>(null);
+  const [noteAiResults, setNoteAiResults] = useState<Record<string, string>>({});
+  const [noteAiLoading, setNoteAiLoading] = useState<string | null>(null);
+  const [expandedFeed, setExpandedFeed] = useState<string | null>(null);
+  const [notesView, setNotesView] = useState<"my" | "coach">("my");
+  const [coachInboxNotes] = useState<{ id: string; text: string; category: "technique" | "fitness" | "mental" | "general"; date: string; coachName: string; coachId: string }[]>([
+    { id: "cn1", text: "Arjun shows excellent footwork against pace but needs to work on playing spin. Recommend 30 min daily spin drills.", category: "technique", date: "2026-02-10", coachName: "Suresh Menon", coachId: "c1" },
+    { id: "cn2", text: "Core strength needs improvement. Add planks and medicine ball exercises to weekly routine.", category: "fitness", date: "2026-02-08", coachName: "Suresh Menon", coachId: "c1" },
+    { id: "cn3", text: "Good temperament under pressure but tends to lose concentration after reaching 30+. Work on mental focus drills.", category: "mental", date: "2026-02-05", coachName: "James Wright", coachId: "c3" },
+  ]);
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
@@ -266,6 +278,7 @@ function PlayersContent() {
           stats: {
             matches: Number(c.totalMatches) || 0,
             innings: Number(c.totalMatches) || 0,
+            notOuts: 0,
             runs: Number(c.totalRuns) || 0,
             battingAverage: Number(c.battingAverage) || 0,
             strikeRate: Number(c.strikeRate) || 0,
@@ -381,12 +394,13 @@ function PlayersContent() {
                   <div className="text-3xl font-black text-emerald-400">{player.stats.runs.toLocaleString()}</div>
                   <div className="text-[9px] uppercase tracking-wider text-slate-500">Runs</div>
                 </div>
-                <div className="flex-1 grid grid-cols-4 gap-1">
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.battingAverage}</div><div className="text-[9px] text-slate-500">Avg</div></div>
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.strikeRate}</div><div className="text-[9px] text-slate-500">SR</div></div>
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.fifties}</div><div className="text-[9px] text-slate-500">50s</div></div>
-                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
-                </div>
+                  <div className="flex-1 grid grid-cols-5 gap-1">
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.notOuts}</div><div className="text-[9px] text-slate-500">NO</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.battingAverage}</div><div className="text-[9px] text-slate-500">Avg</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.strikeRate}</div><div className="text-[9px] text-slate-500">SR</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.fifties}</div><div className="text-[9px] text-slate-500">50s</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
+                  </div>
               </div>
               {profileBattingChart.length > 0 && <ProfileBattingChart data={profileBattingChart} />}
             </div>
@@ -478,7 +492,7 @@ function PlayersContent() {
               {playerFeed.map((item) => {
                 const config = feedTypeConfig[item.type];
                 return (
-                  <Link key={item.id} href={`/players/${item.playerId}`}>
+                  <div key={item.id} className="cursor-pointer" onClick={() => setExpandedFeed(expandedFeed === item.id ? null : item.id)}>
                     <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
                       <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
                         {config.icon}
@@ -489,7 +503,10 @@ function PlayersContent() {
                       </div>
                       <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
                     </div>
-                  </Link>
+                    {expandedFeed === item.id && (
+                      <div className="ml-11 mr-2 mt-1 mb-2 text-xs text-slate-400 bg-slate-800/50 border border-slate-700/30 rounded-lg px-3 py-2">{item.description}</div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -515,27 +532,27 @@ function PlayersContent() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <StatCard label="Matches" value={player.stats.matches} color="emerald" />
                 <StatCard label="Innings" value={player.stats.innings} color="blue" />
+                <StatCard label="Not Outs" value={player.stats.notOuts} color="cyan" />
                 <StatCard label="Runs" value={player.stats.runs} color="purple" />
-                <StatCard label="Average" value={player.stats.battingAverage} color="amber" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Average" value={player.stats.battingAverage} color="amber" />
                 <StatCard label="Strike Rate" value={player.stats.strikeRate} color="emerald" />
                 <StatCard label="50s / 100s" value={`${player.stats.fifties} / ${player.stats.hundreds}`} color="blue" />
                 <StatCard label="Wickets" value={player.stats.wickets} color="purple" />
-                <StatCard label="Bowl Avg" value={player.stats.bowlingAverage} color="amber" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Bowl Avg" value={player.stats.bowlingAverage} color="amber" />
                 <StatCard label="Economy" value={player.stats.economy} color="emerald" />
                 <StatCard label="Best Bowling" value={player.stats.bestBowling} color="blue" />
                 <StatCard label="Catches" value={player.stats.catches} color="purple" />
-                <StatCard label="Stumpings" value={player.stats.stumpings} color="amber" />
               </div>
             </div>
 
             {playerCPI && (
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">CPI Metrics</h3>
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide" title="Cricket Performance Index: 40% Match Performance + 30% Athletic Metrics + 20% Form Index + 10% Consistency">CPI Metrics <span className="inline-block w-3.5 h-3.5 text-[10px] text-slate-500 border border-slate-600 rounded-full text-center leading-[13px] cursor-help">?</span></h3>
                   <div className="flex items-center gap-2">
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${formStatus === "Red Hot" ? "bg-red-500/20 text-red-400 border-red-500/30" : formStatus === "In Form" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : formStatus === "Steady" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-blue-500/20 text-blue-400 border-blue-500/30"}`}>{formStatus}</span>
                     <span className="text-xs text-slate-500">Rank #{playerCPI.cpiScore.nationalRank}</span>
@@ -701,10 +718,30 @@ function PlayersContent() {
         };
         const lvlColors: Record<string, string> = { beginner: "text-emerald-400", intermediate: "text-amber-400", advanced: "text-red-400" };
 
-        const PLAN_KEY = "cricverse360_training_plan";
+        const getWeekKey = (offset: number) => {
+          const d = new Date();
+          d.setDate(d.getDate() + offset * 7);
+          const year = d.getFullYear();
+          const jan1 = new Date(year, 0, 1);
+          const weekNum = Math.ceil(((d.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+          return `${year}-W${String(weekNum).padStart(2, "0")}`;
+        };
+        const getWeekDateRange = (offset: number) => {
+          const now = new Date();
+          const dayOfWeek = now.getDay();
+          const monday = new Date(now);
+          monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + offset * 7);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
+        };
+        const weekKey = getWeekKey(weekOffset);
+        const PLAN_KEY = `cricverse360_training_plan_${weekKey}`;
         const LOG_KEY = "cricverse360_session_logs";
         const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
         const defaultActivities = ["Batting Nets", "Bowling Practice", "Fielding Drills", "Fitness & Conditioning", "Match Simulation", "Video Analysis", "Rest Day"];
+        const isPastWeek = weekOffset < 0;
 
         let storedPlan: Record<string, string[]> = {};
         try { const raw = localStorage.getItem(PLAN_KEY); if (raw) storedPlan = JSON.parse(raw); } catch {}
@@ -715,6 +752,7 @@ function PlayersContent() {
         const currentLogs = sessionLogs.length > 0 ? sessionLogs : storedLogs;
 
         const togglePlanActivity = (day: string, activity: string) => {
+          if (isPastWeek) return;
           const updated = { ...currentPlan };
           const dayActivities = updated[day] || [];
           if (dayActivities.includes(activity)) {
@@ -1086,6 +1124,31 @@ function PlayersContent() {
                   <h2 className="text-xl font-bold text-white mb-1">Weekly Training Plan</h2>
                   <p className="text-sm text-slate-400">Plan your weekly training schedule. Click activities to toggle them for each day.</p>
                 </div>
+                <div className="flex items-center justify-between bg-slate-800/50 border border-slate-700/50 rounded-xl p-3">
+                  <button onClick={() => { setWeekOffset(w => w - 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    Prev Week
+                  </button>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-white">{getWeekDateRange(weekOffset)}</p>
+                    <p className="text-[10px] text-slate-500">{weekOffset === 0 ? "This Week" : weekOffset > 0 ? `${weekOffset} week${weekOffset > 1 ? "s" : ""} ahead` : `${Math.abs(weekOffset)} week${Math.abs(weekOffset) > 1 ? "s" : ""} ago`}{isPastWeek ? " (archived)" : ""}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {weekOffset !== 0 && (
+                      <button onClick={() => { setWeekOffset(0); setPlannerDays({}); }} className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded-lg border border-emerald-500/30 transition-colors">This Week</button>
+                    )}
+                    <button onClick={() => { setWeekOffset(w => w + 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                      Next Week
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                </div>
+                {isPastWeek && (
+                  <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-10.364A9 9 0 1015.536 4.636" /></svg>
+                    <p className="text-xs text-slate-400">This is an archived week. Plans are read-only.</p>
+                  </div>
+                )}
                 <div className="overflow-x-auto">
                   <div className="min-w-[700px]">
                     <div className="grid grid-cols-8 gap-1 mb-2">
@@ -1187,7 +1250,8 @@ function PlayersContent() {
                       <h3 className="text-sm font-semibold text-white">Recent Sessions ({currentLogs.length})</h3>
                     </div>
                     {currentLogs.slice(0, 20).map((log) => (
-                      <div key={log.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
+                      <div key={log.id} className="space-y-2">
+                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           log.type.includes("Bat") ? "bg-emerald-500/20" : log.type.includes("Bowl") ? "bg-blue-500/20" : log.type.includes("Field") ? "bg-amber-500/20" : log.type.includes("Match") ? "bg-red-500/20" : "bg-purple-500/20"
                         }`}>
@@ -1203,8 +1267,35 @@ function PlayersContent() {
                           <p className="text-xs text-slate-500 mt-0.5">{new Date(log.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
                           {log.notes && <p className="text-xs text-slate-400 mt-1">{log.notes}</p>}
                         </div>
-                        <button onClick={() => deleteSessionLog(log.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                        <div className="flex flex-col gap-1 items-end shrink-0">
+                          <button onClick={() => deleteSessionLog(log.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                          {log.notes && (
+                            <button
+                              disabled={sessionAiLoading === log.id}
+                              onClick={async () => {
+                                const cached = localStorage.getItem(`cv360_session_ai_${log.id}`);
+                                if (cached) { setSessionAiResults(p => ({ ...p, [log.id]: cached })); return; }
+                                setSessionAiLoading(log.id);
+                                try {
+                                  const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this training session and give improvement tips: Type: ${log.type}, Duration: ${log.duration}, Notes: ${log.notes}` }) });
+                                  const data = await res.json();
+                                  if (data.reply) { setSessionAiResults(p => ({ ...p, [log.id]: data.reply })); try { localStorage.setItem(`cv360_session_ai_${log.id}`, data.reply); } catch {} }
+                                } catch {} finally { setSessionAiLoading(null); }
+                              }}
+                              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                            >
+                              {sessionAiLoading === log.id ? "Analyzing..." : sessionAiResults[log.id] ? "Re-analyze" : "AI Analyze"}
+                            </button>
+                          )}
+                        </div>
                       </div>
+                      {sessionAiResults[log.id] && (
+                        <div className="ml-13 mt-2 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                          <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Analysis</p>
+                          <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{sessionAiResults[log.id]}</p>
+                        </div>
+                      )}
+                    </div>
                     ))}
                   </div>
                 ) : (
@@ -1395,6 +1486,58 @@ function PlayersContent() {
                       <button onClick={exportCoachNotes} disabled={coachNotes.length === 0} className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${coachNotes.length > 0 ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30" : "bg-slate-700 text-slate-500 cursor-not-allowed border border-slate-700"}`}>Export</button>
                     </div>
                   </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setNotesView("my")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${notesView === "my" ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white"}`}>My Notes ({coachNotes.length})</button>
+                    <button onClick={() => setNotesView("coach")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${notesView === "coach" ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white"}`}>
+                      From Coach ({coachInboxNotes.length})
+                      {coachInboxNotes.length > 0 && notesView !== "coach" && <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />}
+                    </button>
+                  </div>
+                  {notesView === "coach" && (
+                    <div className="space-y-3">
+                      {coachInboxNotes.length === 0 ? (
+                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                          <p className="text-xs text-slate-500">No notes from your coach yet.</p>
+                        </div>
+                      ) : (
+                        coachInboxNotes.map((cn) => (
+                          <div key={cn.id} className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px] font-bold">{cn.coachName.split(" ").map(n => n[0]).join("")}</div>
+                              <span className="text-xs text-indigo-400 font-medium">{cn.coachName}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[cn.category].bg} ${noteCategoryColors[cn.category].text}`}>{cn.category}</span>
+                              <span className="text-xs text-slate-600 ml-auto">{cn.date}</span>
+                              <span className="text-[9px] text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Read-only</span>
+                            </div>
+                            <p className="text-sm text-slate-300">{cn.text}</p>
+                            {noteAiResults[cn.id] && (
+                              <div className="mt-3 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                                <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Drill Suggestions</p>
+                                <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{noteAiResults[cn.id]}</p>
+                              </div>
+                            )}
+                            <button
+                              disabled={noteAiLoading === cn.id}
+                              onClick={async () => {
+                                const cached = localStorage.getItem(`cv360_note_ai_${cn.id}`);
+                                if (cached) { setNoteAiResults(p => ({ ...p, [cn.id]: cached })); return; }
+                                setNoteAiLoading(cn.id);
+                                try {
+                                  const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this coaching note and suggest actionable drills: Category: ${cn.category}, Note: ${cn.text}` }) });
+                                  const data = await res.json();
+                                  if (data.reply) { setNoteAiResults(p => ({ ...p, [cn.id]: data.reply })); try { localStorage.setItem(`cv360_note_ai_${cn.id}`, data.reply); } catch {} }
+                                } catch {} finally { setNoteAiLoading(null); }
+                              }}
+                              className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                            >
+                              {noteAiLoading === cn.id ? "Analyzing..." : noteAiResults[cn.id] ? "Re-analyze" : "AI Analyze"}
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                  {notesView === "my" && (<>
                   <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
                     <div className="flex gap-2 mb-3">
@@ -1477,14 +1620,39 @@ function PlayersContent() {
                                 {note.location && <span className="text-xs text-cyan-400/70">@ {note.location}</span>}
                                 {note.analysisId === "manual" && <span className="text-xs text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Manual</span>}
                               </div>
-                              <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors shrink-0">Delete</button>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  disabled={noteAiLoading === note.id}
+                                  onClick={async () => {
+                                    const cached = localStorage.getItem(`cv360_note_ai_${note.id}`);
+                                    if (cached) { setNoteAiResults(p => ({ ...p, [note.id]: cached })); return; }
+                                    setNoteAiLoading(note.id);
+                                    try {
+                                      const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this coaching note and suggest actionable drills: Category: ${note.category}, Note: ${note.text}` }) });
+                                      const data = await res.json();
+                                      if (data.reply) { setNoteAiResults(p => ({ ...p, [note.id]: data.reply })); try { localStorage.setItem(`cv360_note_ai_${note.id}`, data.reply); } catch {} }
+                                    } catch {} finally { setNoteAiLoading(null); }
+                                  }}
+                                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                                >
+                                  {noteAiLoading === note.id ? "Analyzing..." : noteAiResults[note.id] ? "Re-analyze" : "AI Analyze"}
+                                </button>
+                                <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                              </div>
                             </div>
                             <p className="text-sm text-slate-300">{note.text}</p>
+                            {noteAiResults[note.id] && (
+                              <div className="mt-3 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                                <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Drill Suggestions</p>
+                                <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{noteAiResults[note.id]}</p>
+                              </div>
+                            )}
                           </div>
                         ))
                       )}
                     </div>
                   </div>
+                </>)}
                 </div>
               );
             })()}
