@@ -102,7 +102,7 @@ export default function Home() {
             Whether you&apos;re a street cricketer in Mumbai, a coach in Sydney, or a T20 franchise owner&mdash;join the platform connecting cricket talent worldwide.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
+            <Link href="/auth/register" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
               Create Free Account
             </Link>
             <Link href="/scouting" className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full font-semibold border border-white/20 transition-colors">
