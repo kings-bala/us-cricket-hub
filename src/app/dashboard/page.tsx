@@ -2,19 +2,33 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { players, agents, t20Teams, tournaments, sponsors } from "@/data/mock";
+import { players, agents, t20Teams, tournaments, sponsors, coaches, performanceFeedItems } from "@/data/mock";
 import StatCard from "@/components/StatCard";
 import { UserRole } from "@/types";
 
 const roleLabels: Record<UserRole, string> = {
-  player: "Player Dashboard",
+  player: "My Profile",
   agent: "Agent Dashboard",
   owner: "T20 Owner Dashboard",
   sponsor: "Sponsor Dashboard",
+  coach: "Coach Dashboard",
+};
+
+const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
+  "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
+  "best-bowling": { icon: "W", color: "text-blue-400", bg: "bg-blue-500/20" },
+  "fastest-innings": { icon: "F", color: "text-amber-400", bg: "bg-amber-500/20" },
+  "form-spike": { icon: "S", color: "text-purple-400", bg: "bg-purple-500/20" },
+  "hot-prospect": { icon: "H", color: "text-red-400", bg: "bg-red-500/20" },
+  "rank-movement": { icon: "R", color: "text-cyan-400", bg: "bg-cyan-500/20" },
 };
 
 function PlayerDashboard() {
   const player = players[0];
+  const recentFeed = [...performanceFeedItems]
+    .filter((item) => item.playerId === player.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   return (
     <div className="space-y-6">
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
@@ -56,6 +70,35 @@ function PlayerDashboard() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Performance Feed</h3>
+            <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/30">Live</span>
+          </div>
+          <Link href="/performance-feed" className="text-xs text-cyan-400 hover:text-cyan-300">View All &rarr;</Link>
+        </div>
+        <div className="space-y-2">
+          {recentFeed.map((item) => {
+            const config = feedTypeConfig[item.type];
+            return (
+              <Link key={item.id} href={`/players/${item.playerId}`}>
+                <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
+                  <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
+                    {config.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                    <p className="text-xs text-slate-500">{item.playerName} &middot; {new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                  </div>
+                  <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -185,6 +228,50 @@ function OwnerDashboard() {
   );
 }
 
+function CoachDashboard() {
+  const coach = coaches[0];
+  const myPlayers = players.slice(0, 6);
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
+            {coach.name.split(" ").map((n) => n[0]).join("")}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">{coach.name}</h2>
+            <p className="text-sm text-slate-400">{coach.specialization} • {coach.experience}+ yrs • {coach.region}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Players Developed" value={coach.playersDeveloped} color="emerald" />
+        <StatCard label="Rating" value={coach.rating} color="amber" />
+        <StatCard label="Certifications" value={coach.certifications.length} color="blue" />
+        <StatCard label="Review Count" value={coach.reviewCount} color="purple" />
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">My Trainees</h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {myPlayers.map((p) => (
+            <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                {p.name.split(" ").map((n) => n[0]).join("")}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">{p.name}</p>
+                <p className="text-xs text-slate-400">{p.role} • {p.ageGroup}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SponsorDashboard() {
   const sponsor = sponsors[0];
 
@@ -246,6 +333,9 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-3">
+        <Link href="/players?tab=profile" className="text-sm text-slate-400 hover:text-white">← Back to My Profile</Link>
+      </div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-white">{roleLabels[role]}</h1>
         <select
@@ -257,6 +347,7 @@ export default function DashboardPage() {
           <option value="agent">Agent View</option>
           <option value="owner">T20 Owner View</option>
           <option value="sponsor">Sponsor View</option>
+          <option value="coach">Coach View</option>
         </select>
       </div>
 
@@ -264,6 +355,7 @@ export default function DashboardPage() {
       {role === "agent" && <AgentDashboard />}
       {role === "owner" && <OwnerDashboard />}
       {role === "sponsor" && <SponsorDashboard />}
+      {role === "coach" && <CoachDashboard />}
     </div>
   );
 }

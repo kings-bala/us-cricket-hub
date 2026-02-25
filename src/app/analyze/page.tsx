@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 type AnalysisType = "batting" | "bowling" | "fielding" | "general";
@@ -10,6 +10,14 @@ interface AnalysisResult {
   score: number;
   comment: string;
   suggestion: string;
+}
+
+interface SavedAnalysis {
+  id: string;
+  type: AnalysisType;
+  date: string;
+  overallScore: number;
+  results: AnalysisResult[];
 }
 
 const mockResults: Record<AnalysisType, AnalysisResult[]> = {
@@ -40,30 +48,71 @@ const mockResults: Record<AnalysisType, AnalysisResult[]> = {
   ],
 };
 
+const STORAGE_KEY = "cricverse_analysis_history";
+
 export default function AnalyzePage() {
   const [analysisType, setAnalysisType] = useState<AnalysisType>("batting");
   const [uploaded, setUploaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState<AnalysisResult[] | null>(null);
+  const [history, setHistory] = useState<SavedAnalysis[]>([]);
+  const [viewingId, setViewingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) setHistory(JSON.parse(stored));
+  }, []);
+
+  const saveAnalysis = (type: AnalysisType, analysisResults: AnalysisResult[]) => {
+    const score = Math.round(analysisResults.reduce((s, r) => s + r.score, 0) / analysisResults.length);
+    const entry: SavedAnalysis = {
+      id: Date.now().toString(),
+      type,
+      date: new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }),
+      overallScore: score,
+      results: analysisResults,
+    };
+    const updated = [entry, ...history];
+    setHistory(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
 
   const handleAnalyze = () => {
     setAnalyzing(true);
     setResults(null);
+    setViewingId(null);
     setTimeout(() => {
       setAnalyzing(false);
-      setResults(mockResults[analysisType]);
+      const r = mockResults[analysisType];
+      setResults(r);
+      saveAnalysis(analysisType, r);
     }, 2000);
   };
 
   const handleUpload = () => {
     setUploaded(true);
     setResults(null);
+    setViewingId(null);
+  };
+
+  const viewPastAnalysis = (entry: SavedAnalysis) => {
+    setResults(entry.results);
+    setAnalysisType(entry.type);
+    setViewingId(entry.id);
+    setUploaded(true);
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    localStorage.removeItem(STORAGE_KEY);
   };
 
   const overallScore = results ? Math.round(results.reduce((sum, r) => sum + r.score, 0) / results.length) : 0;
+  const typeLabels: Record<AnalysisType, string> = { batting: "Batting", bowling: "Bowling", fielding: "Fielding", general: "General" };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-3"><Link href="/players?tab=ai" className="text-sm text-slate-400 hover:text-white">← Back to Full Track AI</Link></div>
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">AI Video Analysis</h1>
@@ -145,6 +194,61 @@ export default function AnalyzePage() {
         </div>
 
         <div className="lg:col-span-2 space-y-6">
+          {history.length > 0 && !results && !analyzing && (
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-white uppercase tracking-wide">Past Analyses</h2>
+                <button onClick={clearHistory} className="text-xs text-slate-500 hover:text-red-400 transition-colors">Clear History</button>
+              </div>
+              <div className="space-y-3">
+                {history.map((entry) => (
+                  <button
+                    key={entry.id}
+                    onClick={() => viewPastAnalysis(entry)}
+                    className={`w-full text-left flex items-center justify-between p-4 rounded-lg border hover:border-emerald-500/40 transition-all ${
+                      viewingId === entry.id ? "border-emerald-500 bg-emerald-500/5" : "border-slate-700/50 bg-slate-900/30"
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${entry.overallScore >= 75 ? "bg-emerald-500/20 text-emerald-400" : entry.overallScore >= 60 ? "bg-amber-500/20 text-amber-400" : "bg-red-500/20 text-red-400"}`}>
+                        {entry.overallScore}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{typeLabels[entry.type]} Analysis</p>
+                        <p className="text-xs text-slate-400">{entry.date}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-1 max-w-[200px] justify-end">
+                      {entry.results.slice(0, 3).map((r) => (
+                        <span key={r.category} className="text-[10px] bg-slate-700/50 px-2 py-0.5 rounded-full text-slate-400">{r.category}</span>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {history.length > 0 && (results || analyzing) && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-slate-500">Past:</span>
+              {history.map((entry) => (
+                <button
+                  key={entry.id}
+                  onClick={() => viewPastAnalysis(entry)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                    viewingId === entry.id
+                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
+                      : "border-slate-700 text-slate-400 hover:border-slate-500"
+                  }`}
+                >
+                  {typeLabels[entry.type]} ({entry.overallScore})
+                </button>
+              ))}
+              <button onClick={clearHistory} className="text-[10px] text-slate-600 hover:text-red-400 ml-auto">Clear</button>
+            </div>
+          )}
+
           {analyzing && (
             <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
               <div className="w-16 h-16 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4" />
@@ -229,6 +333,7 @@ export default function AnalyzePage() {
           )}
         </div>
       </div>
+
     </div>
   );
 }
