@@ -153,8 +153,14 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "AI Analysis", id: "ai", links: [
       { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
+    { title: "Scoring", id: "scoring", links: [
+      { href: "/scoring", label: "Live Scoring", desc: "Score matches ball-by-ball" },
+    ]},
+    { title: "Streaming", id: "streaming", links: [
+      { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
+    ]},
   ],
-  academy_admin: [
+  academy_admin:[
     { title: "Dashboard", id: "dashboard", links: [
       { href: "/academy", label: "Dashboard", desc: "Academy overview" },
     ]},
@@ -175,6 +181,12 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     ]},
     { title: "Payments", id: "payments", links: [
       { href: "/payments", label: "Payments", desc: "Collect fees & track payments" },
+    ]},
+    { title: "Scoring", id: "scoring", links: [
+      { href: "/scoring", label: "Live Scoring", desc: "Score matches ball-by-ball" },
+    ]},
+    { title: "Streaming", id: "streaming", links: [
+      { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
     ]},
   ],
 };
@@ -210,8 +222,10 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/leaderboard", label: "Leaderboard" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/analyze", label: "AI Analysis" },
+    { href: "/scoring", label: "Live Scoring" },
+    { href: "/streaming", label: "Streaming" },
   ],
-  academy_admin: [
+  academy_admin:[
     { href: "/academy", label: "Dashboard" },
     { href: "/academy/roster", label: "Roster" },
     { href: "/academy/staff", label: "Staff" },
@@ -219,6 +233,8 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/academy/invite", label: "Invite" },
     { href: "/academy/reports", label: "Reports" },
     { href: "/payments", label: "Payments" },
+    { href: "/scoring", label: "Live Scoring" },
+    { href: "/streaming", label: "Streaming" },
   ],
 };
 
