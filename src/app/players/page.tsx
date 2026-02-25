@@ -32,7 +32,7 @@ function PlayersContent() {
 
   useEffect(() => {
     const todayKey = new Date().toISOString().slice(0, 10);
-    const stored = localStorage.getItem(`cricverse_routine_log_${todayKey}`);
+    const stored = localStorage.getItem(`cricverse360_routine_log_${todayKey}`);
     if (stored) setCompletedRoutines(JSON.parse(stored));
   }, []);
 
@@ -40,7 +40,7 @@ function PlayersContent() {
     const todayKey = new Date().toISOString().slice(0, 10);
     const updated = { ...completedRoutines, [routineKey]: !completedRoutines[routineKey] };
     setCompletedRoutines(updated);
-    localStorage.setItem(`cricverse_routine_log_${todayKey}`, JSON.stringify(updated));
+    localStorage.setItem(`cricverse360_routine_log_${todayKey}`, JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -483,7 +483,7 @@ function PlayersContent() {
             ))}
           </div>
           <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-4">
-            <p className="text-slate-500 text-xs text-center">CricVerse is not affiliated with these stores. Links open in a new tab.</p>
+            <p className="text-slate-500 text-xs text-center">CricVerse360 is not affiliated with these stores. Links open in a new tab.</p>
           </div>
         </div>
       )}

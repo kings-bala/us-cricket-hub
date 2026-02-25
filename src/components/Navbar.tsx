@@ -145,7 +145,7 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
   ],
 };
 
-export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">CricVerse</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
+export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">CricVerse360</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
 
 function NavbarInner() {
   const [role, setRole] = useState<UserRole>("player");
@@ -187,7 +187,7 @@ function NavbarInner() {
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
               CV
             </div>
-            <span className="font-bold text-lg hidden sm:block">CricVerse</span>
+            <span className="font-bold text-lg hidden sm:block">CricVerse360</span>
           </Link>
 
                     {showTabs && user && (
@@ -233,7 +233,7 @@ function NavbarInner() {
                 <div className="hidden sm:flex items-center gap-2">
                   {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
                   <span className="text-xs text-slate-300">{user.name}</span>
-                  {isAdmin && <span className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full">Admin</span>}
+                  {isAdmin && <Link href="/admin" className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full hover:bg-amber-500/30 transition-colors">Admin</Link>}
                 </div>
                 <button onClick={() => { logout(); router.push("/auth"); }} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full transition-colors">Logout</button>
               </div>
@@ -274,7 +274,8 @@ function NavbarInner() {
               </div>
             )}
             {isAdmin && (
-              <div className="pt-2 border-t border-slate-700">
+              <div className="pt-2 border-t border-slate-700 space-y-2">
+                <Link href="/admin" onClick={() => setMobileOpen(false)} className="block py-1.5 text-sm text-amber-400 hover:text-amber-300 pl-2 border-l-2 border-amber-500 transition-colors">Admin Dashboard</Link>
                 <span className="text-xs text-slate-400">View as:</span>
                 <select
                   value={role}
