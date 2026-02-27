@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 border-t border-slate-800">
@@ -21,7 +23,13 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; 2026 CricVerse360. All rights reserved. Connecting cricket talent worldwide.</p>
+          <p>&copy; {new Date().getFullYear()} Rising Star Cricket League &amp; CricVerse360. All rights reserved.</p>
+          <p className="mt-1 text-xs text-slate-600">This platform, its design, code, and content are proprietary and protected under applicable copyright and intellectual property laws. Unauthorized reproduction, distribution, or use is strictly prohibited.</p>
+          <div className="flex items-center justify-center gap-4 mt-3">
+            <Link href="/terms" className="text-xs text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
+            <span className="text-slate-700">|</span>
+            <Link href="/privacy" className="text-xs text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
+          </div>
         </div>
       </div>
     </footer>
