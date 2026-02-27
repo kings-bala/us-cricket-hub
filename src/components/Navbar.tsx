@@ -106,6 +106,12 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Compare", id: "compare", links: [
       { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
     ]},
+    { title: "Selector", id: "selector", links: [
+      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
+    ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
+    ]},
   ],
   agent:[
     { title: "Stats", id: "stats", links: [
@@ -129,6 +135,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Selector", id: "selector", links: [
       { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
     ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
+    ]},
   ],
   owner: [
     { title: "Stats", id: "stats", links: [
@@ -149,6 +158,12 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Compare", id: "compare", links: [
       { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
     ]},
+    { title: "Selector", id: "selector", links: [
+      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
+    ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
+    ]},
   ],
   sponsor: [
     { title: "Discover", id: "discover", links: [
@@ -159,6 +174,15 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     ]},
     { title: "Feed", id: "feed", links: [
       { href: "/feed", label: "Cricket Feed", desc: "Cricket recognition network" },
+    ]},
+    { title: "Compare", id: "compare", links: [
+      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
+    ]},
+    { title: "Selector", id: "selector", links: [
+      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
+    ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
     ]},
   ],
   coach: [
@@ -249,6 +273,8 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/streaming", label: "Streaming" },
     { href: "/feed", label: "Feed" },
     { href: "/compare", label: "Compare" },
+    { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
   agent:[
     { href: "/stats", label: "Stats" },
@@ -258,6 +284,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/feed", label: "Feed" },
     { href: "/compare", label: "Compare" },
     { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
   owner: [
     { href: "/stats", label: "Stats" },
@@ -266,11 +293,16 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/analyze", label: "AI Analysis" },
     { href: "/feed", label: "Feed" },
     { href: "/compare", label: "Compare" },
+    { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
   sponsor: [
     { href: "/players", label: "Player Registry" },
     { href: "/sponsors", label: "Sponsorships" },
     { href: "/feed", label: "Feed" },
+    { href: "/compare", label: "Compare" },
+    { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
   coach: [
     { href: "/academy/attendance", label: "Attendance" },
