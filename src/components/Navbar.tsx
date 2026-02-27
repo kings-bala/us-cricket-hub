@@ -94,11 +94,11 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Community", id: "community", links: [
       { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
     ]},
-    { title: "Store", id: "store", links: [
-      { href: "/players?tab=store", label: "Store", desc: "Cricket gear & equipment" },
-    ]},
     { title: "Streaming", id: "streaming", links: [
       { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
+    ]},
+    { title: "Store", id: "store", links: [
+      { href: "/store", label: "Store", desc: "Rising Star merchandise" },
     ]},
   ],
   agent:[
@@ -239,8 +239,8 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/players?tab=training", label: "Training" },
     { href: "/analyze", label: "Full Track AI" },
     { href: "/community", label: "Community" },
-    { href: "/players?tab=store", label: "Store" },
     { href: "/streaming", label: "Streaming" },
+    { href: "/store", label: "Store" },
   ],
   agent:[
     { href: "/stats", label: "Stats" },
