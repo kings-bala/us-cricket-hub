@@ -91,8 +91,8 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Full Track AI", id: "ai", links: [
       { href: "/analyze", label: "Full Track AI", desc: "Video + AI insights" },
     ]},
-    { title: "Leaderboard", id: "leaderboard", links: [
-      { href: "/leaderboard", label: "Leaderboard", desc: "Cricket Energy rankings" },
+    { title: "Community", id: "community", links: [
+      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
     ]},
     { title: "Store", id: "store", links: [
       { href: "/players?tab=store", label: "Store", desc: "Cricket gear & equipment" },
@@ -114,6 +114,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "AI Analysis", id: "ai", links: [
       { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
+    { title: "Community", id: "community", links: [
+      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
+    ]},
   ],
   owner: [
     { title: "Stats", id: "stats", links: [
@@ -128,6 +131,18 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "AI Analysis", id: "ai", links: [
       { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
     ]},
+    { title: "Community", id: "community", links: [
+      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
+    ]},
+    { title: "Compare", id: "compare", links: [
+      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
+    ]},
+    { title: "Selector", id: "selector", links: [
+      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
+    ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
+    ]},
   ],
   sponsor: [
     { title: "Discover", id: "discover", links: [
@@ -135,6 +150,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     ]},
     { title: "Sponsorships", id: "sponsorships", links: [
       { href: "/sponsors", label: "Sponsorships", desc: "Partner with talent" },
+    ]},
+    { title: "Community", id: "community", links: [
+      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
     ]},
   ],
   coach: [
@@ -158,6 +176,18 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     ]},
     { title: "Streaming", id: "streaming", links: [
       { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
+    ]},
+    { title: "Community", id: "community", links: [
+      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
+    ]},
+    { title: "Compare", id: "compare", links: [
+      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
+    ]},
+    { title: "Selector", id: "selector", links: [
+      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
+    ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
     ]},
   ],
   academy_admin:[
@@ -188,6 +218,18 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Streaming", id: "streaming", links: [
       { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
     ]},
+    { title: "Community", id: "community", links: [
+      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
+    ]},
+    { title: "Compare", id: "compare", links: [
+      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
+    ]},
+    { title: "Selector", id: "selector", links: [
+      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
+    ]},
+    { title: "Strategy", id: "strategy", links: [
+      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
+    ]},
   ],
 };
 
@@ -196,7 +238,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/players?tab=profile", label: "My Profile" },
     { href: "/players?tab=training", label: "Training" },
     { href: "/analyze", label: "Full Track AI" },
-    { href: "/leaderboard", label: "Leaderboard" },
+    { href: "/community", label: "Community" },
     { href: "/players?tab=store", label: "Store" },
     { href: "/streaming", label: "Streaming" },
   ],
@@ -205,16 +247,22 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/squad-builder", label: "Squad Builder" },
     { href: "/analyze", label: "AI Analysis" },
+    { href: "/community", label: "Community" },
   ],
   owner: [
     { href: "/stats", label: "Stats" },
     { href: "/squad-builder", label: "Squad Builder" },
     { href: "/scouting", label: "Pro Scouting" },
     { href: "/analyze", label: "AI Analysis" },
+    { href: "/community", label: "Community" },
+    { href: "/compare", label: "Compare" },
+    { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
   sponsor: [
     { href: "/players", label: "Player Registry" },
     { href: "/sponsors", label: "Sponsorships" },
+    { href: "/community", label: "Community" },
   ],
   coach: [
     { href: "/academy/attendance", label: "Attendance" },
@@ -224,6 +272,10 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/analyze", label: "AI Analysis" },
     { href: "/scoring", label: "Live Scoring" },
     { href: "/streaming", label: "Streaming" },
+    { href: "/community", label: "Community" },
+    { href: "/compare", label: "Compare" },
+    { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
   academy_admin:[
     { href: "/academy", label: "Dashboard" },
@@ -235,6 +287,10 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/payments", label: "Payments" },
     { href: "/scoring", label: "Live Scoring" },
     { href: "/streaming", label: "Streaming" },
+    { href: "/community", label: "Community" },
+    { href: "/compare", label: "Compare" },
+    { href: "/selector", label: "Selector" },
+    { href: "/strategy", label: "Strategy" },
   ],
 };
 
