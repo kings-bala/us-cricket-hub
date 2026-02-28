@@ -72,10 +72,17 @@ function seedRisingStarAcademy() {
   const existing = academies.find((a) => a.id === "academy_risingstar");
   const playerEmails = ["arjun@cricverse360.com", "jake@cricverse360.com", "rashid@cricverse360.com", "rahul@cricverse360.com", "neel@risingstar.com"];
   if (existing) {
+    let changed = false;
     if (existing.playerEmails.length === 0) {
       existing.playerEmails = playerEmails;
-      setItem("academies", academies);
+      changed = true;
     }
+    if (existing.maxSeats !== 100) {
+      existing.maxSeats = 100;
+      existing.seatPlan = "pro";
+      changed = true;
+    }
+    if (changed) setItem("academies", academies);
     return;
   }
   academies.push({
