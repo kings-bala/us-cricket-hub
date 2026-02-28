@@ -93,7 +93,7 @@ export default function PaymentsPage() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin" || user?.role === "academy_admin";
   const hasAcademy = !!user?.academyId;
-  const [activeTab, setActiveTab] = useState<"overview" | "students" | "history" | "settings">(isAdmin ? "overview" : "overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "students" | "history" | "settings" | "card">(isAdmin ? "overview" : "overview");
   const [selectedFee, setSelectedFee] = useState<StudentFee | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showReceipt, setShowReceipt] = useState<PaymentRecord | null>(null);
@@ -112,6 +112,15 @@ export default function PaymentsPage() {
     return localStorage.getItem("cv360_auto_pay") === "true";
   });
   const [autoPayToast, setAutoPayToast] = useState("");
+  const [savedCards, setSavedCards] = useState<{id: string; brand: string; last4: string; expMonth: number; expYear: number; isDefault: boolean}[]>(() => {
+    if (typeof window === "undefined") return [];
+    const stored = localStorage.getItem("cv360_saved_cards");
+    if (stored) try { return JSON.parse(stored); } catch { return []; }
+    return [];
+  });
+  const [cardForm, setCardForm] = useState({ number: "", expiry: "", cvc: "", name: "" });
+  const [cardSaving, setCardSaving] = useState(false);
+  const [cardMsg, setCardMsg] = useState("");
   const toggleAutoPay = () => {
     const next = !autoPay;
     setAutoPay(next);
@@ -154,22 +163,36 @@ export default function PaymentsPage() {
     );
   }
 
-  if (!isAdmin && !hasAcademy) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-            <svg className="w-8 h-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <p className="text-lg font-semibold">Academy Members Only</p>
-          <p className="text-sm text-slate-400 mt-2">Payments are available for players enrolled in an academy. Ask your academy admin for an invite code to join.</p>
-          <Link href="/" className="mt-4 inline-block text-sm px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">&larr; Back to Home</Link>
-        </div>
-      </div>
-    );
-  }
+  const saveCard = () => {
+    if (!cardForm.number || !cardForm.expiry || !cardForm.cvc) { setCardMsg("Please fill all card fields"); setTimeout(() => setCardMsg(""), 2500); return; }
+    setCardSaving(true);
+    setTimeout(() => {
+      const last4 = cardForm.number.replace(/\s/g, "").slice(-4);
+      const [mm, yy] = cardForm.expiry.split("/");
+      const brand = cardForm.number.startsWith("4") ? "Visa" : cardForm.number.startsWith("5") ? "Mastercard" : cardForm.number.startsWith("3") ? "Amex" : "Card";
+      const newCard = { id: `card_${Date.now()}`, brand, last4, expMonth: Number(mm), expYear: 2000 + Number(yy), isDefault: savedCards.length === 0 };
+      const updated = [...savedCards, newCard];
+      setSavedCards(updated);
+      try { localStorage.setItem("cv360_saved_cards", JSON.stringify(updated)); } catch {}
+      setCardForm({ number: "", expiry: "", cvc: "", name: "" });
+      setCardSaving(false);
+      setCardMsg("Card saved successfully!");
+      setTimeout(() => setCardMsg(""), 2500);
+    }, 1500);
+  };
+
+  const removeCard = (cardId: string) => {
+    const updated = savedCards.filter(c => c.id !== cardId);
+    if (updated.length > 0 && !updated.some(c => c.isDefault)) updated[0].isDefault = true;
+    setSavedCards(updated);
+    try { localStorage.setItem("cv360_saved_cards", JSON.stringify(updated)); } catch {}
+  };
+
+  const setDefaultCard = (cardId: string) => {
+    const updated = savedCards.map(c => ({ ...c, isDefault: c.id === cardId }));
+    setSavedCards(updated);
+    try { localStorage.setItem("cv360_saved_cards", JSON.stringify(updated)); } catch {}
+  };
 
   const myFees = useMemo(() => {
     if (isAdmin) return MOCK_STUDENT_FEES;
@@ -264,9 +287,15 @@ export default function PaymentsPage() {
         { id: "history" as const, label: "Payment History" },
         { id: "settings" as const, label: "Settings" },
       ]
-    : [
+    : hasAcademy
+    ? [
         { id: "overview" as const, label: "My Fees" },
+        { id: "card" as const, label: "Payment Methods" },
         { id: "history" as const, label: "Payment History" },
+      ]
+    : [
+        { id: "overview" as const, label: "Subscription" },
+        { id: "card" as const, label: "Payment Methods" },
       ];
 
   return (
@@ -278,7 +307,7 @@ export default function PaymentsPage() {
               {isAdmin ? "Fee Management" : "My Payments"}
             </h1>
             <p className="text-sm text-slate-400 mt-1">
-              {isAdmin ? "Manage academy fees, track payments, and send reminders" : "View and pay your academy fees"}
+              {isAdmin ? "Manage academy fees, track payments, and send reminders" : hasAcademy ? "View and pay your academy fees" : "Subscribe to CricVerse360 services"}
             </p>
           </div>
           <Link href={isAdmin ? "/admin" : "/players?tab=profile"} className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">
@@ -300,7 +329,81 @@ export default function PaymentsPage() {
           ))}
         </div>
 
-        {activeTab === "overview" && (
+        {activeTab === "overview" && !isAdmin && !hasAcademy && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border border-emerald-500/20 rounded-xl p-6">
+              <h2 className="text-lg font-bold text-white mb-1">Individual Player Subscription</h2>
+              <p className="text-sm text-slate-400">Choose a plan to access training sessions, AI analysis, and more.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { name: "Basic", price: 29, interval: "month", features: ["Group training 2x/week", "Community access", "Basic stats tracking", "Store discounts"] },
+                { name: "Pro", price: 59, interval: "month", features: ["Group training 4x/week", "Full Track AI analysis", "1 private session/month", "Priority support", "Community access", "Advanced stats"] },
+                { name: "Elite", price: 99, interval: "month", features: ["Unlimited group training", "Unlimited AI analysis", "2 private sessions/month", "Match strategy tools", "Scouting reports", "Priority support", "All Pro features"] },
+              ].map(plan => (
+                <div key={plan.name} className={`bg-slate-800/50 border rounded-xl p-5 flex flex-col ${plan.name === "Pro" ? "border-emerald-500/50 ring-1 ring-emerald-500/20" : "border-slate-700/50"}`}>
+                  {plan.name === "Pro" && <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold mb-2">Most Popular</span>}
+                  <h3 className="text-lg font-bold text-white">{plan.name}</h3>
+                  <div className="mt-2 mb-4">
+                    <span className="text-3xl font-bold text-white">${plan.price}</span>
+                    <span className="text-sm text-slate-400">/{plan.interval}</span>
+                  </div>
+                  <ul className="space-y-2 flex-1 mb-4">
+                    {plan.features.map(f => (
+                      <li key={f} className="flex items-center gap-2 text-sm text-slate-300">
+                        <svg className="w-4 h-4 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => setActiveTab("card")}
+                    className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-colors ${plan.name === "Pro" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : "bg-slate-700 hover:bg-slate-600 text-slate-300"}`}
+                  >
+                    {savedCards.length > 0 ? "Subscribe" : "Add Card & Subscribe"}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Fee Schedule — Per-Session Rates</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left text-xs uppercase tracking-wider text-slate-400 pb-3 pr-4">Session Type</th>
+                      {LEVELS.map(l => (
+                        <th key={l} className="text-center text-xs uppercase tracking-wider pb-3 px-3">
+                          <span className={`px-2 py-0.5 rounded-full border ${levelColors[l]}`}>{l}</span>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {FEE_STRUCTURES.filter(f => f.id === "1on1" || f.id === "2on1").map(fee => (
+                      <tr key={fee.id} className="border-b border-slate-700/30">
+                        <td className="py-3 pr-4">
+                          <p className="text-sm font-semibold text-white">{fee.label}</p>
+                          <p className="text-xs text-slate-400">{fee.description}</p>
+                        </td>
+                        {LEVELS.map(l => (
+                          <td key={l} className="py-3 px-3 text-center">
+                            <span className="text-lg font-bold text-white">${feeAmounts[fee.id]?.[l] ?? fee.amounts[l]}</span>
+                            <span className="text-xs text-slate-500">/{fee.interval}</span>
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "overview" && (isAdmin || hasAcademy) && (
           <div className="space-y-6">
             {overdueCount > 0 && !isAdmin && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3">
@@ -639,6 +742,117 @@ export default function PaymentsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {activeTab === "card" && !isAdmin && (
+          <div className="space-y-6">
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Saved Cards</h3>
+                {cardMsg && <span className={`text-xs ${cardMsg.includes("success") ? "text-emerald-400" : "text-red-400"}`}>{cardMsg}</span>}
+              </div>
+              {savedCards.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-700/50 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
+                  </div>
+                  <p className="text-sm text-slate-400">No saved cards yet</p>
+                  <p className="text-xs text-slate-500 mt-1">Add a card below to enable payments</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {savedCards.map(card => (
+                    <div key={card.id} className={`flex items-center justify-between p-4 rounded-xl border ${card.isDefault ? "bg-emerald-500/5 border-emerald-500/30" : "bg-slate-900/50 border-slate-700/30"}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold ${card.brand === "Visa" ? "bg-blue-500/20 text-blue-400" : card.brand === "Mastercard" ? "bg-orange-500/20 text-orange-400" : card.brand === "Amex" ? "bg-indigo-500/20 text-indigo-400" : "bg-slate-700/50 text-slate-400"}`}>
+                          {card.brand === "Visa" ? "VISA" : card.brand === "Mastercard" ? "MC" : card.brand === "Amex" ? "AMEX" : "CARD"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-white">{card.brand} ****{card.last4}</p>
+                          <p className="text-xs text-slate-400">Expires {String(card.expMonth).padStart(2, "0")}/{card.expYear}</p>
+                        </div>
+                        {card.isDefault && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Default</span>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {!card.isDefault && (
+                          <button onClick={() => setDefaultCard(card.id)} className="text-xs px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">
+                            Set Default
+                          </button>
+                        )}
+                        <button onClick={() => removeCard(card.id)} className="text-xs px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Add New Card</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Cardholder Name</label>
+                  <input
+                    type="text"
+                    placeholder="John Doe"
+                    value={cardForm.name}
+                    onChange={e => setCardForm(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 mb-1">Card Number</label>
+                  <input
+                    type="text"
+                    placeholder="4242 4242 4242 4242"
+                    value={cardForm.number}
+                    onChange={e => {
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 16);
+                      const formatted = v.replace(/(\d{4})(?=\d)/g, "$1 ");
+                      setCardForm(prev => ({ ...prev, number: formatted }));
+                    }}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-mono"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">Expiry (MM/YY)</label>
+                    <input
+                      type="text"
+                      placeholder="12/28"
+                      value={cardForm.expiry}
+                      onChange={e => {
+                        let v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                        if (v.length > 2) v = v.slice(0, 2) + "/" + v.slice(2);
+                        setCardForm(prev => ({ ...prev, expiry: v }));
+                      }}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-slate-400 mb-1">CVC</label>
+                    <input
+                      type="text"
+                      placeholder="123"
+                      value={cardForm.cvc}
+                      onChange={e => setCardForm(prev => ({ ...prev, cvc: e.target.value.replace(/\D/g, "").slice(0, 4) }))}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 font-mono"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={saveCard}
+                  disabled={cardSaving}
+                  className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold transition-colors disabled:opacity-50 mt-2"
+                >
+                  {cardSaving ? "Saving..." : "Save Card"}
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-500 mt-3">Card details are stored securely. In production, this uses Stripe for PCI-compliant storage.</p>
+            </div>
           </div>
         )}
 
