@@ -13,12 +13,11 @@ export default function Footer() {
           </div>
           <div className="text-center md:text-right">
             <h4 className="text-white font-semibold mb-2 text-sm">Contact</h4>
-            <span className="block text-sm">info@crickethubglobal.com</span>
+            <a href="mailto:risingstarcricketleague@gmail.com" className="block text-sm hover:text-white transition-colors">risingstarcricketleague@gmail.com</a>
             <span className="block text-sm">Available Worldwide</span>
             <div className="flex gap-3 mt-3 justify-center md:justify-end">
-              <span className="text-xs bg-slate-800 px-2 py-1 rounded">Twitter</span>
-              <span className="text-xs bg-slate-800 px-2 py-1 rounded">Instagram</span>
-              <span className="text-xs bg-slate-800 px-2 py-1 rounded">YouTube</span>
+              <a href="https://www.instagram.com/risingstarscricket.nj" target="_blank" rel="noopener noreferrer" className="text-xs bg-slate-800 px-2 py-1 rounded hover:text-white transition-colors">Instagram</a>
+              <a href="https://www.facebook.com/risingstarcricketleague" target="_blank" rel="noopener noreferrer" className="text-xs bg-slate-800 px-2 py-1 rounded hover:text-white transition-colors">Facebook</a>
             </div>
           </div>
         </div>
