@@ -100,6 +100,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Store", id: "store", links: [
       { href: "/store", label: "Store", desc: "Rising Star merchandise" },
     ]},
+    { title: "Payments", id: "payments", links: [
+      { href: "/payments", label: "Payments", desc: "Fees & subscriptions" },
+    ]},
   ],
   agent:[
     { title: "Stats", id: "stats", links: [
@@ -241,6 +244,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/community", label: "Community" },
     { href: "/streaming", label: "Streaming" },
     { href: "/store", label: "Store" },
+    { href: "/payments", label: "Payments" },
   ],
   agent:[
     { href: "/stats", label: "Stats" },
@@ -315,10 +319,7 @@ function NavbarInner() {
     if (isAdmin) { try { localStorage.setItem("persona", persona); } catch {} }
   }, [persona, isAdmin]);
 
-  const baseGroups = personaGroups[activeRole];
-  const groups = (activeRole === "player" && user?.academyId)
-    ? [...baseGroups, { title: "Payments", id: "payments", links: [{ href: "/payments", label: "Payments", desc: "Fee management" }] }]
-    : baseGroups;
+  const groups = personaGroups[activeRole];
   const pathname = usePathname();
   const showTabs = !!user;
 
