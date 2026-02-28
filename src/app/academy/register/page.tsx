@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getItem, setItem } from "@/lib/storage";
 import type { Academy, AcademySeatPlan } from "@/types";
 
-const SEAT_LIMITS: Record<AcademySeatPlan, number> = { free: 5, starter: 25, pro: 50, enterprise: 200 };
+const SEAT_LIMITS: Record<AcademySeatPlan, number> = { free: 5, starter: 25, pro: 100, enterprise: 200 };
 
 export default function AcademyRegisterPage() {
   const router = useRouter();
@@ -105,7 +105,7 @@ export default function AcademyRegisterPage() {
               {([
                 { id: "free" as const, label: "Free", seats: 5, price: "$0/mo" },
                 { id: "starter" as const, label: "Starter", seats: 25, price: "$49/mo" },
-                { id: "pro" as const, label: "Pro", seats: 50, price: "$89/mo" },
+                { id: "pro" as const, label: "Pro", seats: 100, price: "$89/mo" },
                 { id: "enterprise" as const, label: "Enterprise", seats: 200, price: "Custom" },
               ]).map((p) => (
                 <button

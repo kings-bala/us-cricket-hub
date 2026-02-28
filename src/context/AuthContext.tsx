@@ -88,7 +88,7 @@ function seedRisingStarAcademy() {
     adminEmail: "risingstar@cricverse360.com",
     joinCode: "RSCA26",
     seatPlan: "pro",
-    maxSeats: 50,
+    maxSeats: 100,
     playerEmails,
     coachEmails: ["yashwant@risingstar.com", "aji@risingstar.com", "mandar@risingstar.com", "vraj@risingstar.com"],
     createdAt: new Date().toISOString(),

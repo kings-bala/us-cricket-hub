@@ -65,12 +65,15 @@ export default function AcademyDashboard() {
               <img src={academy.logo} alt={academy.name} className="w-16 h-16 rounded-xl object-cover bg-white" />
             )}
             <div>
-              <h1 className="text-3xl font-bold">{academy.name}</h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold">{academy.name}</h1>
+                <span className="bg-orange-500/20 text-orange-400 px-2.5 py-0.5 rounded-full text-xs font-semibold">Owner</span>
+              </div>
               <p className="text-slate-400">{academy.location} · Head Coach: {academy.headCoach}</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <Link href="/academy/invite" className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Invite Players</Link>
+            <Link href="/academy/invite" className="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">Invite Members</Link>
             <Link href="/academy/roster" className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors">View Roster</Link>
           </div>
         </div>
@@ -118,8 +121,8 @@ export default function AcademyDashboard() {
                   <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Invite Players</div>
-                  <div className="text-xs text-slate-400">Send email invites or share join code</div>
+                  <div className="text-sm font-medium">Invite Kids & Staff</div>
+                  <div className="text-xs text-slate-400">Invite coaches, staff, and kids to your academy</div>
                 </div>
               </Link>
               <Link href="/academy/roster" className="flex items-center gap-3 p-3 bg-slate-700 rounded-lg hover:bg-slate-600 transition-colors">
