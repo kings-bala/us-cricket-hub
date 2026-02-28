@@ -144,6 +144,24 @@ function PlayersContent() {
   const [noteAiLoading, setNoteAiLoading] = useState<string | null>(null);
   const [expandedFeed, setExpandedFeed] = useState<string | null>(null);
   const [notesView, setNotesView] = useState<"my" | "coach">("my");
+  const [drillView, setDrillView] = useState<"library" | "my-drills" | "upload">("library");
+  const [communityDrills, setCommunityDrills] = useState<{ id: string; title: string; description: string; video_url: string; category: string; skill_level: string; duration_minutes: number; tags: string[]; like_count: number; comment_count: number; share_count: number; visibility: string; author_name: string; created_at: string }[]>([
+    { id: "cd1", title: "Front Foot Drive Masterclass", description: "Step-by-step drill to perfect the front foot cover drive. Focus on head position, weight transfer, and follow-through.", video_url: "https://www.youtube.com/watch?v=yeImrfgNJoM", category: "batting", skill_level: "beginner", duration_minutes: 15, tags: ["Footwork", "Defense"], like_count: 42, comment_count: 8, share_count: 12, visibility: "public", author_name: "Arjun Patel", created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: "cd2", title: "Yorker Bowling Practice", description: "Practice routine for consistently bowling yorkers at the death. Includes target placement drills.", video_url: "https://www.youtube.com/watch?v=iO2ChgTJghE", category: "bowling", skill_level: "advanced", duration_minutes: 20, tags: ["Yorker", "Pace"], like_count: 67, comment_count: 15, share_count: 23, visibility: "public", author_name: "Rashid Mohammed", created_at: new Date(Date.now() - 86400000 * 5).toISOString() },
+    { id: "cd3", title: "Slip Catching Routine", description: "Daily slip catching routine used by professional teams. 50 catches minimum per session.", video_url: "https://www.youtube.com/watch?v=H0jPrcfWu9c", category: "fielding", skill_level: "intermediate", duration_minutes: 30, tags: ["Catching"], like_count: 31, comment_count: 5, share_count: 8, visibility: "public", author_name: "Jake Thompson", created_at: new Date(Date.now() - 86400000 * 1).toISOString() },
+    { id: "cd4", title: "Cricket HIIT Workout", description: "High intensity interval training designed for cricketers. Improves sprint speed and fielding agility.", video_url: "https://www.youtube.com/watch?v=x2yois9bzEE", category: "fitness", skill_level: "intermediate", duration_minutes: 25, tags: ["Cardio", "Agility"], like_count: 89, comment_count: 22, share_count: 45, visibility: "public", author_name: "Coach Yashwant", created_at: new Date(Date.now() - 86400000 * 3).toISOString() },
+  ]);
+  const [likedDrills, setLikedDrills] = useState<Set<string>>(new Set());
+  const [drillSearch, setDrillSearch] = useState("");
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadDesc, setUploadDesc] = useState("");
+  const [uploadVideo, setUploadVideo] = useState("");
+  const [uploadCategory, setUploadCategory] = useState("batting");
+  const [uploadLevel, setUploadLevel] = useState("beginner");
+  const [uploadDuration, setUploadDuration] = useState("");
+  const [uploadTags, setUploadTags] = useState<string[]>([]);
+  const [uploadVisibility, setUploadVisibility] = useState<"public" | "academy" | "private">("public");
+  const [uploadStatus, setUploadStatus] = useState("");
   const [coachInboxNotes] = useState<{ id: string; text: string; category: "technique" | "fitness" | "mental" | "general"; date: string; coachName: string; coachId: string }[]>([
     { id: "cn1", text: "Arjun shows excellent footwork against pace but needs to work on playing spin. Recommend 30 min daily spin drills.", category: "technique", date: "2026-02-10", coachName: "Suresh Menon", coachId: "c1" },
     { id: "cn2", text: "Core strength needs improvement. Add planks and medicine ball exercises to weekly routine.", category: "fitness", date: "2026-02-08", coachName: "Suresh Menon", coachId: "c1" },
@@ -1046,77 +1064,251 @@ function PlayersContent() {
               </div>
             )}
 
-            {trainingTab === "drills" && (
+            {trainingTab === "drills" && (() => {
+              const TAG_SUGGESTIONS = ["Power Hitting", "Defense", "Footwork", "Spin", "Pace", "Yorker", "Short Ball", "Catching", "Ground Fielding", "Throwing", "Cardio", "Strength", "Agility", "Net Session", "Match Prep", "Warm Up"];
+              const myDrills = communityDrills.filter(d => d.author_name === (user?.name || player?.name));
+              const formatDate = (dateStr: string) => { const diff = Date.now() - new Date(dateStr).getTime(); const h = Math.floor(diff / 3600000); if (h < 1) return "Just now"; if (h < 24) return `${h}h ago`; const days = Math.floor(h / 24); if (days < 7) return `${days}d ago`; return new Date(dateStr).toLocaleDateString(); };
+              const browseDrills = communityDrills.filter(d => {
+                if (drillCategory !== "all" && d.category !== drillCategory) return false;
+                if (drillLevel !== "all" && d.skill_level !== drillLevel) return false;
+                if (drillSearch.trim()) { const q = drillSearch.toLowerCase(); if (!d.title.toLowerCase().includes(q) && !d.description.toLowerCase().includes(q) && !d.tags.some(t => t.toLowerCase().includes(q))) return false; }
+                return true;
+              });
+              const submitDrill = () => {
+                if (!uploadTitle.trim()) { setUploadStatus("Title is required"); return; }
+                const drill = { id: `cd-${Date.now()}`, title: uploadTitle.trim(), description: uploadDesc.trim(), video_url: uploadVideo.trim(), category: uploadCategory, skill_level: uploadLevel, duration_minutes: parseInt(uploadDuration) || 0, tags: uploadTags, like_count: 0, comment_count: 0, share_count: 0, visibility: uploadVisibility, author_name: user?.name || player?.name || "You", created_at: new Date().toISOString() };
+                setCommunityDrills(prev => [drill, ...prev]);
+                setUploadStatus("Drill uploaded successfully!");
+                apiRequest("/drills", { method: "POST", body: { title: drill.title, description: drill.description, videoUrl: drill.video_url, category: drill.category, skillLevel: drill.skill_level, durationMinutes: drill.duration_minutes, tags: drill.tags, visibility: drill.visibility } }).catch(() => {});
+                setUploadTitle(""); setUploadDesc(""); setUploadVideo(""); setUploadCategory("batting"); setUploadLevel("beginner"); setUploadDuration(""); setUploadTags([]); setUploadVisibility("public");
+                setTimeout(() => { setUploadStatus(""); setDrillView("my-drills"); }, 1500);
+              };
+              return (
               <div className="space-y-6">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h2 className="text-xl font-bold text-white">Drill Library</h2>
-                    <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">{DRILL_LIBRARY.length} Drills</span>
+                    <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">{DRILL_LIBRARY.length + communityDrills.length} Drills</span>
                   </div>
-                  <p className="text-sm text-slate-400">Curated cricket coaching drills organized by skill and difficulty level.</p>
+                  <p className="text-sm text-slate-400">Curated drills, community uploads, and your own training drills.</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <div className="flex gap-1.5">
-                    {(["all", "batting", "bowling", "fielding", "fitness"] as const).map((cat) => (
-                      <button key={cat} onClick={() => setDrillCategory(cat)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillCategory === cat ? "bg-white/10 text-white border border-white/20" : "text-slate-400 hover:text-white border border-transparent"}`}>
-                        {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="border-l border-slate-700 mx-2" />
-                  <div className="flex gap-1.5">
-                    {(["all", "beginner", "intermediate", "advanced"] as const).map((lvl) => (
-                      <button key={lvl} onClick={() => setDrillLevel(lvl)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillLevel === lvl ? "bg-white/10 text-white border border-white/20" : "text-slate-400 hover:text-white border border-transparent"}`}>
-                        {lvl === "all" ? "All Levels" : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
-                      </button>
-                    ))}
-                  </div>
+
+                <div className="flex gap-2 border-b border-slate-700/30 pb-3">
+                  {([{ id: "library", label: "Curated Drills" }, { id: "my-drills", label: "My Drills" }, { id: "upload", label: "Upload Drill" }] as const).map(v => (
+                    <button key={v.id} onClick={() => setDrillView(v.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillView === v.id ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white border border-transparent"}`}>
+                      {v.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredDrills.map((drill) => {
-                    const colors = catColors[drill.category];
-                    return (
-                      <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ${colors.border} border`}>{drill.category}</span>
-                          <span className={`text-xs ${lvlColors[drill.level]}`}>{drill.level}</span>
-                          <span className="text-xs text-slate-600 ml-auto">{drill.duration}</span>
-                        </div>
-                        <h3 className="text-sm font-semibold text-white mb-1">{drill.title}</h3>
-                        <p className="text-xs text-slate-400 line-clamp-2">{drill.description}</p>
-                        {playingVideo === drill.id ? (
-                          <div className="mt-3">
-                            <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                              <iframe
-                                className="absolute inset-0 w-full h-full rounded-lg"
-                                src={`https://www.youtube.com/embed/${drill.videoUrl.match(/[?&]v=([^&]+)/)?.[1] || ""}?autoplay=1`}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              />
-                            </div>
-                            <button onClick={() => setPlayingVideo(null)} className="mt-2 text-xs text-slate-400 hover:text-white transition-colors">Close</button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs text-slate-500">{drill.channel}</span>
-                            <button onClick={() => setPlayingVideo(drill.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
-                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                              Watch
-                            </button>
-                          </div>
-                        )}
+
+                {drillView === "library" && (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex gap-1.5">
+                        {(["all", "batting", "bowling", "fielding", "fitness"] as const).map((cat) => (
+                          <button key={cat} onClick={() => setDrillCategory(cat)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillCategory === cat ? "bg-white/10 text-white border border-white/20" : "text-slate-400 hover:text-white border border-transparent"}`}>
+                            {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                          </button>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
-                {filteredDrills.length === 0 && (
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
-                    <p className="text-slate-400">No drills match your filters.</p>
-                    <button onClick={() => { setDrillCategory("all"); setDrillLevel("all"); }} className="text-xs text-emerald-400 hover:text-emerald-300 mt-2">Reset Filters</button>
+                      <div className="border-l border-slate-700 mx-2" />
+                      <div className="flex gap-1.5">
+                        {(["all", "beginner", "intermediate", "advanced"] as const).map((lvl) => (
+                          <button key={lvl} onClick={() => setDrillLevel(lvl)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillLevel === lvl ? "bg-white/10 text-white border border-white/20" : "text-slate-400 hover:text-white border border-transparent"}`}>
+                            {lvl === "all" ? "All Levels" : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredDrills.map((drill) => {
+                        const colors = catColors[drill.category];
+                        return (
+                          <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ${colors.border} border`}>{drill.category}</span>
+                              <span className={`text-xs ${lvlColors[drill.level]}`}>{drill.level}</span>
+                              <span className="text-xs text-slate-600 ml-auto">{drill.duration}</span>
+                            </div>
+                            <h3 className="text-sm font-semibold text-white mb-1">{drill.title}</h3>
+                            <p className="text-xs text-slate-400 line-clamp-2">{drill.description}</p>
+                            {playingVideo === drill.id ? (
+                              <div className="mt-3">
+                                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                                  <iframe className="absolute inset-0 w-full h-full rounded-lg" src={`https://www.youtube.com/embed/${drill.videoUrl.match(/[?&]v=([^&]+)/)?.[1] || ""}?autoplay=1`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                                </div>
+                                <button onClick={() => setPlayingVideo(null)} className="mt-2 text-xs text-slate-400 hover:text-white transition-colors">Close</button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-xs text-slate-500">{drill.channel}</span>
+                                <button onClick={() => setPlayingVideo(drill.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                  Watch
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {filteredDrills.length === 0 && (
+                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                        <p className="text-slate-400">No drills match your filters.</p>
+                        <button onClick={() => { setDrillCategory("all"); setDrillLevel("all"); }} className="text-xs text-emerald-400 hover:text-emerald-300 mt-2">Reset Filters</button>
+                      </div>
+                    )}
+
+                    <div className="mt-8">
+                      <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-lg font-bold text-white">Community Drills</h3>
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">{communityDrills.length}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        <input type="text" value={drillSearch} onChange={e => setDrillSearch(e.target.value)} placeholder="Search community drills..." className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-full md:w-64" />
+                      </div>
+                      <div className="space-y-3">
+                        {browseDrills.map(drill => (
+                          <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-medium text-slate-300">{drill.author_name}</span>
+                                  <span className="text-xs text-slate-500">{formatDate(drill.created_at)}</span>
+                                </div>
+                                <h4 className="text-sm font-semibold text-white">{drill.title}</h4>
+                              </div>
+                              {drill.video_url && (
+                                <a href={drill.video_url} target="_blank" rel="noopener noreferrer" className="shrink-0 flex items-center gap-1 text-xs text-red-400 hover:text-red-300">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                  Watch
+                                </a>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-400 mb-2">{drill.description}</p>
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              <span className={`text-xs px-2 py-0.5 rounded-full border ${catColors[drill.category]?.bg || "bg-slate-800"} ${catColors[drill.category]?.text || "text-slate-400"} ${catColors[drill.category]?.border || "border-slate-700"}`}>{drill.category}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${lvlColors[drill.skill_level] || "text-slate-400"}`}>{drill.skill_level}</span>
+                              {drill.duration_minutes > 0 && <span className="text-xs text-slate-500">{drill.duration_minutes} min</span>}
+                              {drill.tags.map(t => <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">{t}</span>)}
+                            </div>
+                            <div className="flex items-center gap-4 pt-2 border-t border-slate-800/50">
+                              <button onClick={() => { const wasLiked = likedDrills.has(drill.id); setLikedDrills(prev => { const n = new Set(prev); if (n.has(drill.id)) n.delete(drill.id); else n.add(drill.id); return n; }); setCommunityDrills(prev => prev.map(d => d.id === drill.id ? { ...d, like_count: wasLiked ? d.like_count - 1 : d.like_count + 1 } : d)); apiRequest(`/drills/${drill.id}/like`, { method: "POST" }).catch(() => {}); }} className={`flex items-center gap-1 text-xs ${likedDrills.has(drill.id) ? "text-red-400" : "text-slate-400 hover:text-red-400"}`}>
+                                <svg className="w-3.5 h-3.5" fill={likedDrills.has(drill.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                {drill.like_count}
+                              </button>
+                              <span className="flex items-center gap-1 text-xs text-slate-500">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                {drill.comment_count}
+                              </span>
+                              <button onClick={() => { setCommunityDrills(prev => prev.map(d => d.id === drill.id ? { ...d, share_count: d.share_count + 1 } : d)); apiRequest(`/drills/${drill.id}/share`, { method: "POST" }).catch(() => {}); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                                {drill.share_count}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {browseDrills.length === 0 && <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center"><p className="text-slate-400 text-sm">No community drills match your search.</p></div>}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {drillView === "my-drills" && (
+                  <div className="space-y-4">
+                    {myDrills.length === 0 ? (
+                      <div className="text-center py-16 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+                        <p className="text-lg font-medium mb-1">No drills uploaded yet</p>
+                        <p className="text-slate-400 text-sm mb-4">Upload your first drill to share with the community!</p>
+                        <button onClick={() => setDrillView("upload")} className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium transition-colors">Upload Your First Drill</button>
+                      </div>
+                    ) : (
+                      myDrills.map(drill => (
+                        <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                              <h4 className="text-sm font-semibold text-white">{drill.title}</h4>
+                              <span className="text-xs text-slate-500">{formatDate(drill.created_at)}</span>
+                            </div>
+                            <button onClick={() => { setCommunityDrills(prev => prev.filter(d => d.id !== drill.id)); apiRequest(`/drills/${drill.id}`, { method: "DELETE" }).catch(() => {}); }} className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded border border-red-500/30 hover:bg-red-500/10 transition-colors">Delete</button>
+                          </div>
+                          <p className="text-xs text-slate-400 mb-2">{drill.description}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${catColors[drill.category]?.bg || "bg-slate-800"} ${catColors[drill.category]?.text || "text-slate-400"} ${catColors[drill.category]?.border || "border-slate-700"}`}>{drill.category}</span>
+                            <span className={`text-xs ${lvlColors[drill.skill_level] || "text-slate-400"}`}>{drill.skill_level}</span>
+                            {drill.duration_minutes > 0 && <span className="text-xs text-slate-500">{drill.duration_minutes} min</span>}
+                            {drill.tags.map(t => <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">{t}</span>)}
+                          </div>
+                          {drill.video_url && <a href={drill.video_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 text-xs text-red-400 hover:text-red-300"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Watch Video</a>}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {drillView === "upload" && (
+                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-white mb-4">Upload New Drill</h3>
+                    {uploadStatus && <div className={`mb-4 p-3 rounded-lg text-sm ${uploadStatus.includes("success") ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{uploadStatus}</div>}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Drill Title *</label>
+                        <input type="text" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="e.g. Front Foot Drive Practice" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Description</label>
+                        <textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Describe the drill..." rows={3} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 resize-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Video URL (YouTube or direct link)</label>
+                        <input type="url" value={uploadVideo} onChange={e => setUploadVideo(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1">Category</label>
+                          <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                            <option value="batting">Batting</option><option value="bowling">Bowling</option><option value="fielding">Fielding</option><option value="fitness">Fitness</option><option value="wicketkeeping">Wicketkeeping</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1">Skill Level</label>
+                          <select value={uploadLevel} onChange={e => setUploadLevel(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                            <option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1">Duration (min)</label>
+                          <input type="number" value={uploadDuration} onChange={e => setUploadDuration(e.target.value)} placeholder="15" min="1" max="180" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-2">Tags</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {TAG_SUGGESTIONS.map(tag => (
+                            <button key={tag} onClick={() => setUploadTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])} className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${uploadTags.includes(tag) ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" : "bg-slate-900 text-slate-400 border-slate-700 hover:border-slate-600"}`}>
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                        {uploadTags.length > 0 && <p className="text-xs text-slate-500 mt-1.5">Selected: {uploadTags.join(", ")}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Visibility</label>
+                        <div className="flex gap-2">
+                          {(["public", "academy", "private"] as const).map(v => (
+                            <button key={v} onClick={() => setUploadVisibility(v)} className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${uploadVisibility === v ? "bg-emerald-600/20 text-emerald-400 border-emerald-500/50" : "bg-slate-900 text-slate-400 border-slate-700 hover:border-slate-600"}`}>
+                              {v === "public" ? "Public" : v === "academy" ? "Academy Only" : "Private"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={submitDrill} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm transition-colors">Upload Drill</button>
+                    </div>
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
 
             {trainingTab === "planner" && (
               <div className="space-y-6">
