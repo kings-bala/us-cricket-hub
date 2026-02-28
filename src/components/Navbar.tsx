@@ -97,6 +97,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Streaming", id: "streaming", links: [
       { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
     ]},
+    { title: "Drills", id: "drills", links: [
+      { href: "/drills", label: "Drills", desc: "Upload & share training drills" },
+    ]},
     { title: "Store", id: "store", links: [
       { href: "/store", label: "Store", desc: "Rising Star merchandise" },
     ]},
@@ -183,6 +186,9 @@ const personaGroups: Record<UserRole, NavGroup[]> = {
     { title: "Community", id: "community", links: [
       { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
     ]},
+    { title: "Drills", id: "drills", links: [
+      { href: "/drills", label: "Drills", desc: "Upload & share training drills" },
+    ]},
     { title: "Compare", id: "compare", links: [
       { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
     ]},
@@ -242,6 +248,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/players?tab=training", label: "Training" },
     { href: "/analyze", label: "Full Track AI" },
     { href: "/community", label: "Community" },
+    { href: "/drills", label: "Drills" },
     { href: "/streaming", label: "Streaming" },
     { href: "/store", label: "Store" },
     { href: "/payments", label: "Payments" },
@@ -277,6 +284,7 @@ const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
     { href: "/scoring", label: "Live Scoring" },
     { href: "/streaming", label: "Streaming" },
     { href: "/community", label: "Community" },
+    { href: "/drills", label: "Drills" },
     { href: "/compare", label: "Compare" },
     { href: "/selector", label: "Selector" },
     { href: "/strategy", label: "Strategy" },
