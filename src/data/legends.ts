@@ -32,75 +32,75 @@ export const legends: Legend[] = [
   { id: "l2", name: "Brian Lara", country: "West Indies", era: "1990–2007", skills: ["Batting"], highlights: "400* in Tests, 501* in first-class cricket", photo: "/players/brian-lara.jpg", routines: {
     Batting: [
       { name: "High Backlift Practice", duration: "30 min", frequency: "Daily", description: "Practice the signature high backlift with emphasis on timing and bat flow through the ball", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Concentration Drills", duration: "60 min", frequency: "4x/week", description: "Extended net sessions (300+ balls) to build stamina for long innings and deep concentration", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Footwork Against Spin", duration: "30 min", frequency: "3x/week", description: "Practice dancing down the pitch to spinners and sweeping with precision placement", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Match Simulation Day", duration: "3 hrs", frequency: "Monthly", description: "Full match simulation with scoreboard pressure, field settings, and bowling changes to test concentration", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Concentration Drills", duration: "60 min", frequency: "4x/week", description: "Extended net sessions (300+ balls) to build stamina for long innings and deep concentration", videoUrl: "https://www.youtube.com/watch?v=2A5KfqBHMJI" },
+      { name: "Footwork Against Spin", duration: "30 min", frequency: "3x/week", description: "Practice dancing down the pitch to spinners and sweeping with precision placement", videoUrl: "https://www.youtube.com/watch?v=FkliqIJMq1M" },
+      { name: "Match Simulation Day", duration: "3 hrs", frequency: "Monthly", description: "Full match simulation with scoreboard pressure, field settings, and bowling changes to test concentration", videoUrl: "https://www.youtube.com/watch?v=d6_2ToGYLBg" },
     ],
   }},
   { id: "l3", name: "Sir Don Bradman", country: "Australia", era: "1928–1948", skills: ["Batting"], highlights: "Test average of 99.94, greatest batsman ever", photo: "/players/sir-don-bradman.jpg", routines: {
     Batting: [
       { name: "Golf Ball & Stump Drill", duration: "20 min", frequency: "Daily", description: "Hit a golf ball against a wall with a stump to sharpen hand-eye coordination and reflexes", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Run Scoring Simulation", duration: "45 min", frequency: "5x/week", description: "Practice rotating strike with singles and twos, converting starts into big scores", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Back-foot Play", duration: "30 min", frequency: "4x/week", description: "Drill cuts, pulls, and back-foot punches against short-pitched deliveries", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Run Scoring Simulation", duration: "45 min", frequency: "5x/week", description: "Practice rotating strike with singles and twos, converting starts into big scores", videoUrl: "https://www.youtube.com/watch?v=d6_2ToGYLBg" },
+      { name: "Back-foot Play", duration: "30 min", frequency: "4x/week", description: "Drill cuts, pulls, and back-foot punches against short-pitched deliveries", videoUrl: "https://www.youtube.com/watch?v=1TtiJtlYwSk" },
     ],
   }},
   { id: "l4", name: "Vivian Richards", country: "West Indies", era: "1974–1991", skills: ["Batting", "Fielding"], highlights: "8,540 Test runs, fastest century in ODIs (56 balls)", photo: "/players/vivian-richards.jpg", routines: {
     Batting: [
-      { name: "Power Hitting Drills", duration: "40 min", frequency: "5x/week", description: "Practice clearing the front leg and hitting through the line with maximum bat speed", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Intimidation Batting", duration: "30 min", frequency: "3x/week", description: "Face bouncers and pace bowling without helmet to build mental toughness and confidence", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Power Hitting Drills", duration: "40 min", frequency: "5x/week", description: "Practice clearing the front leg and hitting through the line with maximum bat speed", videoUrl: "https://www.youtube.com/watch?v=g6QTr62frF0" },
+      { name: "Intimidation Batting", duration: "30 min", frequency: "3x/week", description: "Face bouncers and pace bowling without helmet to build mental toughness and confidence", videoUrl: "https://www.youtube.com/watch?v=2A5KfqBHMJI" },
     ],
     Fielding: [
-      { name: "Slip Catching", duration: "20 min", frequency: "Daily", description: "High-speed slip catch practice with reaction catches from close range", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Ground Fielding Sprints", duration: "25 min", frequency: "4x/week", description: "Sprint to collect and throw from various angles to build arm strength and accuracy", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Slip Catching", duration: "20 min", frequency: "Daily", description: "High-speed slip catch practice with reaction catches from close range", videoUrl: "https://www.youtube.com/watch?v=H0jPrcfWu9c" },
+      { name: "Ground Fielding Sprints", duration: "25 min", frequency: "4x/week", description: "Sprint to collect and throw from various angles to build arm strength and accuracy", videoUrl: "https://www.youtube.com/watch?v=gM9PT0vtoeQ" },
     ],
   }},
   { id: "l5", name: "Shane Warne", country: "Australia", era: "1992–2007", skills: ["Bowling"], highlights: "708 Test wickets, legendary leg-spinner", photo: "/players/shane-warne.jpg", routines: {
     Bowling: [
-      { name: "Wrist Spin Drills", duration: "45 min", frequency: "Daily", description: "Practice leg-break, googly, flipper, and slider with focus on wrist position and revolutions", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Target Bowling", duration: "30 min", frequency: "5x/week", description: "Bowl at cones placed on good length and outside off stump to develop accuracy and drift", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Finger Strength", duration: "15 min", frequency: "Daily", description: "Squeeze tennis balls and do finger push-ups to build the grip strength needed for sharp spin", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Tactical Visualization", duration: "15 min", frequency: "Daily", description: "Study batsmen videos and plan field settings, over sequences, and dismissal strategies", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Variation Assessment", duration: "2 hrs", frequency: "Monthly", description: "Test all spin variations against quality batsmen under match conditions and measure effectiveness", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Wrist Spin Drills", duration: "45 min", frequency: "Daily", description: "Practice leg-break, googly, flipper, and slider with focus on wrist position and revolutions", videoUrl: "https://www.youtube.com/watch?v=GvX6H7qHM68" },
+      { name: "Target Bowling", duration: "30 min", frequency: "5x/week", description: "Bowl at cones placed on good length and outside off stump to develop accuracy and drift", videoUrl: "https://www.youtube.com/watch?v=iO2ChgTJghE" },
+      { name: "Finger Strength", duration: "15 min", frequency: "Daily", description: "Squeeze tennis balls and do finger push-ups to build the grip strength needed for sharp spin", videoUrl: "https://www.youtube.com/watch?v=GvX6H7qHM68" },
+      { name: "Tactical Visualization", duration: "15 min", frequency: "Daily", description: "Study batsmen videos and plan field settings, over sequences, and dismissal strategies", videoUrl: "https://www.youtube.com/watch?v=Zm9VKD0gH1U" },
+      { name: "Variation Assessment", duration: "2 hrs", frequency: "Monthly", description: "Test all spin variations against quality batsmen under match conditions and measure effectiveness", videoUrl: "https://www.youtube.com/watch?v=GvX6H7qHM68" },
     ],
   }},
   { id: "l6", name: "Muttiah Muralitharan", country: "Sri Lanka", era: "1992–2011", skills: ["Bowling"], highlights: "800 Test wickets, all-time leading wicket-taker", photo: "/players/muttiah-muralitharan.jpg", routines: {
     Bowling: [
-      { name: "Off-spin Variations", duration: "45 min", frequency: "Daily", description: "Practice doosra, carrom ball, and top-spinner with maximum revolutions and flight control", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Endurance Bowling", duration: "60 min", frequency: "4x/week", description: "Bowl 20-over spells in nets to build stamina for long spells in match conditions", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Shoulder Flexibility", duration: "20 min", frequency: "Daily", description: "Stretching and rotation exercises to maintain the unique bowling action and prevent injury", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Off-spin Variations", duration: "45 min", frequency: "Daily", description: "Practice doosra, carrom ball, and top-spinner with maximum revolutions and flight control", videoUrl: "https://www.youtube.com/watch?v=Zm9VKD0gH1U" },
+      { name: "Endurance Bowling", duration: "60 min", frequency: "4x/week", description: "Bowl 20-over spells in nets to build stamina for long spells in match conditions", videoUrl: "https://www.youtube.com/watch?v=Zm9VKD0gH1U" },
+      { name: "Shoulder Flexibility", duration: "20 min", frequency: "Daily", description: "Stretching and rotation exercises to maintain the unique bowling action and prevent injury", videoUrl: "https://www.youtube.com/watch?v=x2yois9bzEE" },
     ],
   }},
   { id: "l7", name: "Wasim Akram", country: "Pakistan", era: "1984–2003", skills: ["Bowling"], highlights: "916 international wickets, king of reverse swing", photo: "/players/wasim-akram.jpg", routines: {
     Bowling: [
-      { name: "Reverse Swing Mastery", duration: "40 min", frequency: "5x/week", description: "Practice wrist position for conventional and reverse swing with old and new balls", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Yorker Precision", duration: "30 min", frequency: "Daily", description: "Target the base of stumps consistently — aim for 8/10 yorker accuracy in death overs", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Pace Generation", duration: "30 min", frequency: "4x/week", description: "Run-up rhythm drills and explosive bowling action to maximize pace from a smooth run-up", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Swing Clinic", duration: "2 hrs", frequency: "Monthly", description: "Comprehensive review of swing bowling mechanics with video analysis and corrective drills", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Reverse Swing Mastery", duration: "40 min", frequency: "5x/week", description: "Practice wrist position for conventional and reverse swing with old and new balls", videoUrl: "https://www.youtube.com/watch?v=UyBDQevQphc" },
+      { name: "Yorker Precision", duration: "30 min", frequency: "Daily", description: "Target the base of stumps consistently — aim for 8/10 yorker accuracy in death overs", videoUrl: "https://www.youtube.com/watch?v=iO2ChgTJghE" },
+      { name: "Pace Generation", duration: "30 min", frequency: "4x/week", description: "Run-up rhythm drills and explosive bowling action to maximize pace from a smooth run-up", videoUrl: "https://www.youtube.com/watch?v=EC2PWZxDBec" },
+      { name: "Swing Clinic", duration: "2 hrs", frequency: "Monthly", description: "Comprehensive review of swing bowling mechanics with video analysis and corrective drills", videoUrl: "https://www.youtube.com/watch?v=UyBDQevQphc" },
     ],
   }},
   { id: "l8", name: "Glenn McGrath", country: "Australia", era: "1993–2007", skills: ["Bowling"], highlights: "563 Test wickets, relentless line and length", photo: "/players/glenn-mcgrath.jpg", routines: {
     Bowling: [
-      { name: "Line & Length Drills", duration: "45 min", frequency: "Daily", description: "Bowl on a coin placed on a good length outside off stump — aim for 9/10 accuracy", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Seam Position Control", duration: "30 min", frequency: "5x/week", description: "Practice upright seam position for both away and in-swing movement off the pitch", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Mental Toughness", duration: "15 min", frequency: "Daily", description: "Visualize bowling dry spells, maintaining pressure, and executing plans under stress", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Line & Length Drills", duration: "45 min", frequency: "Daily", description: "Bowl on a coin placed on a good length outside off stump — aim for 9/10 accuracy", videoUrl: "https://www.youtube.com/watch?v=R003xzRMEXw" },
+      { name: "Seam Position Control", duration: "30 min", frequency: "5x/week", description: "Practice upright seam position for both away and in-swing movement off the pitch", videoUrl: "https://www.youtube.com/watch?v=UyBDQevQphc" },
+      { name: "Mental Toughness", duration: "15 min", frequency: "Daily", description: "Visualize bowling dry spells, maintaining pressure, and executing plans under stress", videoUrl: "https://www.youtube.com/watch?v=EC2PWZxDBec" },
     ],
   }},
   { id: "l9", name: "MS Dhoni", country: "India", era: "2004–2020", skills: ["Wicket-Keeping", "Batting"], highlights: "World Cup-winning captain, lightning-fast stumping", photo: "/players/ms-dhoni.jpg", routines: {
     "Wicket-Keeping": [
-      { name: "Lightning Stumping Drill", duration: "30 min", frequency: "Daily", description: "Practice collecting the ball and breaking the stumps in one motion — target sub-0.2s stumping time", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Standing Up to Pace", duration: "25 min", frequency: "4x/week", description: "Practice keeping up to medium pacers to improve reflexes and reduce reaction time", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Diving Catch Practice", duration: "20 min", frequency: "5x/week", description: "Catch tennis balls from a catching cradle while diving left and right at full stretch", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Keeping Fitness Test", duration: "2 hrs", frequency: "Monthly", description: "Full day wicket-keeping drill testing stamina over 90 overs with reflex and agility benchmarks", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Lightning Stumping Drill", duration: "30 min", frequency: "Daily", description: "Practice collecting the ball and breaking the stumps in one motion — target sub-0.2s stumping time", videoUrl: "https://www.youtube.com/watch?v=H0jPrcfWu9c" },
+      { name: "Standing Up to Pace", duration: "25 min", frequency: "4x/week", description: "Practice keeping up to medium pacers to improve reflexes and reduce reaction time", videoUrl: "https://www.youtube.com/watch?v=FkF6bsnW5bE" },
+      { name: "Diving Catch Practice", duration: "20 min", frequency: "5x/week", description: "Catch tennis balls from a catching cradle while diving left and right at full stretch", videoUrl: "https://www.youtube.com/watch?v=FkF6bsnW5bE" },
+      { name: "Keeping Fitness Test", duration: "2 hrs", frequency: "Monthly", description: "Full day wicket-keeping drill testing stamina over 90 overs with reflex and agility benchmarks", videoUrl: "https://www.youtube.com/watch?v=RraLn96THGc" },
     ],
     Batting: [
-      { name: "Helicopter Shot Drill", duration: "20 min", frequency: "3x/week", description: "Practice the wrist roll and follow-through for the signature helicopter shot against yorkers", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
-      { name: "Death Overs Finishing", duration: "40 min", frequency: "5x/week", description: "Simulate match scenarios: 15 needed off 12, 8 off 6 — practice calculated hitting", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Helicopter Shot Drill", duration: "20 min", frequency: "3x/week", description: "Practice the wrist roll and follow-through for the signature helicopter shot against yorkers", videoUrl: "https://www.youtube.com/watch?v=g6QTr62frF0" },
+      { name: "Death Overs Finishing", duration: "40 min", frequency: "5x/week", description: "Simulate match scenarios: 15 needed off 12, 8 off 6 — practice calculated hitting", videoUrl: "https://www.youtube.com/watch?v=d6_2ToGYLBg" },
     ],
   }},
   { id: "l10", name: "Adam Gilchrist", country: "Australia", era: "1996–2008", skills: ["Wicket-Keeping", "Batting"], highlights: "Explosive keeper-batsman, 379 dismissals", photo: "/players/adam-gilchrist.jpg", routines: {
     "Wicket-Keeping": [
       { name: "Edge Catching Drills", duration: "30 min", frequency: "Daily", description: "Face rapid deflections off bat edges from pace bowling — build reflexes for fast catches", videoUrl: "https://www.youtube.com/watch?v=H0jPrcfWu9c" },
-      { name: "Footwork Behind Stumps", duration: "20 min", frequency: "5x/week", description: "Lateral movement drills to cover both sides of the wicket smoothly and quickly", videoUrl: "https://www.youtube.com/watch?v=ZGPXm8yAKVg" },
+      { name: "Footwork Behind Stumps", duration: "20 min", frequency: "5x/week", description: "Lateral movement drills to cover both sides of the wicket smoothly and quickly", videoUrl: "https://www.youtube.com/watch?v=Sixg3PTTXk8" },
     ],
     Batting: [
       { name: "Aggressive Intent Nets", duration: "40 min", frequency: "5x/week", description: "Practice attacking from ball one — lofted drives, pulls, and sweeps with positive footwork", videoUrl: "https://www.youtube.com/watch?v=2A5KfqBHMJI" },
@@ -154,7 +154,7 @@ export const legends: Legend[] = [
       { name: "Elegant Stroke Making", duration: "40 min", frequency: "Daily", description: "Practice flowing drives and wristy flicks with emphasis on balance and grace", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
     ],
     Bowling: [
-      { name: "Multi-Style Bowling", duration: "40 min", frequency: "4x/week", description: "Alternate between pace, medium, and spin in the same session to develop versatility", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Multi-Style Bowling", duration: "40 min", frequency: "4x/week", description: "Alternate between pace, medium, and spin in the same session to develop versatility", videoUrl: "https://www.youtube.com/watch?v=EC2PWZxDBec" },
     ],
     Fielding: [
       { name: "Close-In Catching", duration: "20 min", frequency: "Daily", description: "Short leg and silly point catching drills with protective gear", videoUrl: "https://www.youtube.com/watch?v=H0jPrcfWu9c" },
@@ -277,7 +277,7 @@ export const legends: Legend[] = [
   }},
   { id: "l31", name: "Rishabh Pant", country: "India", era: "2017–present", skills: ["Wicket-Keeping", "Batting"], highlights: "Fearless keeper-batter, match-winning centuries in Aus & Eng, T20 destroyer", photo: "/players/rishabh-pant.jpg", routines: {
     "Wicket-Keeping": [
-      { name: "Standing Up to Pace", duration: "30 min", frequency: "Daily", description: "Practice keeping up to medium-fast bowlers — improve reflexes and quick stumping ability", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM" },
+      { name: "Standing Up to Pace", duration: "30 min", frequency: "Daily", description: "Practice keeping up to medium-fast bowlers — improve reflexes and quick stumping ability", videoUrl: "https://www.youtube.com/watch?v=H0jPrcfWu9c" },
       { name: "Athletic Keeping", duration: "25 min", frequency: "5x/week", description: "Diving catches, one-handed takes, and acrobatic dismissals to build spectacular keeping skills", videoUrl: "https://www.youtube.com/watch?v=FkF6bsnW5bE" },
     ],
     Batting: [
