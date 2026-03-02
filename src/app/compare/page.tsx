@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { players } from "@/data/mock";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 type CompareMetric = "batting" | "bowling" | "fitness" | "overall";
 
@@ -43,6 +44,14 @@ function calcTrendScore(p: typeof players[0]): { score: number; direction: "up" 
 }
 
 export default function ComparePage() {
+  return (
+    <SubscriptionGate feature="compare_players">
+      <CompareContent />
+    </SubscriptionGate>
+  );
+}
+
+function CompareContent() {
   const [selectedIds, setSelectedIds] = useState<string[]>(["p1", "p8"]);
   const [metricView, setMetricView] = useState<CompareMetric>("overall");
   const [searchQuery, setSearchQuery] = useState("");

@@ -4,8 +4,17 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
 import { AgeGroup, Region, PlayerRole, BowlingStyle } from "@/types";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 export default function ScoutingPage() {
+  return (
+    <SubscriptionGate feature="pro_scouting">
+      <ScoutingContent />
+    </SubscriptionGate>
+  );
+}
+
+function ScoutingContent() {
   const [region, setRegion] = useState<Region | "All">("All");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");

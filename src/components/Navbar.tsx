@@ -5,6 +5,7 @@ import { Suspense, useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { UserRole } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { useSubscription } from "@/context/SubscriptionContext";
 
 const roleLabels: Record<UserRole | "admin", string> = {
   player: "Player",
@@ -306,6 +307,7 @@ function NavbarInner() {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { tier } = useSubscription();
   const isAdmin = user?.role === "admin";
 
   const activeRole: UserRole = isAdmin ? persona : (user?.role && user.role !== "admin" ? user.role as UserRole : "player");
@@ -377,8 +379,9 @@ function NavbarInner() {
             {user ? (
               <div className="flex items-center gap-2">
                 <div className="hidden sm:flex items-center gap-2">
-                  {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
-                  <span className="text-xs text-slate-300">{user.name}</span>
+                    {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
+                    <span className="text-xs text-slate-300">{user.name}</span>
+                    {tier !== "free" && <Link href="/pricing" className={`text-xs px-1.5 py-0.5 rounded-full ${tier === "academy" ? "bg-orange-500/20 text-orange-400" : "bg-emerald-500/20 text-emerald-400"}`}>{tier === "academy" ? "Academy" : "Pro"}</Link>}
                   {isAdmin && <Link href="/admin" className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full hover:bg-amber-500/30 transition-colors">Admin</Link>}
                 </div>
                 <button onClick={() => { logout(); router.push("/auth"); }} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full transition-colors">Logout</button>

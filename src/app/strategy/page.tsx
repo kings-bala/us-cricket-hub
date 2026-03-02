@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { players } from "@/data/mock";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 type Phase = "powerplay" | "middle" | "death";
 type MatchFormat = "T20" | "ODI" | "T10";
@@ -75,6 +76,14 @@ const defaultPlan: StrategyPlan = {
 };
 
 export default function StrategyPage() {
+  return (
+    <SubscriptionGate feature="strategy_tools">
+      <StrategyContent />
+    </SubscriptionGate>
+  );
+}
+
+function StrategyContent() {
   const [plan, setPlan] = useState<StrategyPlan>(defaultPlan);
   const [activeTab, setActiveTab] = useState<"batting" | "bowling" | "phases" | "simulation">("batting");
   const [simBall, setSimBall] = useState(0);

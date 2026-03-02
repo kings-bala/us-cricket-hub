@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { players } from "@/data/mock";
 import { useAuth } from "@/context/AuthContext";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 type ReadinessLevel = "Ready Now" | "6 Months" | "1 Year" | "Development";
 type WatchlistCategory = "shortlist" | "watchlist" | "monitor";
@@ -52,6 +53,14 @@ const defaultEntries: WatchlistEntry[] = [
 ];
 
 export default function SelectorPage() {
+  return (
+    <SubscriptionGate feature="selector_tools">
+      <SelectorContent />
+    </SubscriptionGate>
+  );
+}
+
+function SelectorContent() {
   const { user } = useAuth();
   const [entries, setEntries] = useState<WatchlistEntry[]>(defaultEntries);
   const [activeCategory, setActiveCategory] = useState<WatchlistCategory | "all">("all");
