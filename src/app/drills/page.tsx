@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api-client";
+import { useSubscription } from "@/context/SubscriptionContext";
+import { InlineUpgradePrompt } from "@/components/SubscriptionGate";
 
 type DrillCategory = "batting" | "bowling" | "fielding" | "fitness" | "wicketkeeping";
 type SkillLevel = "beginner" | "intermediate" | "advanced";
@@ -75,8 +78,22 @@ const MOCK_DRILLS: Drill[] = [
   },
 ];
 
+const PREMIUM_PACKS = [
+  { id: "pp1", name: "Elite Batting Masterclass", price: 14.99, drillCount: 12, description: "Pro-level batting drills from international coaches", level: "advanced" as SkillLevel },
+  { id: "pp2", name: "Fast Bowling Toolkit", price: 12.99, drillCount: 10, description: "Speed, accuracy, and variation drills for pace bowlers", level: "intermediate" as SkillLevel },
+  { id: "pp3", name: "Fielding Fundamentals Pack", price: 9.99, drillCount: 8, description: "Catching, throwing, and ground fielding essentials", level: "beginner" as SkillLevel },
+];
+
+const AFFILIATE_GEAR = [
+  { name: "SG Cricket Bat - English Willow", price: 189, url: "https://www.amazon.com/dp/B0EXAMPLE1?tag=cricverse360-20", category: "batting" as DrillCategory },
+  { name: "Kookaburra Bowling Machine Ball (6pk)", price: 24, url: "https://www.amazon.com/dp/B0EXAMPLE2?tag=cricverse360-20", category: "bowling" as DrillCategory },
+  { name: "Fielding Training Rebound Net", price: 45, url: "https://www.amazon.com/dp/B0EXAMPLE3?tag=cricverse360-20", category: "fielding" as DrillCategory },
+  { name: "Agility Ladder + Cones Set", price: 29, url: "https://www.amazon.com/dp/B0EXAMPLE4?tag=cricverse360-20", category: "fitness" as DrillCategory },
+];
+
 export default function DrillsPage() {
   const { user } = useAuth();
+  const { hasFeature } = useSubscription();
   const [tab, setTab] = useState<DrillTab>("browse");
   const [drills, setDrills] = useState<Drill[]>(MOCK_DRILLS);
   const [filterCategory, setFilterCategory] = useState<DrillCategory | "all">("all");
@@ -252,6 +269,55 @@ export default function DrillsPage() {
           <h1 className="text-3xl font-bold mb-2">Training Drills</h1>
           <p className="text-slate-400">Upload, share, and discover training drills from the community</p>
         </div>
+
+        {!hasFeature("drills_upload") && (
+          <div className="mb-6">
+            <InlineUpgradePrompt feature="drills_upload" message="Upgrade to Pro to upload & share your own drills with the community" />
+          </div>
+        )}
+
+        <div className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-5 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h2 className="text-sm font-semibold text-blue-400 uppercase tracking-wide">Premium Drill Packs</h2>
+              <p className="text-xs text-slate-500">Curated by professional coaches</p>
+            </div>
+            <Link href="/pricing" className="text-xs text-blue-400 hover:text-blue-300">View all plans &rarr;</Link>
+          </div>
+          <div className="grid md:grid-cols-3 gap-3">
+            {PREMIUM_PACKS.map((pack) => (
+              <div key={pack.id} className="bg-slate-800/50 rounded-xl p-4 border border-blue-500/20 hover:border-blue-500/40 transition-all">
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full border ${SKILL_LEVELS.find(l => l.value === pack.level)?.color}`}>{pack.level}</span>
+                  <span className="text-xs text-slate-500">{pack.drillCount} drills</span>
+                </div>
+                <h3 className="text-sm font-semibold text-white mb-1">{pack.name}</h3>
+                <p className="text-xs text-slate-400 mb-3">{pack.description}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-400 font-semibold">${pack.price}</span>
+                  <button className="text-xs px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors">Buy Pack</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {filterCategory !== "all" && (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
+            <h3 className="text-sm font-semibold text-amber-400 mb-3">Recommended Gear for {CATEGORIES.find(c => c.value === filterCategory)?.label}</h3>
+            <div className="flex gap-3 overflow-x-auto pb-1">
+              {AFFILIATE_GEAR.filter(g => g.category === filterCategory).map((gear) => (
+                <a key={gear.name} href={gear.url} target="_blank" rel="noopener noreferrer" className="shrink-0 bg-slate-900/50 border border-slate-700/50 rounded-lg p-3 hover:border-amber-500/40 transition-all w-52">
+                  <p className="text-xs text-white font-medium truncate">{gear.name}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-amber-400 text-sm font-semibold">${gear.price}</span>
+                    <span className="text-xs text-slate-500">View on Amazon</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-2 mb-6 border-b border-slate-800 pb-4">
           {(["browse", "my-drills", "upload"] as DrillTab[]).map(t => (
