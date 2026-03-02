@@ -700,8 +700,8 @@ export default function PaymentsPage() {
         )}
 
         {activeTab === "history" && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-            <table className="w-full">
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-x-auto">
+            <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-700/50">
                   <th className="text-left text-xs text-slate-500 uppercase tracking-wide px-5 py-3">Date</th>

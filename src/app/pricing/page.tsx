@@ -157,8 +157,8 @@ export default function PricingPage() {
 
       <div className="mt-16">
         <h2 className="text-2xl font-bold text-white text-center mb-8">Feature Comparison</h2>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-x-auto -mx-4 sm:mx-0">
+          <table className="w-full text-sm min-w-[500px]">
             <thead>
               <tr className="border-b border-slate-700/50">
                 <th className="text-left px-6 py-4 text-slate-400 font-medium">Feature</th>
