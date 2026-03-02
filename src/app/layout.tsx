@@ -1,13 +1,20 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import ClientLayout from "@/components/ClientLayout";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+  themeColor: "#10b981",
+};
 
 export const metadata: Metadata = {
   title: "CricVerse360 - International Cricket Talent Discovery Platform",
   description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
   manifest: "/manifest.json",
-  themeColor: "#10b981",
-  appleWebApp: {
+  appleWebApp:{
     capable: true,
     statusBarStyle: "black-translucent",
     title: "CricVerse360",
