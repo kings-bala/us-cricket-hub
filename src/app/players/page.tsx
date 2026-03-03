@@ -802,12 +802,12 @@ function PlayersContent() {
 
         return (
           <div className="space-y-6">
-            <div className="flex gap-2 border-b border-slate-700/50 pb-3">
+            <div className="flex gap-2 border-b border-slate-700/50 pb-3 overflow-x-auto -mx-4 px-4">
               {trainingSubTabs.map((st) => (
                 <button
                   key={st.id}
                   onClick={() => setTrainingTab(st.id)}
-                  className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                  className={`text-sm px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
                     trainingTab === st.id ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white border border-transparent"
                   }`}
                 >

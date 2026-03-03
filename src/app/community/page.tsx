@@ -500,7 +500,18 @@ export default function CommunityPage() {
         {activeTab === "feed" ? (
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="lg:w-64 shrink-0">
-              <div className="sticky top-20">
+              <div className="lg:hidden flex gap-3 mb-4">
+                <select value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value as USRegion)}
+                  className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                  {US_REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value as PostType | "all")}
+                  className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                  <option value="all">All Posts</option>
+                  {(Object.keys(postTypeLabels) as PostType[]).map(t => <option key={t} value={t}>{postTypeLabels[t].label}</option>)}
+                </select>
+              </div>
+              <div className="sticky top-20 hidden lg:block">
                 <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Region</h3>
                   <div className="space-y-1">
