@@ -260,15 +260,7 @@ export default function AnalyzePage() {
         ))}
       </div>
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold text-white">AI Video Analysis</h1>
-          <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">
-            AI-Powered
-          </span>
-          <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">
-            In-Browser
-          </span>
-        </div>
+        <h1 className="text-3xl font-bold text-white mb-2">AI Video Analysis</h1>
         <p className="text-slate-400">
           Upload your cricket videos and get instant AI-powered technique
           analysis with personalized feedback. All processing runs in your
