@@ -473,14 +473,15 @@ export default function CommunityPage() {
   return (
     <div className="min-h-screen bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 animate-fade-up">
           <div>
+            <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Connect</p>
             <h1 className="text-2xl font-bold text-white flex items-center gap-2">
               <span className="text-emerald-400">Community</span> Hub
             </h1>
             <p className="text-sm text-slate-400 mt-1">Feed & Leaderboard in one place</p>
           </div>
-          <div className="flex bg-slate-800/80 border border-slate-700/50 rounded-xl p-1">
+          <div className="flex glass-card rounded-xl p-1">
             <button
               onClick={() => setActiveTab("feed")}
               className={`px-5 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === "feed" ? "bg-emerald-500 text-white shadow-lg" : "text-slate-400 hover:text-white"}`}
@@ -502,17 +503,17 @@ export default function CommunityPage() {
             <div className="lg:w-64 shrink-0">
               <div className="lg:hidden flex gap-3 mb-4">
                 <select value={selectedRegion} onChange={(e) => setSelectedRegion(e.target.value as USRegion)}
-                  className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                  className="flex-1 glass-card rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
                   {US_REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
                 <select value={selectedType} onChange={(e) => setSelectedType(e.target.value as PostType | "all")}
-                  className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+                  className="flex-1 glass-card rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
                   <option value="all">All Posts</option>
                   {(Object.keys(postTypeLabels) as PostType[]).map(t => <option key={t} value={t}>{postTypeLabels[t].label}</option>)}
                 </select>
               </div>
               <div className="sticky top-20 hidden lg:block">
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
+                <div className="glass-card rounded-xl p-4 mb-4">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Region</h3>
                   <div className="space-y-1">
                     {US_REGIONS.map(r => (
@@ -523,7 +524,7 @@ export default function CommunityPage() {
                     ))}
                   </div>
                 </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-4">
+                <div className="glass-card rounded-xl p-4 mb-4">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Post Type</h3>
                   <div className="space-y-1">
                     <button onClick={() => setSelectedType("all")}
@@ -538,7 +539,7 @@ export default function CommunityPage() {
                     ))}
                   </div>
                 </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                <div className="glass-card rounded-xl p-4">
                   <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Active Regions</h3>
                   {regionStats.map(([region, count]) => (
                     <div key={region} className="flex items-center justify-between py-1.5">
@@ -567,7 +568,7 @@ export default function CommunityPage() {
               </div>
 
               {showCreatePost && (
-                <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-5 mb-6">
+                <div className="glass-card rounded-xl p-5 mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-white">Create Post</h3>
                     <button onClick={() => setShowCreatePost(false)} className="text-slate-400 hover:text-white text-xl">&times;</button>
@@ -636,7 +637,7 @@ export default function CommunityPage() {
 
               <div className="space-y-4">
                 {filteredPosts.map(post => (
-                  <div key={post.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden hover:border-slate-600/50 transition-all">
+                  <div key={post.id} className="glass-card rounded-xl overflow-hidden hover:border-slate-600/50 transition-all">
                     <div className="p-5">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -789,7 +790,7 @@ export default function CommunityPage() {
                   ))}
                 </div>
 
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                <div className="glass-card rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-slate-300 mb-3">Rising Players</h3>
                   {posts.filter(p => p.isRising).slice(0, 3).map(p => (
                     <div key={p.id} className="flex items-center gap-2 py-1.5">
@@ -802,7 +803,7 @@ export default function CommunityPage() {
                   ))}
                 </div>
 
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                <div className="glass-card rounded-xl p-4">
                   <h3 className="text-sm font-semibold text-slate-300 mb-3">Trending Topics</h3>
                   <div className="space-y-2">
                     {["MLC Development", "Youth Nationals", "Weekend League", "T20 Championship", "Training Camps"].map(t => (
@@ -829,7 +830,7 @@ export default function CommunityPage() {
             </div>
 
             {isPlayer && myEnergy && (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 mb-8">
+              <div className="glass-card rounded-2xl p-6 mb-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${LEVEL_COLORS[myEnergy.level] || LEVEL_COLORS[1]} flex items-center justify-center text-2xl font-bold shadow-lg`}>
@@ -880,7 +881,7 @@ export default function CommunityPage() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
+                  <div className="glass-card rounded-2xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-slate-700/50">
                       <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wide">
                         {isAdmin ? "All Academies" : "Top Players"} &mdash; {scope === "weekly" ? "This Week" : "All Time"}
@@ -927,7 +928,7 @@ export default function CommunityPage() {
 
                 <div className="space-y-6">
                   {isPlayer && (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5">
+                    <div className="glass-card rounded-2xl p-5">
                       <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-4">
                         My Badges ({myBadges.length}/{allBadges.length})
                       </h3>
@@ -946,7 +947,7 @@ export default function CommunityPage() {
                     </div>
                   )}
 
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5">
+                  <div className="glass-card rounded-2xl p-5">
                     <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">How to Earn CE</h3>
                     <div className="space-y-2 text-xs">
                       {[
@@ -993,7 +994,7 @@ export default function CommunityPage() {
                     </div>
                   )}
 
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-5">
+                  <div className="glass-card rounded-2xl p-5">
                     <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">Levels</h3>
                     <div className="space-y-2">
                       {[

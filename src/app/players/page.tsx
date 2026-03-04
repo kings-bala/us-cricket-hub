@@ -363,14 +363,14 @@ function PlayersContent() {
 
       {(tab === "profile" || tab === "mystats") && (
         <div className="space-y-6">
-          <div className="flex items-center gap-1 bg-slate-800/60 border border-slate-700/50 rounded-xl p-1 mb-2">
+          <div className="flex items-center gap-1 glass-card rounded-xl p-1 mb-2">
             <Link href="/players?tab=profile" className={`flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium transition-colors ${tab === "profile" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>My Profile</Link>
             <Link href="/players?tab=mystats" className={`flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium transition-colors ${tab === "mystats" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>My Stats</Link>
             <Link href="/stats" className="flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">Full Dashboard</Link>
           </div>
 
           {tab === "profile" && (<>
-          <div className="bg-gradient-to-r from-slate-800/80 via-slate-800/50 to-slate-800/80 border border-slate-700/50 rounded-2xl p-6">
+          <div className="glass-card rounded-2xl p-6 animate-fade-up">
             <div className="flex flex-col md:flex-row items-center gap-5">
               <div className="flex-shrink-0">
                 <CPIRing score={profileCpi.overall} size={100} />
@@ -402,7 +402,7 @@ function PlayersContent() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Batting</h3>
                 <span className="text-[10px] text-slate-500">Last {profileMatches.length} innings</span>
@@ -423,7 +423,7 @@ function PlayersContent() {
               {profileBattingChart.length > 0 && <ProfileBattingChart data={profileBattingChart} />}
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wide mb-3">Bowling</h3>
               <div className="flex items-center gap-4 mb-3">
                 <div className="text-center">
@@ -441,7 +441,7 @@ function PlayersContent() {
           </div>
 
           {profileCombine && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wide">Combine Assessment</h3>
                 {profileCombine.verifiedAthlete && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Verified</span>}
@@ -477,7 +477,7 @@ function PlayersContent() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Profile Visibility</h3>
               <div className="space-y-3">
                 <div className="flex justify-between text-sm"><span className="text-slate-400">Profile Views (30d)</span><span className="text-white font-medium">247</span></div>
@@ -485,7 +485,7 @@ function PlayersContent() {
                 <div className="flex justify-between text-sm"><span className="text-slate-400">Agent Interest</span><span className="text-emerald-400 font-medium">3 new</span></div>
               </div>
             </div>
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Upcoming Events</h3>
               <div className="space-y-2">
                 {tournaments.filter((t) => t.status === "upcoming").slice(0, 3).map((t) => (
@@ -498,7 +498,7 @@ function PlayersContent() {
             </div>
           </div>
 
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <div className="glass-card rounded-xl p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Performance Feed</h3>
@@ -545,7 +545,7 @@ function PlayersContent() {
         const formStatus = getFormStatus(matches, player.role);
         return (
           <div className="space-y-6">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Career Stats</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <StatCard label="Matches" value={player.stats.matches} color="emerald" />
@@ -568,7 +568,7 @@ function PlayersContent() {
             </div>
 
             {playerCPI && (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-white uppercase tracking-wide" title="Cricket Performance Index: 40% Match Performance + 30% Athletic Metrics + 20% Form Index + 10% Consistency">CPI Metrics <span className="inline-block w-3.5 h-3.5 text-[10px] text-slate-500 border border-slate-600 rounded-full text-center leading-[13px] cursor-help">?</span></h3>
                   <div className="flex items-center gap-2">
@@ -603,7 +603,7 @@ function PlayersContent() {
             )}
 
             {combine && (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Combine Assessment</h3>
                   <div className="flex items-center gap-2">
@@ -993,7 +993,7 @@ function PlayersContent() {
                       const weekDays = last14.slice(-7);
 
                       return (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="glass-card rounded-xl p-5">
                           <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Routine Progress</h3>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                             <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
@@ -1124,7 +1124,7 @@ function PlayersContent() {
                       {filteredDrills.map((drill) => {
                         const colors = catColors[drill.category];
                         return (
-                          <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600 transition-all">
+                          <div key={drill.id} className="glass-card rounded-xl p-4 hover:border-slate-600 transition-all">
                             <div className="flex items-center gap-2 mb-2">
                               <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ${colors.border} border`}>{drill.category}</span>
                               <span className={`text-xs ${lvlColors[drill.level]}`}>{drill.level}</span>
@@ -1153,7 +1153,7 @@ function PlayersContent() {
                       })}
                     </div>
                     {filteredDrills.length === 0 && (
-                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                      <div className="glass-card rounded-xl p-8 text-center">
                         <p className="text-slate-400">No drills match your filters.</p>
                         <button onClick={() => { setDrillCategory("all"); setDrillLevel("all"); }} className="text-xs text-emerald-400 hover:text-emerald-300 mt-2">Reset Filters</button>
                       </div>
@@ -1169,7 +1169,7 @@ function PlayersContent() {
                       </div>
                       <div className="space-y-3">
                         {browseDrills.map(drill => (
-                          <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                          <div key={drill.id} className="glass-card rounded-xl p-4">
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <div>
                                 <div className="flex items-center gap-2 mb-1">
@@ -1208,7 +1208,7 @@ function PlayersContent() {
                             </div>
                           </div>
                         ))}
-                        {browseDrills.length === 0 && <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center"><p className="text-slate-400 text-sm">No community drills match your search.</p></div>}
+                        {browseDrills.length === 0 && <div className="glass-card rounded-xl p-8 text-center"><p className="text-slate-400 text-sm">No community drills match your search.</p></div>}
                       </div>
                     </div>
                   </>
@@ -1217,14 +1217,14 @@ function PlayersContent() {
                 {drillView === "my-drills" && (
                   <div className="space-y-4">
                     {myDrills.length === 0 ? (
-                      <div className="text-center py-16 bg-slate-800/50 border border-slate-700/50 rounded-xl">
+                      <div className="text-center py-16 glass-card rounded-xl">
                         <p className="text-lg font-medium mb-1">No drills uploaded yet</p>
                         <p className="text-slate-400 text-sm mb-4">Upload your first drill to share with the community!</p>
                         <button onClick={() => setDrillView("upload")} className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium transition-colors">Upload Your First Drill</button>
                       </div>
                     ) : (
                       myDrills.map(drill => (
-                        <div key={drill.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                        <div key={drill.id} className="glass-card rounded-xl p-4">
                           <div className="flex items-start justify-between gap-3 mb-2">
                             <div>
                               <h4 className="text-sm font-semibold text-white">{drill.title}</h4>
@@ -1247,7 +1247,7 @@ function PlayersContent() {
                 )}
 
                 {drillView === "upload" && (
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+                  <div className="glass-card rounded-xl p-6">
                     <h3 className="text-lg font-bold text-white mb-4">Upload New Drill</h3>
                     {uploadStatus && <div className={`mb-4 p-3 rounded-lg text-sm ${uploadStatus.includes("success") ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{uploadStatus}</div>}
                     <div className="space-y-4">
@@ -1316,7 +1316,7 @@ function PlayersContent() {
                   <h2 className="text-xl font-bold text-white mb-1">Weekly Training Plan</h2>
                   <p className="text-sm text-slate-400">Plan your weekly training schedule. Click activities to toggle them for each day.</p>
                 </div>
-                <div className="flex items-center justify-between bg-slate-800/50 border border-slate-700/50 rounded-xl p-3">
+                <div className="flex items-center justify-between glass-card rounded-xl p-3">
                   <button onClick={() => { setWeekOffset(w => w - 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                     Prev Week
@@ -1404,7 +1404,7 @@ function PlayersContent() {
                   <h2 className="text-xl font-bold text-white mb-1">Session Log</h2>
                   <p className="text-sm text-slate-400">Record what you practiced today and track your training consistency.</p>
                 </div>
-                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <div className="glass-card rounded-xl p-5">
                   <h3 className="text-sm font-semibold text-white mb-3">Log New Session</h3>
                   <form
                     onSubmit={(e) => {
@@ -1443,7 +1443,7 @@ function PlayersContent() {
                     </div>
                     {currentLogs.slice(0, 20).map((log) => (
                       <div key={log.id} className="space-y-2">
-                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-start gap-3">
+                      <div className="glass-card rounded-xl p-4 flex items-start gap-3">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           log.type.includes("Bat") ? "bg-emerald-500/20" : log.type.includes("Bowl") ? "bg-blue-500/20" : log.type.includes("Field") ? "bg-amber-500/20" : log.type.includes("Match") ? "bg-red-500/20" : "bg-purple-500/20"
                         }`}>
@@ -1491,7 +1491,7 @@ function PlayersContent() {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                  <div className="glass-card rounded-xl p-8 text-center">
                     <p className="text-slate-400">No sessions logged yet.</p>
                     <p className="text-xs text-slate-500 mt-1">Use the form above to record your first training session.</p>
                   </div>
@@ -1536,7 +1536,7 @@ function PlayersContent() {
                     </select>
                   </div>
                   {filtered.length === 0 ? (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+                    <div className="glass-card rounded-xl p-12 text-center">
                       <p className="text-slate-400 font-medium">No analysis data yet</p>
                       <p className="text-xs text-slate-500 mt-1">Analyze multiple videos to see your progress over time.</p>
                       <Link href="/analyze" className="inline-block mt-4 text-sm text-amber-400 hover:text-amber-300">Go to Analysis &rarr;</Link>
@@ -1544,19 +1544,19 @@ function PlayersContent() {
                   ) : (
                     <>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="glass-card rounded-xl p-5">
                           <p className="text-xs text-slate-500 mb-1">Sessions</p>
                           <p className="text-2xl font-bold text-white">{filtered.length}</p>
                         </div>
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="glass-card rounded-xl p-5">
                           <p className="text-xs text-slate-500 mb-1">Average Score</p>
                           <p className={`text-2xl font-bold ${scoreColor(avgScore)}`}>{avgScore}</p>
                         </div>
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="glass-card rounded-xl p-5">
                           <p className="text-xs text-slate-500 mb-1">Best Score</p>
                           <p className={`text-2xl font-bold ${scoreColor(bestScore)}`}>{bestScore}</p>
                         </div>
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="glass-card rounded-xl p-5">
                           <p className="text-xs text-slate-500 mb-1">Trend</p>
                           <div className="flex items-center gap-2">
                             <p className={`text-2xl font-bold ${overallTrend.direction === "up" ? "text-emerald-400" : overallTrend.direction === "down" ? "text-red-400" : "text-slate-400"}`}>
@@ -1566,7 +1566,7 @@ function PlayersContent() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <div className="glass-card rounded-xl p-5">
                         <h3 className="text-sm font-semibold text-white mb-4">Score Over Time</h3>
                         <div className="flex items-end gap-1.5 h-32">
                           {filtered.map((a, i) => {
@@ -1587,7 +1587,7 @@ function PlayersContent() {
                         </div>
                       </div>
                       {allCategories.length > 0 && (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                        <div className="glass-card rounded-xl p-5">
                           <h3 className="text-sm font-semibold text-white mb-4">Category Trends</h3>
                           <div className="space-y-4">
                             {allCategories.map((cat) => {
@@ -1616,7 +1616,7 @@ function PlayersContent() {
                           </div>
                         </div>
                       )}
-                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <div className="glass-card rounded-xl p-5">
                         <h3 className="text-sm font-semibold text-white mb-4">Session History</h3>
                         <div className="space-y-2">
                           {[...filtered].reverse().map((a) => (
@@ -1688,7 +1688,7 @@ function PlayersContent() {
                   {notesView === "coach" && (
                     <div className="space-y-3">
                       {coachInboxNotes.length === 0 ? (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                        <div className="glass-card rounded-xl p-8 text-center">
                           <p className="text-xs text-slate-500">No notes from your coach yet.</p>
                         </div>
                       ) : (
@@ -1730,7 +1730,7 @@ function PlayersContent() {
                     </div>
                   )}
                   {notesView === "my" && (<>
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                  <div className="glass-card rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
                     <div className="flex gap-2 mb-3">
                       {(["technique", "fitness", "mental", "general"] as const).map((cat) => (
@@ -1763,7 +1763,7 @@ function PlayersContent() {
                   </div>
                   <div className="grid lg:grid-cols-4 gap-6">
                     <div className="lg:col-span-1 space-y-4">
-                      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                      <div className="glass-card rounded-xl p-4">
                         <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Filter by Source</h3>
                         <div className="space-y-2">
                           <button onClick={() => setNoteFilter(null)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${!noteFilter ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
@@ -1799,12 +1799,12 @@ function PlayersContent() {
                     </div>
                     <div className="lg:col-span-3 space-y-2">
                       {filteredNotes.length === 0 ? (
-                        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                        <div className="glass-card rounded-xl p-8 text-center">
                           <p className="text-xs text-slate-500">No notes yet. Add your first coaching note above.</p>
                         </div>
                       ) : (
                         filteredNotes.map((note) => (
-                          <div key={note.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                          <div key={note.id} className="glass-card rounded-xl p-4">
                             <div className="flex items-start justify-between">
                               <div className="flex items-center gap-2 mb-2 flex-wrap">
                                 <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[note.category].bg} ${noteCategoryColors[note.category].text}`}>{note.category}</span>
@@ -1853,7 +1853,7 @@ function PlayersContent() {
       })()}
 
       {tab === "ai" && (
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <div className="glass-card rounded-xl p-5">
           <h2 className="text-xl font-semibold text-white mb-2">Full Track AI</h2>
           <p className="text-slate-400 text-sm mb-4">Upload a batting/bowling/fielding video and get instant AI feedback.</p>
           <Link href="/analyze" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Start Analysis</Link>
@@ -1878,7 +1878,7 @@ function PlayersContent() {
               { name: "MRF Cricket", url: "https://www.mrfcricket.com", desc: "Match-quality bats endorsed by legends", tag: "Legend Choice", color: "orange" },
               { name: "Cricket Store Online", url: "https://www.cricketstoreonline.com", desc: "Largest online cricket store with global shipping", tag: "Online", color: "teal" },
             ].map((store) => (
-              <a key={store.name} href={store.url} target="_blank" rel="noopener noreferrer" className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-emerald-500/40 transition-all group block">
+              <a key={store.name} href={store.url} target="_blank" rel="noopener noreferrer" className="glass-card rounded-xl p-5 hover:border-emerald-500/40 transition-all group block">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="text-white font-semibold group-hover:text-emerald-400 transition-colors">{store.name}</h3>
                   <span className={`text-xs px-2 py-0.5 rounded-full bg-${store.color}-500/20 text-${store.color}-400`}>{store.tag}</span>

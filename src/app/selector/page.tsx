@@ -151,12 +151,13 @@ function SelectorContent() {
   }), [entries]);
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-3"><Link href="/players" className="text-sm text-slate-400 hover:text-white">&larr; Back to Players</Link></div>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 animate-fade-up">
           <div>
+            <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Team Management</p>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-white">Selector Dashboard</h1>
               <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30">Selector Tools</span>
@@ -191,7 +192,7 @@ function SelectorContent() {
         </div>
 
         {showAddPlayer && (
-          <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-5 mb-6">
+          <div className="glass-card rounded-xl p-5 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Add Player to Watchlist</h3>
               <button onClick={() => { setShowAddPlayer(false); setSearchQuery(""); }} className="text-slate-400 hover:text-white text-xl">&times;</button>
@@ -248,7 +249,7 @@ function SelectorContent() {
             if (!p) return null;
             const impact = calcImpactScore(p);
             return (
-              <div key={entry.playerId} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-slate-600/50 transition-all">
+              <div key={entry.playerId} className="glass-card rounded-xl p-4 hover:border-slate-600/50 transition-all">
                 <div className="flex items-start gap-4">
                   <div className="flex flex-col items-center gap-1">
                     <button onClick={() => movePriority(entry.playerId, "up")} disabled={idx === 0}

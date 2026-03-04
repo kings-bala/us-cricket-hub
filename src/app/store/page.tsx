@@ -130,8 +130,9 @@ export default function StorePage() {
       <div className="mb-3">
         <Link href="/dashboard" className="text-sm text-slate-400 hover:text-white">&larr; Dashboard</Link>
       </div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 animate-fade-up">
         <div>
+          <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Merchandise</p>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-white">Rising Star Store</h1>
             <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-full border border-amber-500/30">Official Merchandise</span>
@@ -163,7 +164,7 @@ export default function StorePage() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {featured.map((p) => (
-            <div key={p.id} className="bg-slate-800/50 rounded-xl p-3 border border-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer" onClick={() => addToCart(p.id)}>
+            <div key={p.id} className="glass-card rounded-xl p-3 border border-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer" onClick={() => addToCart(p.id)}>
               <div className="h-20 rounded-lg bg-gradient-to-br from-amber-900/30 to-orange-900/30 mb-2 flex items-center justify-center">
                 <span className="text-2xl">{categoryIcons[p.category]}</span>
               </div>
@@ -174,7 +175,7 @@ export default function StorePage() {
         </div>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
+      <div className="glass-card rounded-xl p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <input
             type="text"
@@ -199,7 +200,7 @@ export default function StorePage() {
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {products.map((p) => (
-          <div key={p.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-amber-500/40 transition-all">
+          <div key={p.id} className="glass-card rounded-xl p-4 hover:border-amber-500/40 transition-all">
             <div className="h-28 rounded-lg bg-gradient-to-br from-amber-900/20 to-orange-900/20 mb-3 flex items-center justify-center">
               <span className="text-3xl">{categoryIcons[p.category]}</span>
             </div>

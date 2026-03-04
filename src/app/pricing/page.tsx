@@ -42,7 +42,8 @@ export default function PricingPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
+      <div className="text-center mb-12 animate-fade-up">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-3">Pricing</p>
         <h1 className="text-4xl font-bold text-white mb-3">Choose Your Plan</h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
           Unlock premium features to take your cricket to the next level. Cancel anytime.
@@ -55,7 +56,7 @@ export default function PricingPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
         {PLANS.map((plan, i) => {
           const isCurrent = plan.id === tier;
           const isDowngrade = i < currentIndex;
@@ -65,7 +66,7 @@ export default function PricingPage() {
           return (
             <div
               key={plan.id}
-              className={`relative bg-slate-800/50 border rounded-2xl p-6 flex flex-col ${
+              className={`relative glass-card border rounded-2xl p-6 flex flex-col ${
                 popular
                   ? "border-amber-500/50 shadow-lg shadow-amber-500/10"
                   : isCurrent
@@ -157,7 +158,7 @@ export default function PricingPage() {
 
       <div className="mt-16">
         <h2 className="text-2xl font-bold text-white text-center mb-8">Feature Comparison</h2>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-x-auto -mx-4 sm:mx-0">
+        <div className="glass-card rounded-xl overflow-x-auto -mx-4 sm:mx-0">
           <table className="w-full text-sm min-w-[500px]">
             <thead>
               <tr className="border-b border-slate-700/50">

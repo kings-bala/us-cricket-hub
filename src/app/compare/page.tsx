@@ -111,12 +111,13 @@ function CompareContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-3"><Link href="/players" className="text-sm text-slate-400 hover:text-white">&larr; Back to Players</Link></div>
 
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 animate-fade-up">
           <div>
+            <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Analytics</p>
             <h1 className="text-3xl font-bold text-white mb-2">Player Comparison</h1>
             <p className="text-slate-400">Side-by-side analysis with AI-powered Impact, Role Fit, and Trend scores</p>
           </div>
@@ -129,7 +130,7 @@ function CompareContent() {
         </div>
 
         {showAddPlayer && (
-          <div className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-5 mb-6">
+          <div className="glass-card rounded-xl p-5 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-white">Add Player to Compare</h3>
               <button onClick={() => { setShowAddPlayer(false); setSearchQuery(""); }} className="text-slate-400 hover:text-white">&times;</button>
@@ -160,7 +161,7 @@ function CompareContent() {
             const impact = calcImpactScore(p);
             const trend = calcTrendScore(p);
             return (
-              <div key={p.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 relative">
+              <div key={p.id} className="glass-card rounded-xl p-5 relative">
                 {selectedIds.length > 2 && (
                   <button onClick={() => removePlayer(p.id)} className="absolute top-3 right-3 text-slate-500 hover:text-red-400 text-sm">&times;</button>
                 )}
@@ -221,7 +222,7 @@ function CompareContent() {
 
         {metricView === "overall" && (
           <div className="space-y-6">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-lg font-semibold text-white mb-4">AI Impact Score Breakdown</h3>
               <div className="space-y-4">
                 {selectedPlayers.map(p => (
@@ -236,7 +237,7 @@ function CompareContent() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-lg font-semibold text-white mb-4">Role Fit Analysis</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -262,7 +263,7 @@ function CompareContent() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-lg font-semibold text-white mb-4">Trend Score & Direction</h3>
               <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(" + selectedPlayers.length + ", 1fr)" }}>
                 {selectedPlayers.map(p => {
@@ -284,7 +285,7 @@ function CompareContent() {
         )}
 
         {metricView === "batting" && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <div className="glass-card rounded-xl p-5">
             <h3 className="text-lg font-semibold text-white mb-4">Batting Comparison</h3>
             <div className="space-y-5">
               {[
@@ -312,7 +313,7 @@ function CompareContent() {
         )}
 
         {metricView === "bowling" && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <div className="glass-card rounded-xl p-5">
             <h3 className="text-lg font-semibold text-white mb-4">Bowling Comparison</h3>
             <div className="space-y-5">
               {[
@@ -338,7 +339,7 @@ function CompareContent() {
         )}
 
         {metricView === "fitness" && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+          <div className="glass-card rounded-xl p-5">
             <h3 className="text-lg font-semibold text-white mb-4">Fitness Comparison</h3>
             <div className="space-y-5">
               {[
