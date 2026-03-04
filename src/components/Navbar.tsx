@@ -63,7 +63,7 @@ function NavDropdown({ label, links, open, setOpen, id }: NavDropdownProps) {
         </svg>
       </button>
       {open === id && (
-        <div className="absolute top-full left-0 mt-2 w-56 bg-slate-800 rounded-lg shadow-xl border border-slate-700 py-2 z-50">
+        <div className="absolute top-full left-0 mt-2 w-56 bg-[#0f172a]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/[0.08] py-2 z-50">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -326,14 +326,14 @@ function NavbarInner() {
   const showTabs = !!user;
 
   return (
-    <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
+    <nav className="bg-[#030712]/80 backdrop-blur-xl text-white sticky top-0 z-50 border-b border-white/[0.06]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-emerald-500/20">
               CV
             </div>
-            <span className="font-bold text-lg hidden sm:block">CricVerse360</span>
+            <span className="font-bold text-lg hidden sm:block tracking-tight">CricVerse360</span>
           </Link>
 
                     {showTabs && user && (

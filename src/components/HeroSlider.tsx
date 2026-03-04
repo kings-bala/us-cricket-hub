@@ -107,25 +107,34 @@ export default function HeroSlider() {
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-6 z-10 text-white text-sm font-semibold bg-black/50 backdrop-blur px-3 py-1.5 rounded-full">
+      <div className="absolute bottom-8 left-6 z-10 text-white text-xs font-medium bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 uppercase tracking-wider">
         Street Cricket
       </div>
-      <div className="absolute bottom-6 right-6 z-10 text-white text-sm font-semibold bg-black/50 backdrop-blur px-3 py-1.5 rounded-full">
+      <div className="absolute bottom-8 right-6 z-10 text-white text-xs font-medium bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 uppercase tracking-wider">
         T20 Professional
       </div>
 
       <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <div className="text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 leading-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
+        <div className="text-center px-4 max-w-4xl">
+          <p className="text-emerald-400 text-xs md:text-sm font-medium uppercase tracking-[0.25em] mb-4 drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">The Global Cricket Platform</p>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-5 leading-[1.1] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)]">
             From Street Cricket to{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400">
               Global T20 Leagues
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
-            The global talent discovery platform connecting youth cricketers with
+          <p className="text-base md:text-lg text-slate-300 max-w-2xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] leading-relaxed">
+            The talent discovery platform connecting cricketers with
             IPL, BBL, CPL, PSL, SA20, The Hundred, and more.
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8 pointer-events-auto">
+            <a href="/auth/register" className="bg-emerald-500 hover:bg-emerald-400 text-white px-7 py-3 rounded-full font-semibold transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 text-sm">
+              Get Started Free
+            </a>
+            <a href="/analyze" className="bg-white/10 hover:bg-white/15 backdrop-blur-sm text-white px-7 py-3 rounded-full font-semibold border border-white/15 hover:border-white/25 transition-all text-sm">
+              Try AI Analysis
+            </a>
+          </div>
         </div>
       </div>
     </div>
