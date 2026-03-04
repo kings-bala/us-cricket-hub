@@ -253,7 +253,7 @@ export default function DrillsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+      <div className="min-h-screen text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-2">Training Drills</h1>
           <p className="text-slate-400">Please log in to access drills</p>
@@ -263,9 +263,10 @@ export default function DrillsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen text-white">
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-8 animate-fade-up">
+          <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Training</p>
           <h1 className="text-3xl font-bold mb-2">Training Drills</h1>
           <p className="text-slate-400">Upload, share, and discover training drills from the community</p>
         </div>
@@ -286,7 +287,7 @@ export default function DrillsPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-3">
             {PREMIUM_PACKS.map((pack) => (
-              <div key={pack.id} className="bg-slate-800/50 rounded-xl p-4 border border-blue-500/20 hover:border-blue-500/40 transition-all">
+              <div key={pack.id} className="glass-card rounded-xl p-4 border border-blue-500/20 hover:border-blue-500/40 transition-all">
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-xs px-2 py-0.5 rounded-full border ${SKILL_LEVELS.find(l => l.value === pack.level)?.color}`}>{pack.level}</span>
                   <span className="text-xs text-slate-500">{pack.drillCount} drills</span>
@@ -303,7 +304,7 @@ export default function DrillsPage() {
         </div>
 
         {filterCategory !== "all" && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
+          <div className="glass-card rounded-xl p-4 mb-6">
             <h3 className="text-sm font-semibold text-amber-400 mb-3">Recommended Gear for {CATEGORIES.find(c => c.value === filterCategory)?.label}</h3>
             <div className="flex gap-3 overflow-x-auto pb-1">
               {AFFILIATE_GEAR.filter(g => g.category === filterCategory).map((gear) => (

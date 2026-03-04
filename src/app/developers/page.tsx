@@ -80,7 +80,8 @@ export default function DevelopersPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
+      <div className="mb-8 animate-fade-up">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">For Developers</p>
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">Developer API</h1>
           <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">
@@ -92,7 +93,7 @@ export default function DevelopersPage() {
         </p>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
+      <div className="glass-card rounded-xl p-6 mb-8 animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <h2 className="text-lg font-semibold text-white mb-4">API Keys</h2>
         {!user ? (
           <p className="text-slate-400 text-sm">Sign in to generate API keys.</p>
@@ -147,7 +148,7 @@ export default function DevelopersPage() {
         )}
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
+      <div className="glass-card rounded-xl p-6 mb-8 animate-fade-up" style={{ animationDelay: '0.15s' }}>
         <h2 className="text-lg font-semibold text-white mb-2">Authentication</h2>
         <p className="text-sm text-slate-400 mb-4">
           Include your API key in the <code className="text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">x-api-key</code> header with every request.
@@ -163,10 +164,10 @@ export default function DevelopersPage() {
         </div>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-6 animate-fade-up" style={{ animationDelay: '0.2s' }}>
         <h2 className="text-2xl font-bold text-white">Endpoints</h2>
         {endpoints.map((ep) => (
-          <div key={ep.path} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <div key={ep.path} className="glass-card rounded-xl p-6">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-xs font-bold bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded">
                 {ep.method}

@@ -158,10 +158,11 @@ function StrategyContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-8 animate-fade-up">
           <div>
+            <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Game Planning</p>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold text-white">Match Strategy Planner</h1>
               <span className={"text-xs px-2 py-1 rounded-full border " + phaseInfo[currentPhase].color}>{plan.format}</span>
@@ -192,7 +193,7 @@ function StrategyContent() {
 
         {activeTab === "batting" && (
           <div className="space-y-4">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-lg font-semibold text-white mb-4">Batting Order vs {plan.opponent}</h3>
               <div className="space-y-2">
                 {plan.battingOrder.map((slot, idx) => {
@@ -235,7 +236,7 @@ function StrategyContent() {
               const phasePlans = plan.bowlingPlans.filter(bp => bp.phase === phase);
               const totalOvers = phasePlans.reduce((s, bp) => s + bp.overs, 0);
               return (
-                <div key={phase} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <div key={phase} className="glass-card rounded-xl p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className={"text-xs px-2 py-1 rounded-full border " + phaseInfo[phase].color}>{phaseInfo[phase].label}</span>
@@ -278,7 +279,7 @@ function StrategyContent() {
             {(["powerplay", "middle", "death"] as Phase[]).map(phase => {
               const target = plan.phaseTargets[phase];
               return (
-                <div key={phase} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                <div key={phase} className="glass-card rounded-xl p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <span className={"text-xs px-2 py-1 rounded-full border " + phaseInfo[phase].color}>{phaseInfo[phase].label}</span>
@@ -360,7 +361,7 @@ function StrategyContent() {
 
         {activeTab === "simulation" && (
           <div className="grid lg:grid-cols-2 gap-6">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-white">Live Simulation</h3>
                 <span className={"text-xs px-2 py-1 rounded-full border " + phaseInfo[currentPhase].color}>{phaseInfo[currentPhase].label}</span>
@@ -416,7 +417,7 @@ function StrategyContent() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-lg font-semibold text-white mb-4">Ball-by-Ball Log</h3>
               <div className="bg-slate-900/50 rounded-lg p-4 max-h-96 overflow-y-auto">
                 {simLog.length === 0 ? (
@@ -447,7 +448,7 @@ function StrategyContent() {
           </div>
         )}
 
-        <div className="mt-8 bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <div className="mt-8 glass-card rounded-xl p-5">
           <h3 className="text-sm font-semibold text-slate-400 mb-2">Strategy Notes</h3>
           <textarea value={plan.notes} onChange={e => setPlan(prev => ({ ...prev, notes: e.target.value }))}
             className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 resize-none" rows={3} />

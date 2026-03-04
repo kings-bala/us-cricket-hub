@@ -259,7 +259,8 @@ export default function AnalyzePage() {
           </Link>
         ))}
       </div>
-      <div className="mb-8">
+      <div className="mb-8 animate-fade-up">
+        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Analysis Suite</p>
         <h1 className="text-3xl font-bold text-white mb-2">AI Video Analysis</h1>
         <p className="text-slate-400">
           Upload your cricket videos and get instant AI-powered technique
@@ -268,9 +269,9 @@ export default function AnalyzePage() {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-3 gap-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <div className="glass-card rounded-xl p-6">
             <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">
               Upload Video
             </h2>
@@ -344,7 +345,7 @@ export default function AnalyzePage() {
             </div>
           </div>
 
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+          <div className="glass-card rounded-xl p-6">
             <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">
               Analysis Type
             </h2>
@@ -371,7 +372,7 @@ export default function AnalyzePage() {
           </div>
 
           {analysisType === "bowling" && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <div className="glass-card rounded-xl p-6">
               <h2 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">
                 Bowling Hand
               </h2>
@@ -424,7 +425,7 @@ export default function AnalyzePage() {
           )}
 
           {summary && frameResults.length > 0 && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+            <div className="glass-card rounded-xl p-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -440,7 +441,7 @@ export default function AnalyzePage() {
 
         <div className="lg:col-span-2 space-y-6">
           {videoUrl && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+            <div className="glass-card rounded-xl overflow-hidden">
               <div className="relative">
                 <video
                   ref={videoRef}
@@ -463,7 +464,7 @@ export default function AnalyzePage() {
           )}
 
           {isProcessing && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+            <div className="glass-card rounded-xl p-8 text-center">
               <div className="w-16 h-16 relative mx-auto mb-4">
                 <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
                   <circle cx="32" cy="32" r="28" fill="none" stroke="#334155" strokeWidth="4" />
@@ -538,7 +539,7 @@ export default function AnalyzePage() {
 
                   <div className="space-y-4">
                     {summary.categories.map((result, i) => (
-                      <div key={i} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                      <div key={i} className="glass-card rounded-xl p-5">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="text-sm font-semibold text-white">{result.category}</h3>
                           <span className={`text-sm font-bold ${scoreColor(result.score)}`}>
@@ -578,7 +579,7 @@ export default function AnalyzePage() {
                   </div>
 
                   {summary.keyFrames.length > 0 && (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <div className="glass-card rounded-xl p-5">
                       <h3 className="text-sm font-semibold text-white mb-3">Key Moments to Review</h3>
                       <div className="space-y-2">
                         {summary.keyFrames.map((kf, i) => (
@@ -608,7 +609,7 @@ export default function AnalyzePage() {
                   )}
 
                   {summary.drills.length > 0 && (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <div className="glass-card rounded-xl p-5">
                       <h3 className="text-sm font-semibold text-white mb-3">Recommended Drills</h3>
                       <div className="space-y-2">
                         {summary.drills.map((drill, i) => (
@@ -625,7 +626,7 @@ export default function AnalyzePage() {
                   )}
 
                   {speedEstimate && (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <div className="glass-card rounded-xl p-5">
                       <h3 className="text-sm font-semibold text-white mb-3">Ball Speed Estimation</h3>
                       <div className="flex items-center gap-4">
                         <div className="text-center">
@@ -645,7 +646,7 @@ export default function AnalyzePage() {
                   )}
 
                   {actionClips.length > 0 && (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                    <div className="glass-card rounded-xl p-5">
                       <h3 className="text-sm font-semibold text-white mb-3">Auto-Detected Clips</h3>
                       <div className="grid grid-cols-4 gap-3 mb-3">
                         <div className="text-center">
@@ -681,7 +682,7 @@ export default function AnalyzePage() {
                     </div>
                   )}
 
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                  <div className="glass-card rounded-xl p-5">
                     <h3 className="text-sm font-semibold text-white mb-3">Next Steps</h3>
                     <div className="grid md:grid-cols-2 gap-3">
                       <Link href="/analyze/coach" className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-4 hover:border-purple-500/40 transition-colors">
@@ -708,7 +709,7 @@ export default function AnalyzePage() {
               {activeTab === "history" && (
                 <div className="space-y-4">
                   {history.length === 0 ? (
-                    <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+                    <div className="glass-card rounded-xl p-8 text-center">
                       <p className="text-slate-400">No analysis history yet. Analyze a video to see results here.</p>
                     </div>
                   ) : (
@@ -722,7 +723,7 @@ export default function AnalyzePage() {
                         </button>
                       </div>
                       {history.map((entry) => (
-                        <div key={entry.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+                        <div key={entry.id} className="glass-card rounded-xl p-4">
                           <div className="flex items-center justify-between mb-2">
                             <div>
                               <p className="text-sm font-medium text-white">{entry.fileName}</p>
@@ -754,7 +755,7 @@ export default function AnalyzePage() {
           )}
 
           {!isProcessing && !summary && !videoUrl && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+            <div className="glass-card rounded-xl p-12 text-center">
               <div className="w-16 h-16 rounded-full bg-slate-700/50 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -783,7 +784,7 @@ export default function AnalyzePage() {
           )}
 
           {!isProcessing && !summary && videoUrl && (
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+            <div className="glass-card rounded-xl p-8 text-center">
               <p className="text-slate-400 font-medium">
                 Video loaded! Select analysis type and click &quot;Analyze Video&quot;
               </p>

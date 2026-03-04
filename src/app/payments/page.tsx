@@ -301,8 +301,9 @@ export default function PaymentsPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-6 animate-fade-up">
           <div>
+            <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Billing</p>
             <h1 className="text-2xl font-bold">
               {isAdmin ? "Fee Management" : "My Payments"}
             </h1>
@@ -367,7 +368,7 @@ export default function PaymentsPage() {
               ))}
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Fee Schedule — Per-Session Rates</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -416,7 +417,7 @@ export default function PaymentsPage() {
             )}
 
             {!isAdmin && (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 flex items-center justify-between">
+              <div className="glass-card rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {autoPay ? (
                     <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
@@ -442,26 +443,26 @@ export default function PaymentsPage() {
             )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5">
                 <p className="text-xs text-slate-500 uppercase tracking-wide">
                   {isAdmin ? "Total Collected" : "Total Paid"}
                 </p>
                 <p className="text-2xl font-bold text-emerald-400 mt-1">${isAdmin ? totalCollected : MOCK_PAYMENTS.filter(p => p.studentName === user.name).reduce((s, p) => s + p.amount, 0)}</p>
                 <p className="text-[10px] text-slate-500 mt-1">{isAdmin ? "This billing cycle" : "All time"}</p>
               </div>
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5">
                 <p className="text-xs text-slate-500 uppercase tracking-wide">Outstanding</p>
                 <p className="text-2xl font-bold text-amber-400 mt-1">${isAdmin ? totalDue : myFees.filter(f => f.status === "due").reduce((s, f) => s + f.amount, 0)}</p>
                 <p className="text-[10px] text-slate-500 mt-1">{isAdmin ? `${myFees.filter(f => f.status === "due").length} students` : "Due this month"}</p>
               </div>
               {isAdmin && (
                 <>
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                  <div className="glass-card rounded-xl p-5">
                     <p className="text-xs text-slate-500 uppercase tracking-wide">Overdue</p>
                     <p className="text-2xl font-bold text-red-400 mt-1">{overdueCount}</p>
                     <p className="text-[10px] text-slate-500 mt-1">Need follow-up</p>
                   </div>
-                  <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                  <div className="glass-card rounded-xl p-5">
                     <p className="text-xs text-slate-500 uppercase tracking-wide">Paid This Month</p>
                     <p className="text-2xl font-bold text-emerald-400 mt-1">{paidCount}/{myFees.length}</p>
                     <p className="text-[10px] text-slate-500 mt-1">Students up to date</p>
@@ -470,7 +471,7 @@ export default function PaymentsPage() {
               )}
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Fee Schedule</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -505,7 +506,7 @@ export default function PaymentsPage() {
             </div>
 
             {!isAdmin && (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5">
                 <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Current Fees</h3>
                 <div className="space-y-3">
                   {myFees.map((fee, i) => {
@@ -550,7 +551,7 @@ export default function PaymentsPage() {
             )}
 
             {isAdmin && (
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+              <div className="glass-card rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Quick Actions</h3>
                   {reminderMsg && <span className="text-xs text-slate-400">{reminderMsg}</span>}
@@ -638,7 +639,7 @@ export default function PaymentsPage() {
                 </button>
               ))}
             </div>
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+            <div className="glass-card rounded-xl overflow-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-700/50">
@@ -700,7 +701,7 @@ export default function PaymentsPage() {
         )}
 
         {activeTab === "history" && (
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-x-auto">
+          <div className="glass-card rounded-xl overflow-x-auto">
             <table className="w-full min-w-[600px]">
               <thead>
                 <tr className="border-b border-slate-700/50">
@@ -747,7 +748,7 @@ export default function PaymentsPage() {
 
         {activeTab === "card" && !isAdmin && (
           <div className="space-y-6">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Saved Cards</h3>
                 {cardMsg && <span className={`text-xs ${cardMsg.includes("success") ? "text-emerald-400" : "text-red-400"}`}>{cardMsg}</span>}
@@ -790,7 +791,7 @@ export default function PaymentsPage() {
               )}
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Add New Card</h3>
               <div className="space-y-3">
                 <div>
@@ -858,7 +859,7 @@ export default function PaymentsPage() {
 
         {activeTab === "settings" && isAdmin && (
           <div className="space-y-6">
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Stripe Configuration</h3>
               <p className="text-xs text-slate-400 mb-4">
                 Connect your Stripe account to accept payments. As a nonprofit, apply at{" "}
@@ -892,7 +893,7 @@ export default function PaymentsPage() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Fee Amounts</h3>
               <p className="text-xs text-slate-400 mb-4">Customize fee amounts by player level. Changes apply to new invoices only.</p>
               <div className="space-y-4">
@@ -929,7 +930,7 @@ export default function PaymentsPage() {
               </div>
             </div>
 
-            <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+            <div className="glass-card rounded-xl p-5">
               <h3 className="text-sm font-semibold text-white uppercase tracking-wide mb-4">Reminder Settings</h3>
               <div className="space-y-3">
                 <label className="flex items-center justify-between cursor-pointer">
