@@ -337,13 +337,13 @@ function NavbarInner() {
           </Link>
 
                     {showTabs && user && (
-                      <div className="hidden md:flex items-center gap-5">
+                      <div className="hidden md:flex items-center gap-5 ml-8">
                         {groups.map((g) =>
                           g.links.length === 1 ? (
                             <Link
                               key={g.id}
                               href={g.links[0].href}
-                              className={`text-sm px-1.5 pb-0.5 border-b-2 transition-colors ${
+                              className={`text-sm px-1.5 pb-0.5 border-b-2 whitespace-nowrap transition-colors ${
                                 pathname === g.links[0].href || pathname.startsWith(g.links[0].href + "/") ? "text-white border-emerald-500" : "text-slate-300 border-transparent hover:text-white"
                               }`}
                             >
