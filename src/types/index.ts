@@ -286,3 +286,50 @@ export interface AcademyStaff {
   joinedAt: string;
   academyId: string;
 }
+
+export interface PlayerProfileEducation {
+  institution: string;
+  degree: string;
+  year: string;
+}
+
+export interface PlayerProfileExperience {
+  team: string;
+  role: string;
+  period: string;
+  description: string;
+}
+
+export interface PlayerProfileReference {
+  name: string;
+  title: string;
+  contact: string;
+}
+
+export interface PlayerProfileTestimonial {
+  quote: string;
+  author: string;
+  role: string;
+}
+
+export interface PlayerProfile {
+  slug: string;
+  playerId: string;
+  bio: string;
+  dateOfBirth: string;
+  height: string;
+  weight: string;
+  nationality: string;
+  languages: string[];
+  contactEmail: string;
+  phone: string;
+  location: string;
+  education: PlayerProfileEducation[];
+  experience: PlayerProfileExperience[];
+  previousClubs: string[];
+  references: PlayerProfileReference[];
+  testimonials: PlayerProfileTestimonial[];
+  socialLinks: { twitter?: string; instagram?: string; youtube?: string; linkedin?: string };
+  videoIntroUrl?: string;
+  recordedVideoUrl?: string;
+}
