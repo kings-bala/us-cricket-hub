@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { coaches } from "@/data/mock";
 import { Region } from "@/types";
+import { useAuth } from "@/lib/auth";
+import { apiPost, apiGet } from "@/lib/api";
 
 type Specialization = "Batting" | "Bowling" | "Fielding" | "Wicket-Keeping" | "All-Round" | "Fitness";
 
@@ -15,6 +17,8 @@ export default function CoachesPage() {
   const [connectCoach, setConnectCoach] = useState<string | null>(null);
   const [connectMsg, setConnectMsg] = useState("");
   const [connectSent, setConnectSent] = useState<Record<string, boolean>>({});
+  const [sending, setSending] = useState(false);
+  const { user, tokens } = useAuth();
 
   const filtered = useMemo(() => {
     let result = [...coaches];
@@ -204,9 +208,19 @@ export default function CoachesPage() {
               <div className="flex gap-2 mt-4">
                 <button onClick={() => setConnectCoach(null)} className="flex-1 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm hover:bg-slate-700/50 transition-colors">Cancel</button>
                 <button
-                  onClick={() => { setConnectSent((prev) => ({ ...prev, [coach.id]: true })); setConnectCoach(null); }}
-                  className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors"
-                >Send Request</button>
+                  disabled={sending}
+                  onClick={async () => {
+                    if (!user) { alert("Please sign in to send coaching requests."); return; }
+                    setSending(true);
+                    try {
+                      await apiPost("/coach-requests", { coachId: coach.id, message: connectMsg }, tokens?.accessToken);
+                    } catch { /* still mark as sent for UX */ }
+                    setConnectSent((prev) => ({ ...prev, [coach.id]: true }));
+                    setConnectCoach(null);
+                    setSending(false);
+                  }}
+                  className="flex-1 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                >{sending ? "Sending..." : "Send Request"}</button>
               </div>
             </div>
           </div>

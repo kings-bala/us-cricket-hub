@@ -2,6 +2,9 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { apiPost } from "@/lib/api";
 import { usePoseDetection } from "@/hooks/usePoseDetection";
 import {
   analyzeFrame,
@@ -56,6 +59,11 @@ export default function AnalyzePage() {
   const [handOverridden, setHandOverridden] = useState(false);
   const [speedEstimate, setSpeedEstimate] = useState<SpeedEstimate | null>(null);
   const [actionClips, setActionClips] = useState<ActionClip[]>([]);
+
+  const [cloudAnalyzing, setCloudAnalyzing] = useState(false);
+  const [cloudError, setCloudError] = useState("");
+  const router = useRouter();
+  const { user, tokens } = useAuth();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -417,6 +425,67 @@ export default function AnalyzePage() {
                 ? `Analyzing... ${progress}%`
                 : "Analyze Video"}
           </button>
+
+          {/* Cloud AI Analysis */}
+          <div className="mt-3 relative">
+            <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-slate-700" /></div>
+            <div className="relative flex justify-center"><span className="bg-slate-800 px-3 text-xs text-slate-500">or</span></div>
+          </div>
+          <button
+            onClick={async () => {
+              if (!videoFile) return;
+              if (!user) { router.push("/auth"); return; }
+              setCloudAnalyzing(true);
+              setCloudError("");
+              try {
+                const ext = videoFile.name.split(".").pop() || "mp4";
+                const uploadRes = await apiPost<{ uploadUrl: string; key: string; videoId: string }>("/videos", {
+                  videoKey: `videos/${crypto.randomUUID()}.${ext}`,
+                  videoType: analysisType === "fielding" ? "batting" : analysisType,
+                }, tokens?.accessToken);
+                if (uploadRes.uploadUrl) {
+                  await fetch(uploadRes.uploadUrl, {
+                    method: "PUT",
+                    body: videoFile,
+                    headers: { "Content-Type": videoFile.type || "video/mp4" },
+                  });
+                }
+                const analysis = await apiPost<Record<string, unknown>>("/ai-analysis", {
+                  videoId: uploadRes.videoId || uploadRes.key,
+                  analysisType: analysisType === "fielding" ? "batting" : analysisType,
+                  videoKey: uploadRes.key,
+                }, tokens?.accessToken);
+                sessionStorage.setItem("latestAnalysis", JSON.stringify(analysis));
+                router.push("/analysis/results");
+              } catch (err) {
+                const msg = err instanceof Error ? err.message : "Analysis failed";
+                if (msg.includes("credits") || msg.includes("upgrade")) {
+                  setCloudError("No credits remaining. Upgrade your plan for more analyses.");
+                } else {
+                  setCloudError(msg);
+                }
+              } finally {
+                setCloudAnalyzing(false);
+              }
+            }}
+            disabled={!videoFile || cloudAnalyzing}
+            className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+              videoFile && !cloudAnalyzing
+                ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                : "bg-slate-700 text-slate-500 cursor-not-allowed"
+            }`}
+          >
+            {cloudAnalyzing ? "Uploading & Analyzing..." : "Get AI-Powered Analysis"}
+          </button>
+          <p className="text-xs text-slate-500 text-center mt-1">Upload to cloud for AI expert analysis{!user && " (sign in required)"}</p>
+          {cloudError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mt-2">
+              <p className="text-xs text-red-400">{cloudError}</p>
+              {cloudError.includes("credits") && (
+                <Link href="/pricing" className="text-xs text-emerald-400 hover:text-emerald-300 mt-1 inline-block">View Pricing</Link>
+              )}
+            </div>
+          )}
 
           {poseError && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">

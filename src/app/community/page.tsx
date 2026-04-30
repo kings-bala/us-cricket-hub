@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, Suspense } from "react";
 import { players } from "@/data/mock";
 import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/api-client";
@@ -258,7 +258,7 @@ function getSeedBadgesForUser(email: string): string[] {
   return map[email] || ["badge_first_step"];
 }
 
-export default function CommunityPage() {
+function CommunityPageInner() {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") === "leaderboard" ? "leaderboard" : "feed";
@@ -1021,5 +1021,13 @@ export default function CommunityPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CommunityPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center"><div className="text-slate-400">Loading...</div></div>}>
+      <CommunityPageInner />
+    </Suspense>
   );
 }

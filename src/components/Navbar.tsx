@@ -1,393 +1,72 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState, useRef, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { UserRole } from "@/types";
-import { useAuth } from "@/context/AuthContext";
-import { useSubscription } from "@/context/SubscriptionContext";
+import { useState } from "react";
+import { useAuth } from "@/lib/auth";
 
-const roleLabels: Record<UserRole | "admin", string> = {
-  player: "Player",
-  agent: "Agent",
-  owner: "T20 Owner",
-  sponsor: "Sponsor",
-  coach: "Coach",
-  academy_admin: "Academy",
-  admin: "Admin",
-};
-
-const roleColors: Record<UserRole | "admin", string> = {
-  player: "bg-emerald-500",
-  agent: "bg-blue-500",
-  owner: "bg-purple-500",
-  sponsor: "bg-amber-500",
-  coach: "bg-teal-500",
-  academy_admin: "bg-orange-500",
-  admin: "bg-red-500",
-};
-
-type NavLink = { href: string; label: string; desc: string };
-type NavGroup = { title: string; id: string; links: NavLink[] };
-
-interface NavDropdownProps {
-  label: string;
-  links: { href: string; label: string; desc: string }[];
-  open: string | null;
-  setOpen: (v: string | null) => void;
-  id: string;
-}
-
-function NavDropdown({ label, links, open, setOpen, id }: NavDropdownProps) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        if (open === id) setOpen(null);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [open, id, setOpen]);
-
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(open === id ? null : id)}
-        className="flex items-center gap-1 text-sm text-slate-300 hover:text-white transition-colors"
-      >
-        {label}
-        <svg className={`w-3.5 h-3.5 transition-transform ${open === id ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      {open === id && (
-        <div className="absolute top-full left-0 mt-2 w-56 bg-[#0f172a]/95 backdrop-blur-xl rounded-xl shadow-2xl border border-white/[0.08] py-2 z-50">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(null)}
-              className="block px-4 py-2 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
-            >
-              {link.label}
-              <span className="block text-xs text-slate-500 mt-0.5">{link.desc}</span>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-const personaGroups: Record<UserRole, NavGroup[]> = {
-  player: [
-    { title: "My Profile", id: "myprofile", links: [
-      { href: "/players?tab=profile", label: "My Profile", desc: "Your profile & settings" },
-    ]},
-    { title: "Training", id: "training", links: [
-      { href: "/players?tab=training", label: "Training", desc: "Practice & routines" },
-    ]},
-    { title: "Full Track AI", id: "ai", links: [
-      { href: "/analyze", label: "Full Track AI", desc: "Video + AI insights" },
-    ]},
-    { title: "Community", id: "community", links: [
-      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
-    ]},
-    { title: "Streaming", id: "streaming", links: [
-      { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
-    ]},
-    { title: "Store", id: "store", links: [
-      { href: "/store", label: "Store", desc: "Rising Star merchandise" },
-    ]},
-    { title: "Payments", id: "payments", links: [
-      { href: "/payments", label: "Payments", desc: "Fees & subscriptions" },
-    ]},
-  ],
-  agent:[
-    { title: "Stats", id: "stats", links: [
-      { href: "/stats", label: "Stats", desc: "Stats & rankings hub" },
-    ]},
-    { title: "Pro Scouting", id: "scouting", links: [
-      { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
-    ]},
-    { title: "Squad Builder", id: "squad", links: [
-      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
-    ]},
-    { title: "AI Analysis", id: "ai", links: [
-      { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
-    ]},
-    { title: "Community", id: "community", links: [
-      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
-    ]},
-  ],
-  owner: [
-    { title: "Stats", id: "stats", links: [
-      { href: "/stats", label: "Stats", desc: "Stats & rankings hub" },
-    ]},
-    { title: "Squad Builder", id: "squad", links: [
-      { href: "/squad-builder", label: "Squad Builder", desc: "Build & analyze XI" },
-    ]},
-    { title: "Pro Scouting", id: "scouting", links: [
-      { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
-    ]},
-    { title: "AI Analysis", id: "ai", links: [
-      { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
-    ]},
-    { title: "Community", id: "community", links: [
-      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
-    ]},
-    { title: "Compare", id: "compare", links: [
-      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
-    ]},
-    { title: "Selector", id: "selector", links: [
-      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
-    ]},
-    { title: "Strategy", id: "strategy", links: [
-      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
-    ]},
-  ],
-  sponsor: [
-    { title: "Discover", id: "discover", links: [
-      { href: "/players", label: "Player Registry", desc: "Browse player profiles" },
-    ]},
-    { title: "Sponsorships", id: "sponsorships", links: [
-      { href: "/sponsors", label: "Sponsorships", desc: "Partner with talent" },
-    ]},
-    { title: "Community", id: "community", links: [
-      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
-    ]},
-  ],
-  coach: [
-    { title: "Academy", id: "academy", links: [
-      { href: "/academy/attendance", label: "Attendance", desc: "Mark daily attendance" },
-    ]},
-    { title: "My Academy Stats", id: "mystats", links: [
-      { href: "/academy/stats", label: "My Academy Stats", desc: "Academy stats hub" },
-    ]},
-    { title: "Leaderboard", id: "leaderboard", links: [
-      { href: "/leaderboard", label: "Leaderboard", desc: "Cricket Energy rankings" },
-    ]},
-    { title: "Pro Scouting", id: "scouting", links: [
-      { href: "/scouting", label: "Pro Scouting", desc: "Advanced scouting" },
-    ]},
-    { title: "AI Analysis", id: "ai", links: [
-      { href: "/analyze", label: "AI Analysis", desc: "AI breakdowns" },
-    ]},
-    { title: "Scoring", id: "scoring", links: [
-      { href: "/scoring", label: "Live Scoring", desc: "Score matches ball-by-ball" },
-    ]},
-    { title: "Streaming", id: "streaming", links: [
-      { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
-    ]},
-    { title: "Community", id: "community", links: [
-      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
-    ]},
-    { title: "Compare", id: "compare", links: [
-      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
-    ]},
-    { title: "Selector", id: "selector", links: [
-      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
-    ]},
-    { title: "Strategy", id: "strategy", links: [
-      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
-    ]},
-  ],
-  academy_admin:[
-    { title: "Dashboard", id: "dashboard", links: [
-      { href: "/academy", label: "Dashboard", desc: "Academy overview" },
-    ]},
-    { title: "Roster", id: "roster", links: [
-      { href: "/academy/roster", label: "Roster", desc: "Manage players" },
-    ]},
-    { title: "Staff", id: "staff", links: [
-      { href: "/academy/staff", label: "Staff", desc: "Coaches & support staff" },
-    ]},
-    { title: "Attendance", id: "attendance", links: [
-      { href: "/academy/attendance", label: "Attendance", desc: "Mark daily attendance" },
-    ]},
-    { title: "Invite", id: "invite", links: [
-      { href: "/academy/invite", label: "Invite", desc: "Invite players" },
-    ]},
-    { title: "Reports", id: "reports", links: [
-      { href: "/academy/reports", label: "Reports", desc: "Progress reports" },
-    ]},
-    { title: "Payments", id: "payments", links: [
-      { href: "/payments", label: "Payments", desc: "Collect fees & track payments" },
-    ]},
-    { title: "Scoring", id: "scoring", links: [
-      { href: "/scoring", label: "Live Scoring", desc: "Score matches ball-by-ball" },
-    ]},
-    { title: "Streaming", id: "streaming", links: [
-      { href: "/streaming", label: "Streaming", desc: "Watch live matches" },
-    ]},
-    { title: "Community", id: "community", links: [
-      { href: "/community", label: "Community", desc: "Feed & Leaderboard" },
-    ]},
-    { title: "Compare", id: "compare", links: [
-      { href: "/compare", label: "Compare Players", desc: "Side-by-side analysis" },
-    ]},
-    { title: "Selector", id: "selector", links: [
-      { href: "/selector", label: "Selector Tools", desc: "Watchlist & shortlist management" },
-    ]},
-    { title: "Strategy", id: "strategy", links: [
-      { href: "/strategy", label: "Match Strategy", desc: "Phase-based match planning" },
-    ]},
-  ],
-};
-
-const roleFlatLinks: Record<UserRole, { href: string; label: string }[]> = {
-  player: [
-    { href: "/players?tab=profile", label: "My Profile" },
-    { href: "/players?tab=training", label: "Training" },
-    { href: "/analyze", label: "Full Track AI" },
-    { href: "/community", label: "Community" },
-    { href: "/streaming", label: "Streaming" },
-    { href: "/store", label: "Store" },
-    { href: "/payments", label: "Payments" },
-  ],
-  agent:[
-    { href: "/stats", label: "Stats" },
-    { href: "/scouting", label: "Pro Scouting" },
-    { href: "/squad-builder", label: "Squad Builder" },
-    { href: "/analyze", label: "AI Analysis" },
-    { href: "/community", label: "Community" },
-  ],
-  owner: [
-    { href: "/stats", label: "Stats" },
-    { href: "/squad-builder", label: "Squad Builder" },
-    { href: "/scouting", label: "Pro Scouting" },
-    { href: "/analyze", label: "AI Analysis" },
-    { href: "/community", label: "Community" },
-    { href: "/compare", label: "Compare" },
-    { href: "/selector", label: "Selector" },
-    { href: "/strategy", label: "Strategy" },
-  ],
-  sponsor: [
-    { href: "/players", label: "Player Registry" },
-    { href: "/sponsors", label: "Sponsorships" },
-    { href: "/community", label: "Community" },
-  ],
-  coach: [
-    { href: "/academy/attendance", label: "Attendance" },
-    { href: "/academy/stats", label: "My Academy Stats" },
-    { href: "/leaderboard", label: "Leaderboard" },
-    { href: "/scouting", label: "Pro Scouting" },
-    { href: "/analyze", label: "AI Analysis" },
-    { href: "/scoring", label: "Live Scoring" },
-    { href: "/streaming", label: "Streaming" },
-    { href: "/community", label: "Community" },
-    { href: "/compare", label: "Compare" },
-    { href: "/selector", label: "Selector" },
-    { href: "/strategy", label: "Strategy" },
-  ],
-  academy_admin:[
-    { href: "/academy", label: "Dashboard" },
-    { href: "/academy/roster", label: "Roster" },
-    { href: "/academy/staff", label: "Staff" },
-    { href: "/academy/attendance", label: "Attendance" },
-    { href: "/academy/invite", label: "Invite" },
-    { href: "/academy/reports", label: "Reports" },
-    { href: "/payments", label: "Payments" },
-    { href: "/scoring", label: "Live Scoring" },
-    { href: "/streaming", label: "Streaming" },
-    { href: "/community", label: "Community" },
-    { href: "/compare", label: "Compare" },
-    { href: "/selector", label: "Selector" },
-    { href: "/strategy", label: "Strategy" },
-  ],
-};
-
-export default function Navbar() { return (<Suspense fallback={<div className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg"><div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"><div className="flex items-center justify-between h-16"><Link href="/" className="flex items-center gap-2 shrink-0"><div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">CV</div><span className="font-bold text-lg hidden sm:block">CricVerse360</span></Link></div></div></div>}> <NavbarInner /></Suspense>); }
-
-function NavbarInner() {
-  const [persona, setPersona] = useState<UserRole>("player");
-  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-  const router = useRouter();
+export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
-  const { tier } = useSubscription();
-  const isAdmin = user?.role === "admin";
 
-  const activeRole: UserRole = isAdmin ? persona : (user?.role && user.role !== "admin" ? user.role as UserRole : "player");
-
-  useEffect(() => {
-    if (!isAdmin) return;
-    const saved = typeof window !== "undefined" ? localStorage.getItem("persona") : null;
-    if (saved && ["player","agent","owner","sponsor","coach","academy_admin"].includes(saved)) setPersona(saved as UserRole);
-  }, [isAdmin]);
-  useEffect(() => {
-    if (isAdmin) { try { localStorage.setItem("persona", persona); } catch {} }
-  }, [persona, isAdmin]);
-
-  const groups = personaGroups[activeRole];
-  const pathname = usePathname();
-  const showTabs = !!user;
+  const navLinks = [
+    { href: "/analyze", label: "AI Analysis" },
+    { href: "/coaches", label: "Coaches" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/players", label: "Players" },
+  ];
 
   return (
-    <nav className="bg-[#030712]/80 backdrop-blur-xl text-white sticky top-0 z-50 border-b border-white/[0.06]">
+    <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center font-bold text-sm shadow-lg shadow-emerald-500/20">
+          <Link href="/" className="flex items-center gap-2 shrink-0">
+            <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
               CV
             </div>
-            <span className="font-bold text-lg hidden sm:block tracking-tight">CricVerse360</span>
+            <span className="font-bold text-lg hidden sm:block">CricVerse360</span>
           </Link>
 
-                    {showTabs && user && (
-                      <div className="hidden md:flex items-center gap-5 ml-8">
-                        {groups.map((g) =>
-                          g.links.length === 1 ? (
-                            <Link
-                              key={g.id}
-                              href={g.links[0].href}
-                              className={`text-sm px-1.5 pb-0.5 border-b-2 whitespace-nowrap transition-colors ${
-                                pathname === g.links[0].href || pathname.startsWith(g.links[0].href + "/") ? "text-white border-emerald-500" : "text-slate-300 border-transparent hover:text-white"
-                              }`}
-                            >
-                              {g.links[0].label}
-                            </Link>
-                          ) : (
-                            <NavDropdown key={g.id} id={g.id} label={g.title} links={g.links} open={dropdownOpen} setOpen={setDropdownOpen} />
-                          )
-                        )}
-                      </div>
-                    )}
+          <div className="hidden md:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="text-sm text-slate-300 hover:text-white transition-colors">
+                {link.label}
+              </Link>
+            ))}
+            {user && (
+              <>
+                <Link href="/profile" className="text-sm text-slate-300 hover:text-white transition-colors">
+                  My Profile
+                </Link>
+                <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
+                  Dashboard
+                </Link>
+              </>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
-            {!isAdmin && user && user.role !== "player" && (
-              <span className={`hidden sm:inline text-xs px-2 py-0.5 rounded-full text-white ${roleColors[activeRole]}`}>{roleLabels[activeRole]}</span>
-            )}
-            {isAdmin && (
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="text-xs text-slate-400">View as:</span>
-                <select
-                  value={persona}
-                  onChange={(e) => { const r = e.target.value as UserRole; setPersona(r); setMobileOpen(false); router.push("/"); }}
-                  className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[persona]}`}
-                >
-                  {(Object.keys(roleFlatLinks) as UserRole[]).map((r) => (
-                    <option key={r} value={r} className="bg-slate-800">
-                      {roleLabels[r]}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
             {user ? (
-              <div className="flex items-center gap-2">
-                <div className="hidden sm:flex items-center gap-2">
-                    {user.avatar && <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover border border-emerald-500" />}
-                    <span className="text-xs text-slate-300">{user.name}</span>
-                    {tier !== "free" && <Link href="/pricing" className={`text-xs px-1.5 py-0.5 rounded-full ${tier === "academy" ? "bg-orange-500/20 text-orange-400" : "bg-emerald-500/20 text-emerald-400"}`}>{tier === "academy" ? "Academy" : "Pro"}</Link>}
-                  {isAdmin && <Link href="/admin" className="text-xs bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full hover:bg-amber-500/30 transition-colors">Admin</Link>}
-                </div>
-                <button onClick={() => { logout(); router.push("/auth"); }} className="text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-full transition-colors">Logout</button>
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard" className="hidden sm:flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-xs font-bold">
+                    {user.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2) || "U"}
+                  </div>
+                  <span className="text-sm text-slate-300">{user.full_name?.split(" ")[0]}</span>
+                </Link>
+                <button
+                  onClick={logout}
+                  className="text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  Sign Out
+                </button>
               </div>
             ) : (
-              <Link href="/auth" className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors">Sign In</Link>
+              <Link
+                href="/auth"
+                className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors"
+              >
+                Sign In
+              </Link>
             )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -407,42 +86,34 @@ function NavbarInner() {
 
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
-          <div className="px-4 pt-3 space-y-4">
-            {showTabs && user && (
-              <div className="space-y-3">
-                {groups.map((g) => (
-                  <div key={g.id}>
-                    {g.links.length > 1 && <span className="block text-xs text-slate-500 uppercase tracking-wider mb-1 pl-2">{g.title}</span>}
-                    {g.links.map((l) => (
-                      <Link
-                        key={l.href}
-                        href={l.href}
-                        onClick={() => setMobileOpen(false)}
-                        className="block py-1.5 text-sm text-slate-300 hover:text-white pl-4 border-l-2 border-slate-700 hover:border-emerald-500 transition-colors"
-                      >
-                        {l.label}
-                      </Link>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
-            {isAdmin && (
-              <div className="pt-2 border-t border-slate-700 space-y-2">
-                <Link href="/admin" onClick={() => setMobileOpen(false)} className="block py-1.5 text-sm text-amber-400 hover:text-amber-300 pl-2 border-l-2 border-amber-500 transition-colors">Admin Dashboard</Link>
-                <span className="text-xs text-slate-400">View as:</span>
-                <select
-                  value={persona}
-                  onChange={(e) => { const r = e.target.value as UserRole; setPersona(r); setMobileOpen(false); router.push("/"); }}
-                  className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[persona]}`}
+          <div className="px-4 pt-3 space-y-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm text-slate-300 hover:text-white"
+              >
+                {link.label}
+              </Link>
+            ))}
+            {user && (
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm text-slate-300 hover:text-white"
                 >
-                  {(Object.keys(roleFlatLinks) as UserRole[]).map((r) => (
-                    <option key={r} value={r} className="bg-slate-800">
-                      {roleLabels[r]}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  My Profile
+                </Link>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm text-slate-300 hover:text-white"
+                >
+                  Dashboard
+                </Link>
+              </>
             )}
           </div>
         </div>

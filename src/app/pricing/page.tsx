@@ -2,224 +2,225 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { useSubscription, PLANS, SubscriptionTier } from "@/context/SubscriptionContext";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { apiPost } from "@/lib/api";
+
+const plans = [
+  {
+    name: "Free",
+    price: "$0",
+    period: "",
+    description: "Try it out",
+    planKey: "free",
+    features: [
+      "1 free video analysis",
+      "Basic player profile",
+      "Overall score",
+      "Top strengths & weaknesses",
+    ],
+    notIncluded: [
+      "Full technical report",
+      "Shareable player card",
+      "Progress history",
+      "Priority processing",
+    ],
+    cta: "Sign Up Free",
+    highlight: false,
+  },
+  {
+    name: "Pro",
+    price: "$9.99",
+    period: "/mo",
+    description: "For serious players",
+    planKey: "pro",
+    features: [
+      "5 video analyses/month",
+      "Full technical report",
+      "Shareable branded player card",
+      "Progress history & tracking",
+      "Detailed drill recommendations",
+      "Download analysis PDF",
+    ],
+    notIncluded: [
+      "Priority processing",
+      "Scout visibility boost",
+    ],
+    cta: "Get Pro",
+    highlight: true,
+  },
+  {
+    name: "Pro Plus",
+    price: "$19.99",
+    period: "/mo",
+    description: "For academies & professionals",
+    planKey: "pro_plus",
+    features: [
+      "15 video analyses/month",
+      "Everything in Pro",
+      "Priority processing",
+      "Scout visibility boost",
+      "Advanced improvement plan",
+      "Coach matching priority",
+      "Academy team management",
+    ],
+    notIncluded: [],
+    cta: "Get Pro Plus",
+    highlight: false,
+  },
+];
 
 export default function PricingPage() {
-  const { user } = useAuth();
-  const { tier, upgrade } = useSubscription();
-  const [processing, setProcessing] = useState<SubscriptionTier | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { user, tokens } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState("");
 
-  const handleUpgrade = async (planId: SubscriptionTier) => {
-    if (!user) return;
-    if (planId === "free") return;
-    setProcessing(planId);
+  const handleCheckout = async (planKey: string) => {
+    if (!user) { router.push("/auth"); return; }
+    if (planKey === "free") { router.push("/analyze"); return; }
+    setLoading(planKey);
     try {
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          priceId: PLANS.find((p) => p.id === planId)?.stripePriceId,
-          email: user.email,
-          tier: planId,
-        }),
-      });
-      const data = await res.json();
+      const data = await apiPost<{ url: string }>("/checkout", {
+        plan: planKey,
+        successUrl: `${window.location.origin}/pricing?success=true`,
+        cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+      }, tokens?.accessToken);
       if (data.url) {
         window.location.href = data.url;
-        return;
       }
-    } catch {}
-    upgrade(planId);
-    setSuccess(`Upgraded to ${planId === "pro" ? "Pro" : "Academy"}!`);
-    setProcessing(null);
-    setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Checkout failed. Please try again.");
+    } finally {
+      setLoading("");
+    }
   };
 
-  const tierOrder: SubscriptionTier[] = ["free", "pro", "academy"];
-  const currentIndex = tierOrder.indexOf(tier);
-
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12 animate-fade-up">
-        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-3">Pricing</p>
-        <h1 className="text-4xl font-bold text-white mb-3">Choose Your Plan</h1>
-        <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          Unlock premium features to take your cricket to the next level. Cancel anytime.
-        </p>
-      </div>
-
-      {success && (
-        <div className="max-w-md mx-auto mb-8 bg-emerald-500/20 border border-emerald-500/30 rounded-xl p-4 text-center">
-          <p className="text-emerald-400 font-medium">{success}</p>
+    <div className="min-h-[80vh] py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Simple, Transparent Pricing
+          </h1>
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            Start with a free analysis. Upgrade when you need more insights to improve your game.
+          </p>
         </div>
-      )}
 
-      <div className="grid md:grid-cols-3 gap-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
-        {PLANS.map((plan, i) => {
-          const isCurrent = plan.id === tier;
-          const isDowngrade = i < currentIndex;
-          const isUpgrade = i > currentIndex;
-          const popular = plan.id === "pro";
-
-          return (
+        <div className="grid md:grid-cols-3 gap-8 mb-16">
+          {plans.map((plan) => (
             <div
-              key={plan.id}
-              className={`relative glass-card border rounded-2xl p-6 flex flex-col ${
-                popular
-                  ? "border-amber-500/50 shadow-lg shadow-amber-500/10"
-                  : isCurrent
-                  ? "border-emerald-500/50"
-                  : "border-slate-700/50"
+              key={plan.name}
+              className={`rounded-2xl p-8 ${
+                plan.highlight
+                  ? "bg-slate-800/80 border-2 border-emerald-500 relative"
+                  : "bg-slate-800/50 border border-slate-700/50"
               }`}
             >
-              {popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    Most Popular
-                  </span>
+              {plan.highlight && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                  Most Popular
                 </div>
               )}
-
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-white">
-                    {plan.price === 0 ? "Free" : `$${plan.price}`}
-                  </span>
-                  {plan.price > 0 && (
-                    <span className="text-slate-400 text-sm">/month</span>
-                  )}
-                </div>
+              <h2 className="text-xl font-bold text-white">{plan.name}</h2>
+              <div className="mt-3 mb-1">
+                <span className="text-4xl font-bold text-white">{plan.price}</span>
+                {plan.period && (
+                  <span className="text-slate-400">{plan.period}</span>
+                )}
               </div>
+              <p className="text-sm text-slate-400 mb-6">{plan.description}</p>
 
-              <ul className="space-y-3 mb-8 flex-1">
-                {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-sm">
-                    <svg
-                      className={`w-4 h-4 mt-0.5 shrink-0 ${
-                        popular ? "text-amber-400" : "text-emerald-400"
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <span className="text-slate-300">{f}</span>
-                  </li>
+              <button
+                onClick={() => handleCheckout(plan.planKey)}
+                disabled={!!loading}
+                className={`w-full text-center px-6 py-3 rounded-full font-semibold transition-colors mb-8 ${
+                  plan.highlight
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-white"
+                } disabled:opacity-50`}
+              >
+                {loading === plan.planKey ? "Redirecting..." : plan.cta}
+              </button>
+
+              <div className="space-y-3">
+                {plan.features.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mt-0.5 shrink-0">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full" />
+                    </span>
+                    <span className="text-sm text-slate-300">{feature}</span>
+                  </div>
                 ))}
-              </ul>
-
-              {isCurrent ? (
-                <button
-                  disabled
-                  className="w-full py-3 rounded-xl text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-default"
-                >
-                  Current Plan
-                </button>
-              ) : isDowngrade ? (
-                <button
-                  disabled
-                  className="w-full py-3 rounded-xl text-sm font-semibold bg-slate-700/50 text-slate-500 cursor-not-allowed"
-                >
-                  Included in your plan
-                </button>
-              ) : isUpgrade ? (
-                <button
-                  onClick={() => handleUpgrade(plan.id)}
-                  disabled={processing === plan.id}
-                  className={`w-full py-3 rounded-xl text-sm font-semibold transition-colors ${
-                    popular
-                      ? "bg-amber-500 hover:bg-amber-600 text-white"
-                      : "bg-emerald-500 hover:bg-emerald-600 text-white"
-                  } ${processing === plan.id ? "opacity-50 cursor-wait" : ""}`}
-                >
-                  {processing === plan.id ? "Processing..." : `Upgrade to ${plan.name}`}
-                </button>
-              ) : (
-                <button
-                  disabled
-                  className="w-full py-3 rounded-xl text-sm font-semibold bg-slate-700/50 text-slate-400 cursor-default"
-                >
-                  Free Forever
-                </button>
-              )}
+                {plan.notIncluded.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3 opacity-40">
+                    <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center mt-0.5 shrink-0">
+                      <span className="w-1.5 h-0.5 bg-slate-500 rounded" />
+                    </span>
+                    <span className="text-sm text-slate-500">{feature}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold text-white text-center mb-8">Feature Comparison</h2>
-        <div className="glass-card rounded-xl overflow-x-auto -mx-4 sm:mx-0">
-          <table className="w-full text-sm min-w-[500px]">
-            <thead>
-              <tr className="border-b border-slate-700/50">
-                <th className="text-left px-6 py-4 text-slate-400 font-medium">Feature</th>
-                <th className="text-center px-4 py-4 text-slate-400 font-medium">Free</th>
-                <th className="text-center px-4 py-4 text-amber-400 font-medium">Pro</th>
-                <th className="text-center px-4 py-4 text-emerald-400 font-medium">Academy</th>
-              </tr>
-            </thead>
-            <tbody>
-              {[
-                { name: "Player Profile", free: true, pro: true, academy: true },
-                { name: "Community Feed", free: true, pro: true, academy: true },
-                { name: "Leaderboard", free: true, pro: true, academy: true },
-                { name: "Live Streaming (View)", free: true, pro: true, academy: true },
-                { name: "Basic Training Videos", free: true, pro: true, academy: true },
-                { name: "AI Coach", free: "3/day", pro: true, academy: true },
-                { name: "Video Analysis", free: false, pro: true, academy: true },
-                { name: "Idol Training Routines", free: false, pro: true, academy: true },
-                { name: "Pro Scouting", free: false, pro: true, academy: true },
-                { name: "Compare Players", free: false, pro: true, academy: true },
-                { name: "Squad Builder", free: false, pro: true, academy: true },
-                { name: "Strategy Tools", free: false, pro: true, academy: true },
-                { name: "Upload Drills", free: false, pro: true, academy: true },
-                { name: "Payment Collection", free: false, pro: false, academy: true },
-                { name: "Attendance Tracking", free: false, pro: false, academy: true },
-                { name: "Roster Management", free: false, pro: false, academy: true },
-                { name: "Progress Reports", free: false, pro: false, academy: true },
-              ].map((row) => (
-                <tr key={row.name} className="border-b border-slate-700/30">
-                  <td className="px-6 py-3 text-slate-300">{row.name}</td>
-                  {[row.free, row.pro, row.academy].map((val, ci) => (
-                    <td key={ci} className="text-center px-4 py-3">
-                      {val === true ? (
-                        <svg className="w-5 h-5 text-emerald-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                      ) : val === false ? (
-                        <span className="text-slate-600">—</span>
-                      ) : (
-                        <span className="text-amber-400 text-xs font-medium">{val}</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          ))}
         </div>
-      </div>
 
-      <div className="mt-12 text-center">
-        <p className="text-slate-500 text-sm">
-          All plans include a 14-day free trial. No credit card required to start.
-        </p>
-        <p className="text-slate-500 text-sm mt-1">
-          Questions?{" "}
-          <Link href="/community" className="text-amber-400 hover:text-amber-300">
-            Ask in the community
-          </Link>
-        </p>
+        {/* One-time purchase */}
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 text-center max-w-2xl mx-auto mb-16">
+          <h3 className="text-xl font-bold text-white mb-2">Just Need One Report?</h3>
+          <p className="text-slate-400 mb-4">
+            Purchase a single video analysis without a subscription.
+          </p>
+          <p className="text-3xl font-bold text-white mb-4">
+            $4.99 <span className="text-sm font-normal text-slate-400">per analysis</span>
+          </p>
+          <button
+            onClick={() => handleCheckout("one_time")}
+            disabled={!!loading}
+            className="inline-block bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-full font-semibold transition-colors disabled:opacity-50"
+          >
+            {loading === "one_time" ? "Redirecting..." : "Buy Single Analysis"}
+          </button>
+        </div>
+
+        {/* Feature comparison */}
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl font-bold text-white text-center mb-8">Feature Comparison</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left text-slate-400 py-3 pr-4">Feature</th>
+                  <th className="text-center text-white py-3 px-4">Free</th>
+                  <th className="text-center text-emerald-400 py-3 px-4">Pro</th>
+                  <th className="text-center text-white py-3 px-4">Pro Plus</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-300">
+                {[
+                  { feature: "Video analyses/month", free: "1 (total)", pro: "5", plus: "15" },
+                  { feature: "Overall score", free: "Yes", pro: "Yes", plus: "Yes" },
+                  { feature: "Strengths & weaknesses", free: "Basic", pro: "Detailed", plus: "Detailed" },
+                  { feature: "Technical feedback", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Drill recommendations", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Shareable player card", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Progress tracking", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Priority processing", free: "-", pro: "-", plus: "Yes" },
+                  { feature: "Scout visibility boost", free: "-", pro: "-", plus: "Yes" },
+                  { feature: "Advanced improvement plan", free: "-", pro: "-", plus: "Yes" },
+                  { feature: "Coach matching priority", free: "-", pro: "-", plus: "Yes" },
+                ].map((row) => (
+                  <tr key={row.feature} className="border-b border-slate-800">
+                    <td className="py-3 pr-4">{row.feature}</td>
+                    <td className="text-center py-3 px-4">{row.free}</td>
+                    <td className="text-center py-3 px-4">{row.pro}</td>
+                    <td className="text-center py-3 px-4">{row.plus}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

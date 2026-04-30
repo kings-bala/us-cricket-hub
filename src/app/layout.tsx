@@ -1,27 +1,12 @@
-import type { Metadata, Viewport } from "next";
+import type { Metadata } from "next";
 import "./globals.css";
-import ClientLayout from "@/components/ClientLayout";
-
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 5,
-  viewportFit: "cover",
-  themeColor: "#10b981",
-};
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "CricVerse360 - International Cricket Talent Discovery Platform",
-  description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
-  manifest: "/manifest.json",
-  appleWebApp:{
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "CricVerse360",
-  },
-  other: {
-    "mobile-web-app-capable": "yes",
-  },
+  title: "CricVerse360 - AI Cricket Analysis That Helps Players Improve and Get Discovered",
+  description: "Upload your batting or bowling video and receive instant AI-powered feedback, improvement tips, and a shareable player profile. Free first analysis.",
 };
 
 export default function RootLayout({
@@ -31,16 +16,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      </head>
       <body className="min-h-screen flex flex-col antialiased">
-        <ClientLayout>{children}</ClientLayout>
+        <Providers>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

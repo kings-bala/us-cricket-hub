@@ -2,54 +2,55 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-[#030712] text-slate-400 border-t border-white/[0.06]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8">
-          <div className="md:col-span-1">
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center font-bold text-sm text-white shadow-lg shadow-emerald-500/20">
+    <footer className="bg-slate-900 text-slate-400 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-white">
                 CV
               </div>
-              <span className="font-bold text-lg text-white tracking-tight">CricVerse360</span>
+              <span className="font-bold text-lg text-white">CricVerse360</span>
             </div>
-            <p className="text-sm text-slate-500 leading-relaxed">The global cricket platform connecting talent with opportunity.</p>
+            <p className="text-sm">
+              The global cricket platform connecting talent with opportunity. AI-powered video analysis and coaching.
+            </p>
           </div>
-
           <div>
-            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Platform</h4>
-            <div className="space-y-2.5">
-              <Link href="/players?tab=profile" className="block text-sm text-slate-500 hover:text-white transition-colors">Player Profile</Link>
-              <Link href="/analyze" className="block text-sm text-slate-500 hover:text-white transition-colors">AI Analysis</Link>
-              <Link href="/scouting" className="block text-sm text-slate-500 hover:text-white transition-colors">Pro Scouting</Link>
-              <Link href="/community" className="block text-sm text-slate-500 hover:text-white transition-colors">Community</Link>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Company</h4>
-            <div className="space-y-2.5">
-              <Link href="/terms" className="block text-sm text-slate-500 hover:text-white transition-colors">Terms of Service</Link>
-              <Link href="/privacy" className="block text-sm text-slate-500 hover:text-white transition-colors">Privacy Policy</Link>
-              <Link href="/developers" className="block text-sm text-slate-500 hover:text-white transition-colors">Developers</Link>
-              <Link href="/pricing" className="block text-sm text-slate-500 hover:text-white transition-colors">Pricing</Link>
+            <h4 className="text-white font-semibold mb-3 text-sm">Platform</h4>
+            <div className="space-y-2">
+              <Link href="/players" className="block text-sm hover:text-white transition-colors">Player Registry</Link>
+              <Link href="/agents" className="block text-sm hover:text-white transition-colors">Agent Marketplace</Link>
+              <Link href="/scouting" className="block text-sm hover:text-white transition-colors">Pro Scouting</Link>
+              <Link href="/sponsors" className="block text-sm hover:text-white transition-colors">Sponsorships</Link>
+              <Link href="/analyze" className="block text-sm hover:text-white transition-colors">AI Video Analysis</Link>
+              <Link href="/coaches" className="block text-sm hover:text-white transition-colors">Coach Directory</Link>
             </div>
           </div>
-
           <div>
-            <h4 className="text-white font-semibold text-xs uppercase tracking-wider mb-4">Connect</h4>
-            <div className="space-y-2.5">
-              <a href="mailto:risingstarcricketleague@gmail.com" className="block text-sm text-slate-500 hover:text-white transition-colors">Email Us</a>
-              <a href="https://www.instagram.com/risingstarscricket.nj" target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-500 hover:text-white transition-colors">Instagram</a>
-              <a href="https://www.facebook.com/risingstarcricketleague" target="_blank" rel="noopener noreferrer" className="block text-sm text-slate-500 hover:text-white transition-colors">Facebook</a>
+            <h4 className="text-white font-semibold mb-3 text-sm">Resources</h4>
+            <div className="space-y-2">
+              <span className="block text-sm">Showcase Calendar</span>
+              <span className="block text-sm">Verified Stats Guide</span>
+              <span className="block text-sm">T20 League Info</span>
+              <span className="block text-sm">Academy Directory</span>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-white font-semibold mb-3 text-sm">Contact</h4>
+            <div className="space-y-2">
+              <span className="block text-sm">info@cricverse360.com</span>
+              <span className="block text-sm">Available Worldwide</span>
+              <div className="flex gap-3 mt-3">
+                <span className="text-xs bg-slate-800 px-2 py-1 rounded">Twitter</span>
+                <span className="text-xs bg-slate-800 px-2 py-1 rounded">Instagram</span>
+                <span className="text-xs bg-slate-800 px-2 py-1 rounded">YouTube</span>
+              </div>
             </div>
           </div>
         </div>
-
-        <div className="section-divider mt-12 mb-8" />
-
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-slate-600">&copy; {new Date().getFullYear()} Rising Star Cricket League &amp; CricVerse360. All rights reserved.</p>
-          <p className="text-xs text-slate-700 text-center md:text-right max-w-md">Proprietary platform protected under applicable copyright and intellectual property laws.</p>
+        <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
+          <p>&copy; 2026 CricVerse360. All rights reserved. AI-powered cricket analysis platform.</p>
         </div>
       </div>
     </footer>
