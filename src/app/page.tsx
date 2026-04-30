@@ -25,17 +25,20 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/analyze"
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors text-lg"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
               >
-                Upload Your First Video Free
+                Get Your Cricket Score Free
               </Link>
               <Link
                 href="/sample-analysis"
-                className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-full font-semibold border border-slate-700 transition-colors text-lg"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold border border-slate-700 transition-colors text-lg"
               >
                 See Sample Analysis
               </Link>
             </div>
+            <p className="text-sm text-slate-400 mt-4">
+              Upload your video and get instant AI feedback in seconds.
+            </p>
           </div>
         </div>
       </section>
@@ -97,6 +100,15 @@ export default function Home() {
           <Link href="/sample-analysis" className="text-emerald-400 hover:text-emerald-300 font-semibold text-sm transition-colors">
             See a full sample analysis report &rarr;
           </Link>
+        </div>
+        <div className="mt-10 text-center">
+          <Link
+            href="/analyze"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/25"
+          >
+            Get Your Cricket Score Free
+          </Link>
+          <p className="text-sm text-slate-400 mt-3">Upload your video and get instant AI feedback in seconds.</p>
         </div>
       </section>
 
@@ -238,6 +250,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA before Pricing */}
+      <section className="bg-gradient-to-r from-emerald-900/40 to-blue-900/40 border-y border-emerald-500/20">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
+            Find Out Where You Stand as a Cricketer
+          </h2>
+          <p className="text-slate-300 mb-6 max-w-lg mx-auto">
+            Upload your video and get instant AI feedback in seconds.
+          </p>
+          <Link
+            href="/analyze"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
+          >
+            Get Your Cricket Score Free
+          </Link>
+        </div>
+      </section>
+
       {/* Pricing Preview */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-12">
@@ -353,18 +383,19 @@ export default function Home() {
       {/* Final CTA */}
       <section className="bg-gradient-to-r from-emerald-900/50 to-blue-900/50 border-y border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">Ready to Improve Your Game?</h2>
+          <h2 className="text-3xl font-bold text-white mb-4">Your Next Level Starts Here</h2>
           <p className="text-slate-300 mb-8 max-w-xl mx-auto">
-            Upload your first video for free. Get AI-powered analysis in minutes. Start improving today.
+            Upload your video and get instant AI feedback in seconds. No credit card. No commitment.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/analyze" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-semibold transition-colors">
-              Upload Your First Video Free
+            <Link href="/analyze" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25">
+              Get Your Cricket Score Free
             </Link>
-            <Link href="/pricing" className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-full font-semibold border border-white/20 transition-colors">
-              View Pricing
+            <Link href="/sample-analysis" className="bg-white/10 hover:bg-white/20 text-white px-8 py-3.5 rounded-full font-semibold border border-white/20 transition-colors">
+              See Sample Analysis
             </Link>
           </div>
+          <p className="text-sm text-slate-400 mt-4">Upload your video and get instant AI feedback in seconds.</p>
         </div>
       </section>
     </div>
