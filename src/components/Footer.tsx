@@ -3,7 +3,16 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="bg-slate-900 text-slate-400 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
+        <div className="bg-gradient-to-r from-emerald-900/30 to-blue-900/30 border border-emerald-500/20 rounded-2xl p-8 mb-10 text-center">
+          <h3 className="text-xl md:text-2xl font-bold text-white mb-2">Get Your Cricket Score Free</h3>
+          <p className="text-sm text-slate-300 mb-5">Upload your video and get instant AI feedback in seconds.</p>
+          <Link href="/analyze" className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/25">
+            Upload Your Video Now
+          </Link>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-4">
