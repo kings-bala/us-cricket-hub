@@ -30,7 +30,7 @@ export default function Home() {
                 Upload Your First Video Free
               </Link>
               <Link
-                href="/analysis/sample"
+                href="/sample-analysis"
                 className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3 rounded-full font-semibold border border-slate-700 transition-colors text-lg"
               >
                 See Sample Analysis
@@ -92,6 +92,11 @@ export default function Home() {
               <p className="text-slate-400">{item.desc}</p>
             </div>
           ))}
+        </div>
+        <div className="text-center mt-8">
+          <Link href="/sample-analysis" className="text-emerald-400 hover:text-emerald-300 font-semibold text-sm transition-colors">
+            See a full sample analysis report &rarr;
+          </Link>
         </div>
       </section>
 
@@ -288,6 +293,11 @@ export default function Home() {
         <p className="text-center text-sm text-slate-400 mt-6">
           Need just one report? <Link href="/pricing" className="text-emerald-400 hover:underline">$4.99 per analysis</Link> available.
         </p>
+        <div className="text-center mt-4">
+          <Link href="/sample-analysis" className="text-blue-400 hover:text-blue-300 font-medium text-sm transition-colors">
+            Preview a sample analysis before you sign up &rarr;
+          </Link>
+        </div>
       </section>
 
       {/* Testimonials placeholder */}
