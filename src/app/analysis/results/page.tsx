@@ -366,20 +366,20 @@ export default function AnalysisResultsPage() {
         {isFree && <LockedOverlay />}
       </div>
 
-      {/* Shareable Card — paid only */}
-      {!isFree && (
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-6 text-center">Share Your Analysis</h2>
-          <ShareCard
-            playerName={user?.full_name || "Player"}
-            role={playerRole}
-            overallScore={a.overall_score}
-            topStrength={a.strengths[0] || ""}
-            topImprovement={a.weaknesses[0] || ""}
-            analysisType={a.analysis_type}
-          />
-        </div>
-      )}
+      {/* Shareable Card — all users */}
+      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-xl p-6 mb-8">
+        <h2 className="text-xl font-bold text-white mb-2 text-center">Your Player Card</h2>
+        <p className="text-sm text-slate-400 text-center mb-6">Download and share to get discovered</p>
+        <ShareCard
+          playerName={user?.full_name || "Player"}
+          role={playerRole}
+          overallScore={a.overall_score}
+          confidenceScore={confidenceScore}
+          topStrength={a.strengths[0] || ""}
+          topImprovement={a.weaknesses[0] || ""}
+          analysisType={a.analysis_type}
+        />
+      </div>
 
       {/* Bottom CTA for free users */}
       {isFree && <UpgradeSection tokens={tokens} router={router} />}
