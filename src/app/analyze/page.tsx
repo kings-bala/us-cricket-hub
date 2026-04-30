@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { apiPost } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 import { usePoseDetection } from "@/hooks/usePoseDetection";
 import {
   analyzeFrame,
@@ -437,6 +438,7 @@ export default function AnalyzePage() {
               if (!user) { router.push("/auth"); return; }
               setCloudAnalyzing(true);
               setCloudError("");
+              trackEvent("video_upload_started", { analysisType }, tokens?.accessToken);
               try {
                 const ext = videoFile.name.split(".").pop() || "mp4";
                 const uploadRes = await apiPost<{ uploadUrl: string; key: string; videoId: string }>("/videos", {
@@ -450,15 +452,19 @@ export default function AnalyzePage() {
                     headers: { "Content-Type": videoFile.type || "video/mp4" },
                   });
                 }
+                trackEvent("video_uploaded", { analysisType }, tokens?.accessToken);
+                trackEvent("analysis_started", { analysisType }, tokens?.accessToken);
                 const analysis = await apiPost<Record<string, unknown>>("/ai-analysis", {
                   videoId: uploadRes.videoId || uploadRes.key,
                   analysisType: analysisType === "fielding" ? "batting" : analysisType,
                   videoKey: uploadRes.key,
                 }, tokens?.accessToken);
+                trackEvent("analysis_completed", { analysisType, score: analysis.overall_score }, tokens?.accessToken);
                 sessionStorage.setItem("latestAnalysis", JSON.stringify(analysis));
                 router.push("/analysis/results");
               } catch (err) {
                 const msg = err instanceof Error ? err.message : "Analysis failed";
+                trackEvent("analysis_failed", { analysisType, error: msg }, tokens?.accessToken);
                 if (msg.includes("credits") || msg.includes("upgrade")) {
                   setCloudError("No credits remaining. Upgrade your plan for more analyses.");
                 } else {

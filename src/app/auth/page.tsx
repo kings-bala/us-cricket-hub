@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
+import { trackEvent } from "@/lib/analytics";
 import { UserRole } from "@/types";
 
 export default function AuthPage() {
@@ -46,10 +47,12 @@ export default function AuthPage() {
           return;
         }
         const result = await register(email, password, fullName, selectedRole);
+        trackEvent("signup_completed", { role: selectedRole });
         setSuccess(result.message || "Registration successful! Check your email for a verification code.");
         setShowVerify(true);
       } else {
         await login(email, password);
+        trackEvent("signin_completed", {});
         router.push("/dashboard");
       }
     } catch (err) {

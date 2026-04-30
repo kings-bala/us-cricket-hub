@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { apiPost } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 const plans = [
   {
@@ -75,10 +76,15 @@ export default function PricingPage() {
   const router = useRouter();
   const [loading, setLoading] = useState("");
 
+  useEffect(() => {
+    trackEvent("pricing_viewed", {}, tokens?.accessToken);
+  }, [tokens?.accessToken]);
+
   const handleCheckout = async (planKey: string) => {
     if (!user) { router.push("/auth"); return; }
     if (planKey === "free") { router.push("/analyze"); return; }
     setLoading(planKey);
+    trackEvent("checkout_started", { plan: planKey }, tokens?.accessToken);
     try {
       const data = await apiPost<{ url: string }>("/checkout", {
         plan: planKey,
