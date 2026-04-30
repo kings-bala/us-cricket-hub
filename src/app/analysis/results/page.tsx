@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ShareCard from "@/components/ShareCard";
 
 interface AnalysisResult {
   analysisId: string;
@@ -134,6 +135,19 @@ export default function AnalysisResultsPage() {
             </li>
           ))}
         </ol>
+      </div>
+
+      {/* Shareable Card */}
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-12">
+        <h2 className="text-xl font-bold text-white mb-6 text-center">Share Your Analysis</h2>
+        <ShareCard
+          playerName="Player"
+          role={a.player_type}
+          overallScore={a.overall_score}
+          topStrength={a.strengths[0] || ""}
+          topImprovement={a.weaknesses[0] || ""}
+          analysisType={a.analysis_type}
+        />
       </div>
 
       {/* Actions */}

@@ -1,4 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { apiPost } from "@/lib/api";
 
 const plans = [
   {
@@ -6,6 +12,7 @@ const plans = [
     price: "$0",
     period: "",
     description: "Try it out",
+    planKey: "free",
     features: [
       "1 free video analysis",
       "Basic player profile",
@@ -19,7 +26,6 @@ const plans = [
       "Priority processing",
     ],
     cta: "Sign Up Free",
-    ctaHref: "/auth",
     highlight: false,
   },
   {
@@ -27,6 +33,7 @@ const plans = [
     price: "$9.99",
     period: "/mo",
     description: "For serious players",
+    planKey: "pro",
     features: [
       "5 video analyses/month",
       "Full technical report",
@@ -40,7 +47,6 @@ const plans = [
       "Scout visibility boost",
     ],
     cta: "Get Pro",
-    ctaHref: "/auth",
     highlight: true,
   },
   {
@@ -48,6 +54,7 @@ const plans = [
     price: "$19.99",
     period: "/mo",
     description: "For academies & professionals",
+    planKey: "pro_plus",
     features: [
       "15 video analyses/month",
       "Everything in Pro",
@@ -59,12 +66,35 @@ const plans = [
     ],
     notIncluded: [],
     cta: "Get Pro Plus",
-    ctaHref: "/auth",
     highlight: false,
   },
 ];
 
 export default function PricingPage() {
+  const { user, tokens } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState("");
+
+  const handleCheckout = async (planKey: string) => {
+    if (!user) { router.push("/auth"); return; }
+    if (planKey === "free") { router.push("/analyze"); return; }
+    setLoading(planKey);
+    try {
+      const data = await apiPost<{ url: string }>("/checkout", {
+        plan: planKey,
+        successUrl: `${window.location.origin}/pricing?success=true`,
+        cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+      }, tokens?.accessToken);
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Checkout failed. Please try again.");
+    } finally {
+      setLoading("");
+    }
+  };
+
   return (
     <div className="min-h-[80vh] py-16">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -101,16 +131,17 @@ export default function PricingPage() {
               </div>
               <p className="text-sm text-slate-400 mb-6">{plan.description}</p>
 
-              <Link
-                href={plan.ctaHref}
-                className={`block text-center px-6 py-3 rounded-full font-semibold transition-colors mb-8 ${
+              <button
+                onClick={() => handleCheckout(plan.planKey)}
+                disabled={!!loading}
+                className={`w-full text-center px-6 py-3 rounded-full font-semibold transition-colors mb-8 ${
                   plan.highlight
                     ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                     : "bg-slate-700 hover:bg-slate-600 text-white"
-                }`}
+                } disabled:opacity-50`}
               >
-                {plan.cta}
-              </Link>
+                {loading === plan.planKey ? "Redirecting..." : plan.cta}
+              </button>
 
               <div className="space-y-3">
                 {plan.features.map((feature) => (
@@ -143,12 +174,13 @@ export default function PricingPage() {
           <p className="text-3xl font-bold text-white mb-4">
             $4.99 <span className="text-sm font-normal text-slate-400">per analysis</span>
           </p>
-          <Link
-            href="/auth"
-            className="inline-block bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-full font-semibold transition-colors"
+          <button
+            onClick={() => handleCheckout("one_time")}
+            disabled={!!loading}
+            className="inline-block bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-full font-semibold transition-colors disabled:opacity-50"
           >
-            Buy Single Analysis
-          </Link>
+            {loading === "one_time" ? "Redirecting..." : "Buy Single Analysis"}
+          </button>
         </div>
 
         {/* Feature comparison */}
