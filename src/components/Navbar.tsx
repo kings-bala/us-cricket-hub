@@ -37,9 +37,11 @@ export default function Navbar() {
                 <Link href="/profile" className="text-sm text-slate-300 hover:text-white transition-colors">
                   My Profile
                 </Link>
-                <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
-                  Dashboard
-                </Link>
+                {user.role === "admin" && (
+                  <Link href="/admin" className="text-sm text-slate-300 hover:text-white transition-colors">
+                    Admin
+                  </Link>
+                )}
               </>
             )}
           </div>
@@ -47,7 +49,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             {user ? (
               <div className="flex items-center gap-3">
-                <Link href="/dashboard" className="hidden sm:flex items-center gap-2">
+                <Link href="/profile" className="hidden sm:flex items-center gap-2">
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-xs font-bold">
                     {user.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2) || "U"}
                   </div>
@@ -106,13 +108,15 @@ export default function Navbar() {
                 >
                   My Profile
                 </Link>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm text-slate-300 hover:text-white"
-                >
-                  Dashboard
-                </Link>
+                {user.role === "admin" && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-2 text-sm text-slate-300 hover:text-white"
+                  >
+                    Admin
+                  </Link>
+                )}
               </>
             )}
           </div>
