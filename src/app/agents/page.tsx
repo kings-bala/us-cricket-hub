@@ -1,7 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { agents, players } from "@/data/mock";
 
 export default function AgentsPage() {
+  const [requestAgent, setRequestAgent] = useState<string | null>(null);
+  const [requestMsg, setRequestMsg] = useState("");
+  const [requestsSent, setRequestsSent] = useState<Record<string, boolean>>({});
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
@@ -104,11 +110,56 @@ export default function AgentsPage() {
                     )}
                   </div>
                 </div>
+
+                <button
+                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); if (!requestsSent[agent.id]) { setRequestAgent(agent.id); setRequestMsg(""); } }}
+                  className={`w-full mt-4 py-2 rounded-lg text-sm font-medium transition-colors border ${
+                    requestsSent[agent.id]
+                      ? "bg-blue-500/20 text-blue-400 border-blue-500/30 cursor-default"
+                      : "bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border-blue-500/30"
+                  }`}
+                >
+                  {requestsSent[agent.id] ? "Request Sent" : "Request Representation"}
+                </button>
               </div>
             </Link>
           );
         })}
       </div>
+
+      {requestAgent && (() => {
+        const agent = agents.find((a) => a.id === requestAgent);
+        if (!agent) return null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setRequestAgent(null)}>
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm">
+                  {agent.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <div>
+                  <p className="text-white font-semibold">{agent.name}</p>
+                  <p className="text-xs text-slate-400">{agent.agency} &middot; {agent.country}</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-400 mb-3">Request representation from {agent.name.split(" ")[0]}:</p>
+              <textarea
+                value={requestMsg}
+                onChange={(e) => setRequestMsg(e.target.value)}
+                placeholder="Hi, I'm a player looking for representation. Here's why I'd be a great fit..."
+                className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 h-24 resize-none"
+              />
+              <div className="flex gap-2 mt-4">
+                <button onClick={() => setRequestAgent(null)} className="flex-1 py-2 rounded-lg border border-slate-700 text-slate-400 text-sm hover:bg-slate-700/50 transition-colors">Cancel</button>
+                <button
+                  onClick={() => { setRequestsSent((prev) => ({ ...prev, [agent.id]: true })); setRequestAgent(null); }}
+                  className="flex-1 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium transition-colors"
+                >Send Request</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

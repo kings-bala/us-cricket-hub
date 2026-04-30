@@ -4,8 +4,17 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { players, t20Teams, regionColors, roleIcons } from "@/data/mock";
 import { AgeGroup, Region, PlayerRole, BowlingStyle } from "@/types";
+import SubscriptionGate from "@/components/SubscriptionGate";
 
 export default function ScoutingPage() {
+  return (
+    <SubscriptionGate feature="pro_scouting">
+      <ScoutingContent />
+    </SubscriptionGate>
+  );
+}
+
+function ScoutingContent() {
   const [region, setRegion] = useState<Region | "All">("All");
   const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
   const [role, setRole] = useState<PlayerRole | "All">("All");
@@ -34,8 +43,10 @@ export default function ScoutingPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
+      <div className="mb-3"><Link href="/players?tab=profile" className="text-sm text-slate-400 hover:text-white">← Back to My Profile</Link></div>
+      <div className="flex items-center justify-between mb-8 animate-fade-up">
         <div>
+          <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Talent Discovery</p>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-white">Pro Scouting Dashboard</h1>
             <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-1 rounded-full border border-purple-500/30">T20 Owners</span>
@@ -44,9 +55,9 @@ export default function ScoutingPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid lg:grid-cols-4 gap-4 mb-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
         {t20Teams.slice(0, 4).map((team) => (
-          <div key={team.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
+          <div key={team.id} className="glass-card rounded-xl p-4 hover:border-purple-500/50 transition-all cursor-pointer" onClick={() => { setRegion("All"); setAgeGroup("All"); setRole("All"); }}>
             <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
                 {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
@@ -72,7 +83,7 @@ export default function ScoutingPage() {
         ))}
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 mb-6">
+      <div className="glass-card rounded-xl p-5 mb-6">
         <h2 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Advanced Filters</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
           <div>
@@ -153,7 +164,7 @@ export default function ScoutingPage() {
         </div>
       </div>
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden">
+      <div className="glass-card rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

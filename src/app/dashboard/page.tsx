@@ -1,26 +1,151 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Link from "next/link";
-import { players, agents, t20Teams, tournaments, sponsors } from "@/data/mock";
+import { players, agents, t20Teams, tournaments, sponsors, coaches, performanceFeedItems } from "@/data/mock";
 import StatCard from "@/components/StatCard";
-import { UserRole } from "@/types";
+import { UserRole, Player } from "@/types";
+import { useAuth } from "@/context/AuthContext";
+import { getItem } from "@/lib/storage";
+import { apiRequest } from "@/lib/api-client";
 
 const roleLabels: Record<UserRole, string> = {
-  player: "Player Dashboard",
+  player: "My Profile",
   agent: "Agent Dashboard",
   owner: "T20 Owner Dashboard",
   sponsor: "Sponsor Dashboard",
+  coach: "Coach Dashboard",
+  academy_admin: "Academy Dashboard",
 };
 
+const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
+  "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
+  "best-bowling": { icon: "W", color: "text-blue-400", bg: "bg-blue-500/20" },
+  "fastest-innings": { icon: "F", color: "text-amber-400", bg: "bg-amber-500/20" },
+  "form-spike": { icon: "S", color: "text-purple-400", bg: "bg-purple-500/20" },
+  "hot-prospect": { icon: "H", color: "text-red-400", bg: "bg-red-500/20" },
+  "rank-movement": { icon: "R", color: "text-cyan-400", bg: "bg-cyan-500/20" },
+};
+
+function resolvePlayer(email: string | undefined): Player {
+  if (email) {
+    const seed = players.find(
+      (p) =>
+        p.id ===
+        [
+          { e: "arjun@cricverse360.com", id: "p1" },
+          { e: "jake@cricverse360.com", id: "p2" },
+          { e: "rashid@cricverse360.com", id: "p3" },
+          { e: "rahul@cricverse360.com", id: "p8" },
+        ].find((m) => m.e === email.toLowerCase())?.id
+    );
+    if (seed) return seed;
+
+    const profiles = getItem<{ basic: { email: string; fullName: string; role: string; battingStyle: string; bowlingStyle: string; ageGroup: string; country: string; state: string; city: string; region: string }; cric: { totalMatches: string; totalRuns: string; totalWickets: string; battingAverage: string; bowlingAverage: string; strikeRate: string; economy: string } }[]>("profiles", []);
+    const reg = profiles.find((p) => p.basic.email.toLowerCase() === email.toLowerCase());
+    if (reg) {
+      const c = reg.cric;
+      return {
+        id: `reg_${email}`,
+        name: reg.basic.fullName,
+        age: 0,
+        ageGroup: (reg.basic.ageGroup || "Men") as Player["ageGroup"],
+        country: reg.basic.country || "USA",
+        countryCode: "US",
+        region: (reg.basic.region || "Americas") as Player["region"],
+        state: reg.basic.state || "",
+        city: reg.basic.city || "",
+        role: (reg.basic.role || "Batsman") as Player["role"],
+        battingStyle: (reg.basic.battingStyle || "Right-hand Bat") as Player["battingStyle"],
+        bowlingStyle: (reg.basic.bowlingStyle || "Right-arm Medium") as Player["bowlingStyle"],
+        profileTier: "Free",
+        avatar: "",
+        verified: false,
+        stats: {
+          matches: Number(c.totalMatches) || 0,
+          innings: Number(c.totalMatches) || 0,
+          notOuts: 0,
+          runs: Number(c.totalRuns) || 0,
+          battingAverage: Number(c.battingAverage) || 0,
+          strikeRate: Number(c.strikeRate) || 0,
+          fifties: 0,
+          hundreds: 0,
+          wickets: Number(c.totalWickets) || 0,
+          bowlingAverage: Number(c.bowlingAverage) || 0,
+          economy: Number(c.economy) || 0,
+          bestBowling: "-",
+          catches: 0,
+          stumpings: 0,
+        },
+        fitnessData: { sprintSpeed: 0, yoYoTest: 0, throwDistance: 0, beepTestLevel: 0 },
+        highlights: [],
+        achievements: [],
+        showcaseEvents: [],
+        targetLeagues: [],
+      };
+    }
+  }
+  return players[0];
+}
+
 function PlayerDashboard() {
-  const player = players[0];
+  const { user } = useAuth();
+  const player = resolvePlayer(user?.email);
+  const recentFeed = [...performanceFeedItems]
+    .filter((item) => item.playerId === player.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [reminders, setReminders] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
+    try { return JSON.parse(localStorage.getItem("cv360_event_reminders") || "{}"); } catch { return {}; }
+  });
+  const [reminderToast, setReminderToast] = useState<string | null>(null);
+  const [expandedFeed, setExpandedFeed] = useState<string | null>(null);
+  const toggleReminder = (eventId: string, eventName: string) => {
+    if (!reminders[eventId] && typeof Notification !== "undefined" && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    const next = { ...reminders, [eventId]: !reminders[eventId] };
+    setReminders(next);
+    try { localStorage.setItem("cv360_event_reminders", JSON.stringify(next)); } catch {}
+    setReminderToast(next[eventId] ? `Reminder set for ${eventName}` : `Reminder removed for ${eventName}`);
+    setTimeout(() => setReminderToast(null), 2500);
+  };
+
+  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const res = await apiRequest<{ uploadUrl?: string; key?: string }>("/users/avatar", { method: "POST" });
+    if (res.ok && res.data?.uploadUrl) {
+      try {
+        await fetch(res.data.uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": "image/jpeg" } });
+        const bucket = "cricverse360-assets-411964234582";
+        setAvatarUrl(`https://${bucket}.s3.us-east-1.amazonaws.com/${res.data.key}`);
+      } catch {}
+    }
+    setUploading(false);
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
         <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
-            {player.name.split(" ").map((n) => n[0]).join("")}
+          <div className="relative group cursor-pointer" onClick={() => avatarInputRef.current?.click()}>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                {player.name.split(" ").map((n) => n[0]).join("")}
+              </div>
+            )}
+            <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            </div>
+            {uploading && <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center"><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /></div>}
+            <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           </div>
           <div>
             <h2 className="text-xl font-bold text-white">{player.name}</h2>
@@ -51,11 +176,53 @@ function PlayerDashboard() {
           <div className="space-y-2">
             {tournaments.filter((t) => t.status === "upcoming").slice(0, 3).map((t) => (
               <div key={t.id} className="flex items-center justify-between text-sm">
-                <span className="text-slate-300">{t.name}</span>
-                <span className="text-xs text-slate-500">{t.startDate}</span>
+                <span className="text-slate-300 flex-1 truncate">{t.name}</span>
+                <span className="text-xs text-slate-500 mx-2 shrink-0">{t.startDate}</span>
+                <button onClick={() => toggleReminder(t.id, t.name)} className="shrink-0 p-1 rounded-lg hover:bg-slate-700/50 transition-colors" title={reminders[t.id] ? "Remove reminder" : "Remind me"}>
+                  {reminders[t.id] ? (
+                    <svg className="w-4 h-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 002 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+                  ) : (
+                    <svg className="w-4 h-4 text-slate-600 hover:text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                  )}
+                </button>
               </div>
             ))}
           </div>
+          {reminderToast && (
+            <div className="mt-2 text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-1.5 animate-pulse">{reminderToast}</div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Performance Feed</h3>
+            <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/30">Live</span>
+          </div>
+          <Link href="/performance-feed" className="text-xs text-cyan-400 hover:text-cyan-300">View All &rarr;</Link>
+        </div>
+        <div className="space-y-2">
+          {recentFeed.map((item) => {
+            const config = feedTypeConfig[item.type];
+            return (
+              <div key={item.id} className="cursor-pointer" onClick={() => setExpandedFeed(expandedFeed === item.id ? null : item.id)}>
+                <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
+                  <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
+                    {config.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                    <p className="text-xs text-slate-500">{item.playerName} &middot; {new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                  </div>
+                  <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
+                </div>
+                {expandedFeed === item.id && (
+                  <div className="ml-11 mr-2 mt-1 mb-2 text-xs text-slate-400 bg-slate-800/50 border border-slate-700/30 rounded-lg px-3 py-2">{item.description}</div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -185,6 +352,50 @@ function OwnerDashboard() {
   );
 }
 
+function CoachDashboard() {
+  const coach = coaches[0];
+  const myPlayers = players.slice(0, 6);
+  return (
+    <div className="space-y-6">
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
+            {coach.name.split(" ").map((n) => n[0]).join("")}
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white">{coach.name}</h2>
+            <p className="text-sm text-slate-400">{coach.specialization} • {coach.experience}+ yrs • {coach.region}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard label="Players Developed" value={coach.playersDeveloped} color="emerald" />
+        <StatCard label="Rating" value={coach.rating} color="amber" />
+        <StatCard label="Certifications" value={coach.certifications.length} color="blue" />
+        <StatCard label="Review Count" value={coach.reviewCount} color="purple" />
+      </div>
+
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">My Trainees</h3>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {myPlayers.map((p) => (
+            <Link key={p.id} href={`/players/${p.id}`} className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
+                {p.name.split(" ").map((n) => n[0]).join("")}
+              </div>
+              <div>
+                <p className="text-sm font-medium text-white">{p.name}</p>
+                <p className="text-xs text-slate-400">{p.role} • {p.ageGroup}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SponsorDashboard() {
   const sponsor = sponsors[0];
 
@@ -246,6 +457,9 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mb-3">
+        <Link href="/players?tab=profile" className="text-sm text-slate-400 hover:text-white">← Back to My Profile</Link>
+      </div>
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-white">{roleLabels[role]}</h1>
         <select
@@ -257,6 +471,7 @@ export default function DashboardPage() {
           <option value="agent">Agent View</option>
           <option value="owner">T20 Owner View</option>
           <option value="sponsor">Sponsor View</option>
+          <option value="coach">Coach View</option>
         </select>
       </div>
 
@@ -264,6 +479,7 @@ export default function DashboardPage() {
       {role === "agent" && <AgentDashboard />}
       {role === "owner" && <OwnerDashboard />}
       {role === "sponsor" && <SponsorDashboard />}
+      {role === "coach" && <CoachDashboard />}
     </div>
   );
 }

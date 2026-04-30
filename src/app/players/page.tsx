@@ -1,170 +1,1898 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import PlayerCard from "@/components/PlayerCard";
-import { players } from "@/data/mock";
-import { AgeGroup, Region, PlayerRole } from "@/types";
+import { Suspense, useEffect, useState, useMemo, useCallback } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
+import { players, tournaments, performanceFeedItems, playerCombineData, generateCPIRankings, playerMatchHistory, getFormStatus, calculateCPI } from "@/data/mock";
+
+const ProfileBattingChart = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } = mod;
+  return { default: ({ data }: { data: { name: string; runs: number }[] }) => (
+    <div className="h-28">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+          <XAxis dataKey="name" tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fill: "#64748b", fontSize: 9 }} axisLine={false} tickLine={false} />
+          <Tooltip contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px", color: "#fff", fontSize: 11 }} />
+          <Bar dataKey="runs" fill="#10b981" radius={[3, 3, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  )};
+}), { ssr: false });
+const ProfileRadarChart = dynamic(() => import("recharts").then(mod => {
+  const { ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis } = mod;
+  return { default: ({ data }: { data: { axis: string; value: number }[] }) => (
+    <div className="mt-2">
+      <h4 className="text-xs text-slate-400 mb-2">CPI Breakdown</h4>
+      <div className="h-32">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={data} cx="50%" cy="50%" outerRadius="65%">
+            <PolarGrid stroke="#334155" />
+            <PolarAngleAxis dataKey="axis" tick={{ fill: "#94a3b8", fontSize: 10 }} />
+            <PolarRadiusAxis tick={false} domain={[0, 100]} axisLine={false} />
+            <Radar dataKey="value" stroke="#a855f7" fill="#a855f7" fillOpacity={0.25} strokeWidth={2} dot={{ fill: "#a855f7", r: 2 }} />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )};
+}), { ssr: false });
+import { legends, skillColors, type Skill, type Routine } from "@/data/legends";
+import StatCard from "@/components/StatCard";
+import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
+import { useAuth } from "@/context/AuthContext";
+import { getItem } from "@/lib/storage";
+import { apiRequest } from "@/lib/api-client";
+import type { Player } from "@/types";
+
+function CPIRing({ score, size = 100 }: { score: number; size?: number }) {
+  const radius = (size - 10) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+  const color = score >= 80 ? "#10b981" : score >= 60 ? "#f59e0b" : score >= 40 ? "#3b82f6" : "#ef4444";
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#1e293b" strokeWidth="6" />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth="6" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" className="transition-all duration-1000" />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-xl font-bold text-white">{score}</span>
+        <span className="text-[9px] text-slate-400 uppercase tracking-wider">CPI</span>
+      </div>
+    </div>
+  );
+}
+
+function FormBadge({ status }: { status: string }) {
+  const config: Record<string, { bg: string; text: string; glow: string }> = {
+    "Red Hot": { bg: "bg-red-500/20", text: "text-red-400", glow: "shadow-red-500/20 shadow-lg" },
+    "In Form": { bg: "bg-emerald-500/20", text: "text-emerald-400", glow: "shadow-emerald-500/20 shadow-lg" },
+    "Steady": { bg: "bg-amber-500/20", text: "text-amber-400", glow: "" },
+    "Cold": { bg: "bg-slate-600/50", text: "text-slate-400", glow: "" },
+  };
+  const c = config[status] || config["Cold"];
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text} ${c.glow}`}>
+      {status === "Red Hot" && <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />}
+      {status === "In Form" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+      {status}
+    </span>
+  );
+}
+
+function ProfileProgressBar({ label, value, max, unit }: { label: string; value: number; max: number; unit?: string }) {
+  const pct = Math.min((value / max) * 100, 100);
+  const color = pct >= 75 ? "bg-emerald-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
+  const textColor = pct >= 75 ? "text-emerald-400" : pct >= 50 ? "text-amber-400" : "text-red-400";
+  return (
+    <div>
+      <div className="flex justify-between mb-1">
+        <span className="text-xs text-slate-400">{label}</span>
+        <span className={`text-xs font-semibold ${textColor}`}>{value}{unit}</span>
+      </div>
+      <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }> = {
+  "top-score": { icon: "B", color: "text-emerald-400", bg: "bg-emerald-500/20" },
+  "best-bowling": { icon: "W", color: "text-blue-400", bg: "bg-blue-500/20" },
+  "fastest-innings": { icon: "F", color: "text-amber-400", bg: "bg-amber-500/20" },
+  "form-spike": { icon: "S", color: "text-purple-400", bg: "bg-purple-500/20" },
+  "hot-prospect": { icon: "H", color: "text-red-400", bg: "bg-red-500/20" },
+  "rank-movement": { icon: "R", color: "text-cyan-400", bg: "bg-cyan-500/20" },
+};
 
 export default function PlayersPage() {
-  const [search, setSearch] = useState("");
-  const [ageGroup, setAgeGroup] = useState<AgeGroup | "All">("All");
-  const [region, setRegion] = useState<Region | "All">("All");
-  const [streetOnly, setStreetOnly] = useState(false);
-  const [role, setRole] = useState<PlayerRole | "All">("All");
-  const [sortBy, setSortBy] = useState<"runs" | "wickets" | "average" | "name">("runs");
-  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  return (
+    <Suspense fallback={<div className="py-8 text-slate-400">Loading...</div>}>
+      <PlayersContent />
+    </Suspense>
+  );
+}
 
-  const filtered = useMemo(() => {
-    let result = [...players];
+function PlayersContent() {
+  const [tab, setTab] = useState<"profile" | "mystats" | "training" | "ai" | "store">("profile");
+  const [trainingTab, setTrainingTab] = useState<"routines" | "drills" | "planner" | "log" | "progress" | "notes">("routines");
+  const [drillCategory, setDrillCategory] = useState<"all" | "batting" | "bowling" | "fielding" | "fitness">("all");
+  const [drillLevel, setDrillLevel] = useState<"all" | "beginner" | "intermediate" | "advanced">("all");
+  const [sessionLogs, setSessionLogs] = useState<{ id: string; date: string; type: string; duration: string; notes: string }[]>([]);
+  const [plannerDays, setPlannerDays] = useState<Record<string, string[]>>({});
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [progressFilter, setProgressFilter] = useState<"all" | "batting" | "bowling" | "fielding">("all");
+  const [analysisHistory, setAnalysisHistory] = useState<SavedAnalysis[]>([]);
+  const [coachNotes, setCoachNotes] = useState<{ id: string; analysisId: string; text: string; timestamp: string; category: "technique" | "fitness" | "mental" | "general"; date?: string; location?: string }[]>([]);
+  const [selectedAnalysis, setSelectedAnalysis] = useState<SavedAnalysis | null>(null);
+  const [newNote, setNewNote] = useState("");
+  const [noteCategory, setNoteCategory] = useState<"technique" | "fitness" | "mental" | "general">("technique");
+  const [noteDate, setNoteDate] = useState(new Date().toISOString().slice(0, 10));
+  const [noteLocation, setNoteLocation] = useState("");
+  const [exportFormat, setExportFormat] = useState<"text" | "csv">("text");
+  const search = useSearchParams();
+  const [completedRoutines, setCompletedRoutines] = useState<Record<string, boolean>>({});
+  const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [noteFilter, setNoteFilter] = useState<string | null>(null);
+  const [sessionAiResults, setSessionAiResults] = useState<Record<string, string>>({});
+  const [sessionAiLoading, setSessionAiLoading] = useState<string | null>(null);
+  const [noteAiResults, setNoteAiResults] = useState<Record<string, string>>({});
+  const [noteAiLoading, setNoteAiLoading] = useState<string | null>(null);
+  const [expandedFeed, setExpandedFeed] = useState<string | null>(null);
+  const [notesView, setNotesView] = useState<"my" | "coach">("my");
+  const [drillView, setDrillView] = useState<"library" | "my-drills" | "upload">("library");
+  const [communityDrills, setCommunityDrills] = useState<{ id: string; title: string; description: string; video_url: string; category: string; skill_level: string; duration_minutes: number; tags: string[]; like_count: number; comment_count: number; share_count: number; visibility: string; author_name: string; created_at: string }[]>([
+    { id: "cd1", title: "Front Foot Drive Masterclass", description: "Step-by-step drill to perfect the front foot cover drive. Focus on head position, weight transfer, and follow-through.", video_url: "https://www.youtube.com/watch?v=yeImrfgNJoM", category: "batting", skill_level: "beginner", duration_minutes: 15, tags: ["Footwork", "Defense"], like_count: 42, comment_count: 8, share_count: 12, visibility: "public", author_name: "Arjun Patel", created_at: new Date(Date.now() - 86400000 * 2).toISOString() },
+    { id: "cd2", title: "Yorker Bowling Practice", description: "Practice routine for consistently bowling yorkers at the death. Includes target placement drills.", video_url: "https://www.youtube.com/watch?v=iO2ChgTJghE", category: "bowling", skill_level: "advanced", duration_minutes: 20, tags: ["Yorker", "Pace"], like_count: 67, comment_count: 15, share_count: 23, visibility: "public", author_name: "Rashid Mohammed", created_at: new Date(Date.now() - 86400000 * 5).toISOString() },
+    { id: "cd3", title: "Slip Catching Routine", description: "Daily slip catching routine used by professional teams. 50 catches minimum per session.", video_url: "https://www.youtube.com/watch?v=H0jPrcfWu9c", category: "fielding", skill_level: "intermediate", duration_minutes: 30, tags: ["Catching"], like_count: 31, comment_count: 5, share_count: 8, visibility: "public", author_name: "Jake Thompson", created_at: new Date(Date.now() - 86400000 * 1).toISOString() },
+    { id: "cd4", title: "Cricket HIIT Workout", description: "High intensity interval training designed for cricketers. Improves sprint speed and fielding agility.", video_url: "https://www.youtube.com/watch?v=x2yois9bzEE", category: "fitness", skill_level: "intermediate", duration_minutes: 25, tags: ["Cardio", "Agility"], like_count: 89, comment_count: 22, share_count: 45, visibility: "public", author_name: "Coach Yashwant", created_at: new Date(Date.now() - 86400000 * 3).toISOString() },
+  ]);
+  const [likedDrills, setLikedDrills] = useState<Set<string>>(new Set());
+  const [drillSearch, setDrillSearch] = useState("");
+  const [uploadTitle, setUploadTitle] = useState("");
+  const [uploadDesc, setUploadDesc] = useState("");
+  const [uploadVideo, setUploadVideo] = useState("");
+  const [uploadCategory, setUploadCategory] = useState("batting");
+  const [uploadLevel, setUploadLevel] = useState("beginner");
+  const [uploadDuration, setUploadDuration] = useState("");
+  const [uploadTags, setUploadTags] = useState<string[]>([]);
+  const [uploadVisibility, setUploadVisibility] = useState<"public" | "academy" | "private">("public");
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [coachInboxNotes] = useState<{ id: string; text: string; category: "technique" | "fitness" | "mental" | "general"; date: string; coachName: string; coachId: string }[]>([
+    { id: "cn1", text: "Arjun shows excellent footwork against pace but needs to work on playing spin. Recommend 30 min daily spin drills.", category: "technique", date: "2026-02-10", coachName: "Suresh Menon", coachId: "c1" },
+    { id: "cn2", text: "Core strength needs improvement. Add planks and medicine ball exercises to weekly routine.", category: "fitness", date: "2026-02-08", coachName: "Suresh Menon", coachId: "c1" },
+    { id: "cn3", text: "Good temperament under pressure but tends to lose concentration after reaching 30+. Work on mental focus drills.", category: "mental", date: "2026-02-05", coachName: "James Wright", coachId: "c3" },
+  ]);
 
-    if (search) {
-      const q = search.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.name.toLowerCase().includes(q) ||
-          p.city.toLowerCase().includes(q) ||
-          p.country.toLowerCase().includes(q) ||
-          p.state.toLowerCase().includes(q)
-      );
+  useEffect(() => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const stored = localStorage.getItem(`cricverse360_routine_log_${todayKey}`);
+    if (stored) setCompletedRoutines(JSON.parse(stored));
+    setAnalysisHistory(getHistory());
+    try {
+      const raw = localStorage.getItem("cricverse360_coach_notes");
+      if (raw) setCoachNotes(JSON.parse(raw));
+    } catch {}
+    const h = getHistory();
+    if (h.length > 0) setSelectedAnalysis(h[0]);
+  }, []);
+
+  const addCoachNote = useCallback(() => {
+    if (!newNote.trim()) return;
+    const note = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, analysisId: selectedAnalysis?.id || "manual", text: newNote.trim(), timestamp: new Date().toISOString(), category: noteCategory, date: noteDate, location: noteLocation.trim() || undefined };
+    const updated = [note, ...coachNotes];
+    setCoachNotes(updated);
+    try { localStorage.setItem("cricverse360_coach_notes", JSON.stringify(updated)); } catch {}
+    setNewNote("");
+  }, [newNote, selectedAnalysis, noteCategory, noteDate, noteLocation, coachNotes]);
+
+  const deleteCoachNote = useCallback((id: string) => {
+    const updated = coachNotes.filter((n) => n.id !== id);
+    setCoachNotes(updated);
+    try { localStorage.setItem("cricverse360_coach_notes", JSON.stringify(updated)); } catch {}
+  }, [coachNotes]);
+
+  const exportCoachNotes = useCallback(() => {
+    const notesToExport = selectedAnalysis ? coachNotes.filter((n) => n.analysisId === selectedAnalysis.id) : coachNotes;
+    if (notesToExport.length === 0) return;
+    let content = "";
+    if (exportFormat === "csv") {
+      content = "Date,Location,Category,Note,Source\n";
+      notesToExport.forEach((n) => {
+        const date = n.date || new Date(n.timestamp).toLocaleDateString();
+        const loc = n.location || "";
+        const source = n.analysisId === "manual" ? "Manual" : (selectedAnalysis?.fileName || "Session");
+        content += `"${date}","${loc}","${n.category}","${n.text.replace(/"/g, '""')}","${source}"\n`;
+      });
+    } else {
+      content = selectedAnalysis
+        ? `Coach Notes Report - ${selectedAnalysis.fileName}\nAnalysis Type: ${selectedAnalysis.summary.type} | Score: ${selectedAnalysis.summary.overallScore}/100\n`
+        : `Coach Notes Report\n`;
+      content += `Generated: ${new Date().toLocaleDateString()}\n${"=".repeat(50)}\n`;
+      if (selectedAnalysis) {
+        content += `\nANALYSIS SUMMARY:\n`;
+        selectedAnalysis.summary.categories.forEach((c) => { content += `  ${c.category}: ${c.score}/100 - ${c.comment}\n`; });
+      }
+      content += `\nCOACH NOTES:\n`;
+      notesToExport.forEach((n) => {
+        const date = n.date || new Date(n.timestamp).toLocaleDateString();
+        const loc = n.location ? ` @ ${n.location}` : "";
+        content += `  [${n.category.toUpperCase()}] ${date}${loc} - ${n.text}\n`;
+      });
+      if (selectedAnalysis) {
+        content += `\nRECOMMENDED DRILLS:\n`;
+        selectedAnalysis.summary.drills.forEach((d, i) => { content += `  ${i + 1}. ${d}\n`; });
+      }
     }
-    if (ageGroup !== "All") result = result.filter((p) => p.ageGroup === ageGroup);
-    if (region !== "All") result = result.filter((p) => p.region === region);
-    if (role !== "All") result = result.filter((p) => p.role === role);
-    if (verifiedOnly) result = result.filter((p) => p.verified);
-    if (streetOnly) result = result.filter((p) => p.streetCricketer);
+    const blob = new Blob([content], { type: exportFormat === "csv" ? "text/csv" : "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `coach-notes-${selectedAnalysis?.fileName?.replace(/\.[^.]+$/, "") || "all"}.${exportFormat === "csv" ? "csv" : "txt"}`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [selectedAnalysis, coachNotes, exportFormat]);
 
-    switch (sortBy) {
-      case "runs":
-        result.sort((a, b) => b.stats.runs - a.stats.runs);
-        break;
-      case "wickets":
-        result.sort((a, b) => b.stats.wickets - a.stats.wickets);
-        break;
-      case "average":
-        result.sort((a, b) => b.stats.battingAverage - a.stats.battingAverage);
-        break;
-      case "name":
-        result.sort((a, b) => a.name.localeCompare(b.name));
-        break;
+  const toggleRoutine = (routineKey: string) => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const updated = { ...completedRoutines, [routineKey]: !completedRoutines[routineKey] };
+    setCompletedRoutines(updated);
+    localStorage.setItem(`cricverse360_routine_log_${todayKey}`, JSON.stringify(updated));
+  };
+
+  useEffect(() => {
+    const t = search.get("tab");
+    const sub = search.get("sub");
+    if (t === "profile" || t === "mystats" || t === "training" || t === "ai" || t === "store") setTab(t);
+    if (sub === "routines" || sub === "drills" || sub === "planner" || sub === "log" || sub === "progress" || sub === "notes") setTrainingTab(sub);
+  }, [search]);
+
+  const tabs = [
+    { id: "profile", label: "My Profile" },
+    { id: "mystats", label: "My Stats" },
+    { id: "training", label: "Training" },
+    { id: "ai", label: "Full Track AI" },
+    { id: "store", label: "Merchandise Store" },
+  ] as const;
+
+  const { user } = useAuth();
+  const player = useMemo(() => {
+    if (user?.email) {
+      const seedMap: Record<string, string> = {
+        "arjun@cricverse360.com": "p1",
+        "jake@cricverse360.com": "p2",
+        "rashid@cricverse360.com": "p3",
+        "rahul@cricverse360.com": "p8",
+      };
+      const seedId = seedMap[user.email.toLowerCase()];
+      if (seedId) {
+        const found = players.find((p) => p.id === seedId);
+        if (found) return found;
+      }
+      const profiles = getItem<{ basic: { email: string; fullName: string; role: string; battingStyle: string; bowlingStyle: string; ageGroup: string; country: string; state: string; city: string; region: string }; cric: { totalMatches: string; totalRuns: string; totalWickets: string; battingAverage: string; bowlingAverage: string; strikeRate: string; economy: string } }[]>("profiles", []);
+      const reg = profiles.find((p) => p.basic.email.toLowerCase() === user.email.toLowerCase());
+      if (reg) {
+        const c = reg.cric;
+        return {
+          id: `reg_${user.email}`,
+          name: reg.basic.fullName,
+          age: 0,
+          ageGroup: (reg.basic.ageGroup || "Men") as Player["ageGroup"],
+          country: reg.basic.country || "USA",
+          countryCode: "US",
+          region: (reg.basic.region || "Americas") as Player["region"],
+          state: reg.basic.state || "",
+          city: reg.basic.city || "",
+          role: (reg.basic.role || "Batsman") as Player["role"],
+          battingStyle: (reg.basic.battingStyle || "Right-hand Bat") as Player["battingStyle"],
+          bowlingStyle: (reg.basic.bowlingStyle || "Right-arm Medium") as Player["bowlingStyle"],
+          profileTier: "Free" as const,
+          avatar: "",
+          verified: false,
+          stats: {
+            matches: Number(c.totalMatches) || 0,
+            innings: Number(c.totalMatches) || 0,
+            notOuts: 0,
+            runs: Number(c.totalRuns) || 0,
+            battingAverage: Number(c.battingAverage) || 0,
+            strikeRate: Number(c.strikeRate) || 0,
+            fifties: 0,
+            hundreds: 0,
+            wickets: Number(c.totalWickets) || 0,
+            bowlingAverage: Number(c.bowlingAverage) || 0,
+            economy: Number(c.economy) || 0,
+            bestBowling: "-",
+            catches: 0,
+            stumpings: 0,
+          },
+          fitnessData: { sprintSpeed: 0, yoYoTest: 0, throwDistance: 0, beepTestLevel: 0 },
+          highlights: [] as Player["highlights"],
+          achievements: [] as string[],
+          showcaseEvents: [] as string[],
+          targetLeagues: [] as Player["targetLeagues"],
+        } satisfies Player;
+      }
     }
+    return players[0];
+  }, [user?.email]);
+  const playerFeed = [...performanceFeedItems]
+    .filter((item) => item.playerId === player.id)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-    return result;
-  }, [search, ageGroup, region, role, sortBy, verifiedOnly, streetOnly]);
+  const profileMatches = useMemo(() => playerMatchHistory[player.id] || [], [player.id]);
+  const profileCpi = useMemo(() => calculateCPI(player, profileMatches), [player, profileMatches]);
+  const profileForm = useMemo(() => getFormStatus(profileMatches, player.role), [profileMatches, player.role]);
+  const profileCombine = useMemo(() => playerCombineData[player.id], [player.id]);
+  const profileBattingChart = useMemo(() => [...profileMatches].reverse().slice(-5).map(m => ({ name: m.opponent.split(" ")[0], runs: m.runsScored })), [profileMatches]);
+  const profileRadarData = useMemo(() => [
+    { axis: "Match", value: profileCpi.matchPerformance },
+    { axis: "Athletic", value: profileCpi.athleticMetrics },
+    { axis: "Form", value: profileCpi.formIndex },
+    { axis: "Consist.", value: profileCpi.consistency },
+  ], [profileCpi]);
+  const profileAiInsights = useMemo(() => {
+    const insights: string[] = [];
+    if (profileMatches.length >= 2) {
+      const recent3 = profileMatches.slice(0, 3);
+      const older = profileMatches.slice(3);
+      if (recent3.length && older.length) {
+        const recentAvg = recent3.reduce((s, m) => s + m.runsScored, 0) / recent3.length;
+        const olderAvg = older.reduce((s, m) => s + m.runsScored, 0) / older.length;
+        const diff = Math.round(((recentAvg - olderAvg) / Math.max(olderAvg, 1)) * 100);
+        if (Math.abs(diff) >= 10) insights.push(`Batting avg ${diff > 0 ? "up" : "down"} ${Math.abs(diff)}% over last 3 matches`);
+      }
+      const motm = profileMatches.filter(m => m.manOfMatch).length;
+      if (motm >= 2) insights.push(`${motm} MOTM awards in last ${profileMatches.length} innings`);
+    }
+    if (profileForm === "Red Hot") insights.push("Currently in Red Hot form");
+    if (profileCpi.overall >= 75) insights.push(`Elite CPI of ${profileCpi.overall}`);
+    if (profileCombine) {
+      if (profileCombine.yoYoScore >= 19) insights.push(`Yo-Yo ${profileCombine.yoYoScore} — top-tier endurance`);
+      if (profileCombine.bowlingSpeed && profileCombine.bowlingSpeed >= 140) insights.push(`Express pace: ${profileCombine.bowlingSpeed} km/h`);
+    }
+    if (insights.length === 0) insights.push("Keep logging sessions to unlock AI insights");
+    return insights;
+  }, [profileMatches, profileForm, profileCpi, profileCombine]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Player Registry</h1>
-        <p className="text-slate-400">
-          Browse {players.length} registered youth cricket players from around the world
-        </p>
-      </div>
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-          <div className="md:col-span-2">
-            <input
-              type="text"
-              placeholder="Search by name, city, country..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
+      {(tab === "profile" || tab === "mystats") && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-1 glass-card rounded-xl p-1 mb-2">
+            <Link href="/players?tab=profile" className={`flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium transition-colors ${tab === "profile" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>My Profile</Link>
+            <Link href="/players?tab=mystats" className={`flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium transition-colors ${tab === "mystats" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white hover:bg-slate-700/50"}`}>My Stats</Link>
+            <Link href="/stats" className="flex-1 text-center text-sm py-2 px-4 rounded-lg font-medium text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors">Full Dashboard</Link>
           </div>
-          <select
-            value={ageGroup}
-            onChange={(e) => setAgeGroup(e.target.value as AgeGroup | "All")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="All">All Ages</option>
-            <option value="U15">U15</option>
-            <option value="U17">U17</option>
-            <option value="U19">U19</option>
-            <option value="U21">U21</option>
-          </select>
-          <select
-            value={region}
-            onChange={(e) => setRegion(e.target.value as Region | "All")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="All">All Regions</option>
-            <option value="South Asia">South Asia</option>
-            <option value="Oceania">Oceania</option>
-            <option value="Europe">Europe</option>
-            <option value="Caribbean">Caribbean</option>
-            <option value="Africa">Africa</option>
-            <option value="Americas">Americas</option>
-            <option value="Middle East">Middle East</option>
-          </select>
-          <select
-            value={role}
-            onChange={(e) => setRole(e.target.value as PlayerRole | "All")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="All">All Roles</option>
-            <option value="Batsman">Batsman</option>
-            <option value="Bowler">Bowler</option>
-            <option value="All-Rounder">All-Rounder</option>
-            <option value="Wicket-Keeper">Wicket-Keeper</option>
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as "runs" | "wickets" | "average" | "name")}
-            className="bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-          >
-            <option value="runs">Sort: Most Runs</option>
-            <option value="wickets">Sort: Most Wickets</option>
-            <option value="average">Sort: Best Average</option>
-            <option value="name">Sort: Name A-Z</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-4 mt-3">
-          <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={verifiedOnly}
-              onChange={(e) => setVerifiedOnly(e.target.checked)}
-              className="rounded border-slate-600 bg-slate-900 text-emerald-500 focus:ring-emerald-500"
-            />
-            Verified profiles only
-          </label>
-          <label className="flex items-center gap-2 text-sm text-slate-400 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={streetOnly}
-              onChange={(e) => setStreetOnly(e.target.checked)}
-              className="rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500"
-            />
-            Street cricketers only
-          </label>
-          <span className="text-sm text-slate-500">
-            Showing {filtered.length} of {players.length} players
-          </span>
-        </div>
-      </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filtered.map((player, i) => (
-          <PlayerCard key={player.id} player={player} rank={i + 1} />
-        ))}
-      </div>
+          {tab === "profile" && (<>
+          <div className="glass-card rounded-2xl p-6 animate-fade-up">
+            <div className="flex flex-col md:flex-row items-center gap-5">
+              <div className="flex-shrink-0">
+                <CPIRing score={profileCpi.overall} size={100} />
+              </div>
+              <div className="flex-1 text-center md:text-left">
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-1">
+                  <h2 className="text-xl font-bold text-white">{player.name}</h2>
+                  <FormBadge status={profileForm} />
+                </div>
+                <p className="text-sm text-slate-400">{player.role} &middot; {player.battingStyle} &middot; {player.ageGroup} &middot; {player.country}</p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${player.profileTier === "Elite" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : player.profileTier === "Premium" ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-slate-600/50 text-slate-400 border border-slate-600"}`}>{player.profileTier}</span>
+                  {player.verified && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">Verified</span>}
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-700/50 text-slate-300">{player.stats.matches} Matches</span>
+                  <span className="text-xs text-slate-500">Rank #{profileCpi.nationalRank || "—"}</span>
+                </div>
+              </div>
+              <div className="flex-shrink-0 hidden md:flex flex-col items-center gap-2">
+                {player.avatar ? (
+                  <img src={player.avatar} alt={player.name} className="w-20 h-20 rounded-full object-cover border-2 border-emerald-500" />
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-2xl">
+                    {player.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                )}
+                <Link href="/stats" className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 transition-colors">Full Dashboard &rarr;</Link>
+              </div>
+            </div>
+          </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-16">
-          <p className="text-slate-500 text-lg">No players match your filters</p>
-          <button
-            onClick={() => {
-              setSearch("");
-              setAgeGroup("All");
-              setRegion("All");
-              setStreetOnly(false);
-              setRole("All");
-              setVerifiedOnly(false);
-            }}
-            className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm"
-          >
-            Clear all filters
-          </button>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="glass-card rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide">Batting</h3>
+                <span className="text-[10px] text-slate-500">Last {profileMatches.length} innings</span>
+              </div>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="text-center">
+                  <div className="text-3xl font-black text-emerald-400">{player.stats.runs.toLocaleString()}</div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-500">Runs</div>
+                </div>
+                  <div className="flex-1 grid grid-cols-5 gap-1">
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.notOuts}</div><div className="text-[9px] text-slate-500">NO</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.battingAverage}</div><div className="text-[9px] text-slate-500">Avg</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.strikeRate}</div><div className="text-[9px] text-slate-500">SR</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.fifties}</div><div className="text-[9px] text-slate-500">50s</div></div>
+                    <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.hundreds}</div><div className="text-[9px] text-slate-500">100s</div></div>
+                  </div>
+              </div>
+              {profileBattingChart.length > 0 && <ProfileBattingChart data={profileBattingChart} />}
+            </div>
+
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wide mb-3">Bowling</h3>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="text-center">
+                  <div className="text-3xl font-black text-red-400">{player.stats.wickets}</div>
+                  <div className="text-[9px] uppercase tracking-wider text-slate-500">Wickets</div>
+                </div>
+                <div className="flex-1 grid grid-cols-3 gap-1">
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bowlingAverage || "-"}</div><div className="text-[9px] text-slate-500">Avg</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.economy || "-"}</div><div className="text-[9px] text-slate-500">Econ</div></div>
+                  <div className="text-center px-1 py-1 bg-slate-800/30 rounded"><div className="text-xs font-semibold text-white">{player.stats.bestBowling}</div><div className="text-[9px] text-slate-500">Best</div></div>
+                </div>
+              </div>
+              {profileRadarData.some(d => d.value > 0) && <ProfileRadarChart data={profileRadarData} />}
+            </div>
+          </div>
+
+          {profileCombine && (
+            <div className="glass-card rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wide">Combine Assessment</h3>
+                {profileCombine.verifiedAthlete && <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Verified</span>}
+              </div>
+              <div className="grid md:grid-cols-2 gap-x-6 gap-y-2">
+                <ProfileProgressBar label="Yo-Yo Test" value={profileCombine.yoYoScore} max={22} />
+                <ProfileProgressBar label="Sprint 20m" value={Math.max(0, 4.5 - profileCombine.sprint20m)} max={1.5} unit="s" />
+                {profileCombine.batSpeed && <ProfileProgressBar label="Bat Speed" value={profileCombine.batSpeed} max={140} unit=" km/h" />}
+                {profileCombine.bowlingSpeed && <ProfileProgressBar label="Bowling Speed" value={profileCombine.bowlingSpeed} max={160} unit=" km/h" />}
+                <ProfileProgressBar label="Vertical Jump" value={profileCombine.verticalJump} max={80} unit=" cm" />
+                <ProfileProgressBar label="Fielding Eff." value={profileCombine.fieldingEfficiency} max={100} unit="%" />
+                <ProfileProgressBar label="Throw Accuracy" value={profileCombine.throwAccuracy} max={100} unit="%" />
+                <ProfileProgressBar label="Reaction Time" value={Math.round(Math.max(0, 0.5 - profileCombine.reactionTime) * 100) / 100} max={0.3} unit="s" />
+              </div>
+            </div>
+          )}
+
+          <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-6 h-6 rounded-md bg-indigo-500/20 flex items-center justify-center">
+                <svg className="w-3 h-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 00.659 1.591L19 14.5" /></svg>
+              </div>
+              <h3 className="text-sm font-semibold text-indigo-400 uppercase tracking-wide">AI Insights</h3>
+            </div>
+            <div className="space-y-2">
+              {profileAiInsights.map((insight, i) => (
+                <div key={i} className="flex items-start gap-2 p-2 bg-slate-900/40 rounded-lg border border-slate-700/30">
+                  <svg className="w-3 h-3 text-indigo-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+                  <p className="text-xs text-slate-300 leading-relaxed">{insight}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Profile Visibility</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Profile Views (30d)</span><span className="text-white font-medium">247</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Shortlisted by Scouts</span><span className="text-white font-medium">8</span></div>
+                <div className="flex justify-between text-sm"><span className="text-slate-400">Agent Interest</span><span className="text-emerald-400 font-medium">3 new</span></div>
+              </div>
+            </div>
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Upcoming Events</h3>
+              <div className="space-y-2">
+                {tournaments.filter((t) => t.status === "upcoming").slice(0, 3).map((t) => (
+                  <div key={t.id} className="flex items-center justify-between text-sm">
+                    <span className="text-slate-300">{t.name}</span>
+                    <span className="text-xs text-slate-500">{t.startDate}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="glass-card rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Performance Feed</h3>
+                <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-500/30">Live</span>
+              </div>
+              <Link href="/performance-feed" className="text-xs text-cyan-400 hover:text-cyan-300">View All &rarr;</Link>
+            </div>
+            <div className="space-y-2">
+              {playerFeed.map((item) => {
+                const config = feedTypeConfig[item.type];
+                return (
+                  <div key={item.id} className="cursor-pointer" onClick={() => setExpandedFeed(expandedFeed === item.id ? null : item.id)}>
+                    <div className="flex items-center gap-3 hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
+                      <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center ${config.color} font-bold text-xs shrink-0`}>
+                        {config.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{item.title}</p>
+                        <p className="text-xs text-slate-500">{item.playerName} &middot; {new Date(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                      </div>
+                      <span className={`text-sm font-bold ${config.color} shrink-0`}>{item.value}</span>
+                    </div>
+                    {expandedFeed === item.id && (
+                      <div className="ml-11 mr-2 mt-1 mb-2 text-xs text-slate-400 bg-slate-800/50 border border-slate-700/30 rounded-lg px-3 py-2">{item.description}</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
+            <h3 className="text-sm font-semibold text-emerald-400 mb-2">Upgrade to Premium</h3>
+            <p className="text-sm text-slate-400 mb-3">Get professional video analysis, verified speed-gun data, and priority visibility to scouts.</p>
+            <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">Upgrade Now - $9.99/mo</button>
+          </div>
+          </>)}
+
+          {tab === "mystats" && (() => {
+        const ranked = generateCPIRankings();
+        const playerCPI = ranked.find((p) => p.id === player.id);
+        const combine = playerCombineData[player.id];
+        const matches = playerMatchHistory[player.id] || [];
+        const formStatus = getFormStatus(matches, player.role);
+        return (
+          <div className="space-y-6">
+            <div className="glass-card rounded-xl p-5">
+              <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Career Stats</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <StatCard label="Matches" value={player.stats.matches} color="emerald" />
+                <StatCard label="Innings" value={player.stats.innings} color="blue" />
+                <StatCard label="Not Outs" value={player.stats.notOuts} color="cyan" />
+                <StatCard label="Runs" value={player.stats.runs} color="purple" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Average" value={player.stats.battingAverage} color="amber" />
+                <StatCard label="Strike Rate" value={player.stats.strikeRate} color="emerald" />
+                <StatCard label="50s / 100s" value={`${player.stats.fifties} / ${player.stats.hundreds}`} color="blue" />
+                <StatCard label="Wickets" value={player.stats.wickets} color="purple" />
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                <StatCard label="Bowl Avg" value={player.stats.bowlingAverage} color="amber" />
+                <StatCard label="Economy" value={player.stats.economy} color="emerald" />
+                <StatCard label="Best Bowling" value={player.stats.bestBowling} color="blue" />
+                <StatCard label="Catches" value={player.stats.catches} color="purple" />
+              </div>
+            </div>
+
+            {playerCPI && (
+              <div className="glass-card rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide" title="Cricket Performance Index: 40% Match Performance + 30% Athletic Metrics + 20% Form Index + 10% Consistency">CPI Metrics <span className="inline-block w-3.5 h-3.5 text-[10px] text-slate-500 border border-slate-600 rounded-full text-center leading-[13px] cursor-help">?</span></h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${formStatus === "Red Hot" ? "bg-red-500/20 text-red-400 border-red-500/30" : formStatus === "In Form" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : formStatus === "Steady" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" : "bg-blue-500/20 text-blue-400 border-blue-500/30"}`}>{formStatus}</span>
+                    <span className="text-xs text-slate-500">Rank #{playerCPI.cpiScore.nationalRank}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-6 mb-4">
+                  <div className={`w-20 h-20 rounded-full flex items-center justify-center border-2 ${playerCPI.cpiScore.overall >= 75 ? "border-emerald-500 bg-emerald-500/10" : playerCPI.cpiScore.overall >= 55 ? "border-blue-500 bg-blue-500/10" : "border-amber-500 bg-amber-500/10"}`}>
+                    <p className={`text-2xl font-bold ${playerCPI.cpiScore.overall >= 75 ? "text-emerald-400" : playerCPI.cpiScore.overall >= 55 ? "text-blue-400" : "text-amber-400"}`}>{playerCPI.cpiScore.overall}</p>
+                  </div>
+                  <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Match (40%)</p>
+                      <p className="text-lg font-bold text-emerald-400">{playerCPI.cpiScore.matchPerformance}</p>
+                    </div>
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Athletic (30%)</p>
+                      <p className="text-lg font-bold text-blue-400">{playerCPI.cpiScore.athleticMetrics}</p>
+                    </div>
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Form (20%)</p>
+                      <p className="text-lg font-bold text-purple-400">{playerCPI.cpiScore.formIndex}</p>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Consist. (10%)</p>
+                      <p className="text-lg font-bold text-amber-400">{playerCPI.cpiScore.consistency}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {combine && (
+              <div className="glass-card rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Combine Assessment</h3>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${combine.verifiedAthlete ? "bg-emerald-500/20 text-emerald-400" : "bg-slate-700/50 text-slate-400"}`}>{combine.verifiedAthlete ? "Verified" : "Pending"}</span>
+                    <span className="text-xs text-slate-500">Next: {new Date(combine.nextAssessmentDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Yo-Yo Score</p>
+                    <p className={`text-lg font-bold ${combine.yoYoScore >= 19 ? "text-emerald-400" : combine.yoYoScore >= 17 ? "text-amber-400" : "text-red-400"}`}>{combine.yoYoScore}</p>
+                  </div>
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">20m Sprint</p>
+                    <p className={`text-lg font-bold ${combine.sprint20m <= 3.0 ? "text-emerald-400" : combine.sprint20m <= 3.2 ? "text-amber-400" : "text-red-400"}`}>{combine.sprint20m}s</p>
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Bat Speed</p>
+                    <p className={`text-lg font-bold ${combine.batSpeed && combine.batSpeed >= 110 ? "text-emerald-400" : "text-amber-400"}`}>{combine.batSpeed || "N/A"}</p>
+                  </div>
+                  <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Vert. Jump</p>
+                    <p className={`text-lg font-bold ${combine.verticalJump >= 60 ? "text-emerald-400" : combine.verticalJump >= 50 ? "text-amber-400" : "text-red-400"}`}>{combine.verticalJump}cm</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                  <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Fielding Eff.</p>
+                    <p className={`text-lg font-bold ${combine.fieldingEfficiency >= 80 ? "text-emerald-400" : combine.fieldingEfficiency >= 70 ? "text-amber-400" : "text-red-400"}`}>{combine.fieldingEfficiency}%</p>
+                  </div>
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Throw Acc.</p>
+                    <p className={`text-lg font-bold ${combine.throwAccuracy >= 80 ? "text-emerald-400" : combine.throwAccuracy >= 70 ? "text-amber-400" : "text-red-400"}`}>{combine.throwAccuracy}%</p>
+                  </div>
+                  <div className="bg-slate-700/30 border border-slate-600/30 rounded-lg p-3 text-center">
+                    <p className="text-xs text-slate-400">Reaction</p>
+                    <p className={`text-lg font-bold ${combine.reactionTime <= 0.25 ? "text-emerald-400" : combine.reactionTime <= 0.30 ? "text-amber-400" : "text-red-400"}`}>{combine.reactionTime}s</p>
+                  </div>
+                  {combine.bowlingSpeed && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
+                      <p className="text-xs text-slate-400">Bowl Speed</p>
+                      <p className={`text-lg font-bold ${combine.bowlingSpeed >= 140 ? "text-emerald-400" : combine.bowlingSpeed >= 120 ? "text-amber-400" : "text-slate-400"}`}>{combine.bowlingSpeed} km/h</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+        </div>
+      )}
+
+      {tab === "training" && (() => {
+        const trainingSubTabs = [
+          { id: "routines", label: "Routines" },
+          { id: "drills", label: "Drill Library" },
+          { id: "planner", label: "Training Plan" },
+          { id: "log", label: "Session Log" },
+          { id: "progress", label: "Progress" },
+          { id: "notes", label: "Coach Notes" },
+        ] as const;
+
+        let savedSelections: Record<string, string> = {};
+        try {
+          const raw = typeof window !== "undefined" ? localStorage.getItem("idol-selections") : null;
+          if (raw) savedSelections = JSON.parse(raw);
+        } catch {}
+        const hasIdols = Object.keys(savedSelections).length > 0;
+
+        const savedLegends = Object.entries(savedSelections).map(([skill, id]) => {
+          const legend = legends.find((l) => l.id === id);
+          return legend ? { skill: skill as Skill, legend } : null;
+        }).filter(Boolean) as { skill: Skill; legend: (typeof legends)[number] }[];
+
+        const groupedRoutines: Record<string, { routine: Routine; idol: string; skill: Skill; key: string }[]> = { Daily: [], Weekly: [], Monthly: [] };
+        for (const { skill, legend } of savedLegends) {
+          const routines = legend.routines[skill] || [];
+          for (const r of routines) {
+            const key = `${legend.id}_${skill}_${r.name}`;
+            const entry = { routine: r, idol: legend.name, skill, key };
+            if (r.frequency === "Daily") groupedRoutines.Daily.push(entry);
+            else if (r.frequency === "Monthly") groupedRoutines.Monthly.push(entry);
+            else groupedRoutines.Weekly.push(entry);
+          }
+        }
+        const totalRoutines = groupedRoutines.Daily.length + groupedRoutines.Weekly.length + groupedRoutines.Monthly.length;
+        const completedCount = Object.values(completedRoutines).filter(Boolean).length;
+        const pendingDaily = groupedRoutines.Daily.filter((item) => !completedRoutines[item.key]).length;
+        const pendingWeekly = groupedRoutines.Weekly.filter((item) => !completedRoutines[item.key]).length;
+
+        const DRILL_LIBRARY = [
+          { id: "b1", title: "Front Foot Drive Masterclass", description: "Full technique breakdown of the cricket drive with drills for weight transfer and head position.", category: "batting" as const, skill: "Cover Drive", level: "beginner" as const, duration: "7 min", videoUrl: "https://www.youtube.com/watch?v=yeImrfgNJoM", channel: "CoachCricXI" },
+          { id: "b2", title: "Pull Shot Technique", description: "Master the pull shot against short-pitched bowling with correct body rotation and top-hand control.", category: "batting" as const, skill: "Pull Shot", level: "intermediate" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=2A5KfqBHMJI", channel: "CoachCricXI" },
+          { id: "b3", title: "Front Foot Defence Drills", description: "Build a solid defense with front foot blocking drills and proper hand positioning basics.", category: "batting" as const, skill: "Defense", level: "beginner" as const, duration: "2 min", videoUrl: "https://www.youtube.com/watch?v=SmGqPYa1w40", channel: "Bengaluru Shooterz" },
+          { id: "b4", title: "5 Most Important Front Foot Shots", description: "Cover drive, straight drive, on drive, flick and more — master all key front foot shots.", category: "batting" as const, skill: "Front Foot", level: "beginner" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=d6_2ToGYLBg", channel: "CoachCricXI" },
+          { id: "b5", title: "Sweep Shot Variations", description: "Learn conventional sweep, reverse sweep, and paddle sweep with pro tips from coaching experts.", category: "batting" as const, skill: "Sweep", level: "advanced" as const, duration: "8 min", videoUrl: "https://www.youtube.com/watch?v=FkliqIJMq1M", channel: "CoachCricXI" },
+          { id: "b6", title: "Improve Your Batting Footwork", description: "4 cricket batting drills to improve lateral movement, front foot reach, and back foot positioning.", category: "batting" as const, skill: "Footwork", level: "intermediate" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=ZGPXm8yAKVg", channel: "CoachCricXI" },
+          { id: "b7", title: "Back Foot Play & Punch Technique", description: "Complete guide on playing off the back foot — cuts, pulls, and back foot punches against short bowling.", category: "batting" as const, skill: "Back Foot", level: "intermediate" as const, duration: "9 min", videoUrl: "https://www.youtube.com/watch?v=1TtiJtlYwSk", channel: "CricketMentoringVids" },
+          { id: "b8", title: "Fix Front Foot Batting Mistakes", description: "4 common front foot mistakes and how to fix them with targeted correction drills.", category: "batting" as const, skill: "Correction", level: "beginner" as const, duration: "3 min", videoUrl: "https://www.youtube.com/watch?v=k61Y4T92cOc", channel: "CoachCricXI" },
+          { id: "b9", title: "Power Hitting Masterclass", description: "Learn to clear the boundary with clean bat swing, strong base, and explosive hip rotation for T20 cricket.", category: "batting" as const, skill: "Power Hitting", level: "advanced" as const, duration: "10 min", videoUrl: "https://www.youtube.com/watch?v=g6QTr62frF0", channel: "CoachCricXI" },
+          { id: "b10", title: "Cut Shot Tutorial", description: "Master the square cut and late cut against short and wide deliveries with proper footwork and timing.", category: "batting" as const, skill: "Cut Shot", level: "intermediate" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=hFv3HmVgbbE", channel: "CoachCricXI" },
+          { id: "w1", title: "Fast Bowling Masterclass", description: "Complete fast bowling tutorial covering run-up, action, and release point from professional coaches.", category: "bowling" as const, skill: "Run-Up", level: "beginner" as const, duration: "12 min", videoUrl: "https://www.youtube.com/watch?v=EC2PWZxDBec", channel: "Cricket Mentoring" },
+          { id: "w2", title: "Bowling Arm Action Drills", description: "Drills to maintain a legal bowling action, maximize arm speed and prevent elbow flex issues.", category: "bowling" as const, skill: "Arm Action", level: "intermediate" as const, duration: "8 min", videoUrl: "https://www.youtube.com/watch?v=UyBDQevQphc", channel: "CoachCricXI" },
+          { id: "w3", title: "Leg Spin Bowling Basics", description: "Learn leg spin fundamentals including grip, wrist position, release and flight control from Shane Warne's method.", category: "bowling" as const, skill: "Spin", level: "beginner" as const, duration: "10 min", videoUrl: "https://www.youtube.com/watch?v=GvX6H7qHM68", channel: "Cricket Mentoring" },
+          { id: "w4", title: "Yorker Bowling Drill", description: "Target-based yorker practice methods to improve death bowling accuracy under pressure.", category: "bowling" as const, skill: "Yorker", level: "advanced" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=iO2ChgTJghE", channel: "CoachCricXI" },
+          { id: "w5", title: "Front Knee Brace & Follow Through", description: "Strengthen your front knee brace and follow-through for more pace and control at the crease.", category: "bowling" as const, skill: "Brace", level: "intermediate" as const, duration: "7 min", videoUrl: "https://www.youtube.com/watch?v=R003xzRMEXw", channel: "CoachCricXI" },
+          { id: "w6", title: "Off Spin Bowling Tutorial", description: "Master off spin with correct finger placement, rotation, drift and turn techniques.", category: "bowling" as const, skill: "Off Spin", level: "intermediate" as const, duration: "9 min", videoUrl: "https://www.youtube.com/watch?v=Zm9VKD0gH1U", channel: "CoachCricXI" },
+          { id: "f1", title: "Ground Fielding Fundamentals", description: "Low body position, soft hands, and clean pick-up techniques demonstrated by professional fielders.", category: "fielding" as const, skill: "Ground Fielding", level: "beginner" as const, duration: "8 min", videoUrl: "https://www.youtube.com/watch?v=Sixg3PTTXk8", channel: "Results Cricket Academy" },
+          { id: "f2", title: "High Catch Technique", description: "Practice high catches with positioning, timing, and soft-hand technique for outfield catching.", category: "fielding" as const, skill: "Catching", level: "intermediate" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=FkF6bsnW5bE", channel: "Results Cricket Academy" },
+          { id: "f3", title: "Throwing Accuracy Drills", description: "Improve direct hit accuracy with target-based throwing drills and proper shoulder mechanics.", category: "fielding" as const, skill: "Throwing", level: "intermediate" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=gM9PT0vtoeQ", channel: "Results Cricket Academy" },
+          { id: "f4", title: "Slip Catching Masterclass", description: "Master slip catching with reaction drills, proper hand positioning and movement patterns.", category: "fielding" as const, skill: "Slip Catching", level: "advanced" as const, duration: "7 min", videoUrl: "https://www.youtube.com/watch?v=H0jPrcfWu9c", channel: "Results Cricket Academy" },
+          { id: "x1", title: "Professional Cricket Warm-Up", description: "Professional warm-up drills and exercises used by first-class cricketers before matches and training.", category: "fitness" as const, skill: "Warm-Up", level: "beginner" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=K_s-VXWbQqE", channel: "CoachCricXI" },
+          { id: "x2", title: "Cricket Strength & Power Exercises", description: "Home exercises to increase strength and power for cricket — broad jumps, push-ups, lunges and more.", category: "fitness" as const, skill: "Strength", level: "intermediate" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=x2yois9bzEE", channel: "England Cricket" },
+          { id: "x3", title: "Cricket Agility & Speed Drills", description: "Lateral movement, change of direction, and reaction speed drills specifically designed for cricket fielding.", category: "fitness" as const, skill: "Agility", level: "intermediate" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=RraLn96THGc", channel: "Fitforcrick" },
+          { id: "x4", title: "Fast Bowler Warm-Up Routine", description: "How to warm up if you're a fast bowler — leg lifts, leg swings, active movement and upper body prep.", category: "fitness" as const, skill: "Bowler Warm-Up", level: "beginner" as const, duration: "3 min", videoUrl: "https://www.youtube.com/watch?v=16Ib_EdKzvM", channel: "Brett Lee TV" },
+        ];
+
+        const filteredDrills = DRILL_LIBRARY.filter((d) => {
+          if (drillCategory !== "all" && d.category !== drillCategory) return false;
+          if (drillLevel !== "all" && d.level !== drillLevel) return false;
+          return true;
+        });
+
+        const catColors: Record<string, { text: string; bg: string; border: string }> = {
+          batting: { text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+          bowling: { text: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
+          fielding: { text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
+          fitness: { text: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
+        };
+        const lvlColors: Record<string, string> = { beginner: "text-emerald-400", intermediate: "text-amber-400", advanced: "text-red-400" };
+
+        const getWeekKey = (offset: number) => {
+          const d = new Date();
+          d.setDate(d.getDate() + offset * 7);
+          const year = d.getFullYear();
+          const jan1 = new Date(year, 0, 1);
+          const weekNum = Math.ceil(((d.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+          return `${year}-W${String(weekNum).padStart(2, "0")}`;
+        };
+        const getWeekDateRange = (offset: number) => {
+          const now = new Date();
+          const dayOfWeek = now.getDay();
+          const monday = new Date(now);
+          monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + offset * 7);
+          const sunday = new Date(monday);
+          sunday.setDate(monday.getDate() + 6);
+          const fmt = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          return `${fmt(monday)} - ${fmt(sunday)}, ${sunday.getFullYear()}`;
+        };
+        const weekKey = getWeekKey(weekOffset);
+        const PLAN_KEY = `cricverse360_training_plan_${weekKey}`;
+        const LOG_KEY = "cricverse360_session_logs";
+        const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const defaultActivities = ["Batting Nets", "Bowling Practice", "Fielding Drills", "Fitness & Conditioning", "Match Simulation", "Video Analysis", "Rest Day"];
+        const isPastWeek = weekOffset < 0;
+
+        let storedPlan: Record<string, string[]> = {};
+        try { const raw = localStorage.getItem(PLAN_KEY); if (raw) storedPlan = JSON.parse(raw); } catch {}
+        const currentPlan = Object.keys(plannerDays).length > 0 ? plannerDays : storedPlan;
+
+        let storedLogs: typeof sessionLogs = [];
+        try { const raw = localStorage.getItem(LOG_KEY); if (raw) storedLogs = JSON.parse(raw); } catch {}
+        const currentLogs = sessionLogs.length > 0 ? sessionLogs : storedLogs;
+
+        const togglePlanActivity = (day: string, activity: string) => {
+          if (isPastWeek) return;
+          const updated = { ...currentPlan };
+          const dayActivities = updated[day] || [];
+          if (dayActivities.includes(activity)) {
+            updated[day] = dayActivities.filter((a) => a !== activity);
+          } else {
+            updated[day] = [...dayActivities, activity];
+          }
+          setPlannerDays(updated);
+          localStorage.setItem(PLAN_KEY, JSON.stringify(updated));
+        };
+
+        const addSessionLog = (type: string, duration: string, notes: string, dateStr: string) => {
+          const date = dateStr ? new Date(dateStr + "T12:00:00").toISOString() : new Date().toISOString();
+          const entry = { id: `log_${Date.now()}`, date, type, duration, notes };
+          const updated = [entry, ...currentLogs];
+          setSessionLogs(updated);
+          localStorage.setItem(LOG_KEY, JSON.stringify(updated));
+          apiRequest("/sessions", {
+            method: "POST",
+            body: { sessionType: type, sessionData: { date, duration, notes } },
+          });
+        };
+
+        const deleteSessionLog = (id: string) => {
+          const updated = currentLogs.filter((l) => l.id !== id);
+          setSessionLogs(updated);
+          localStorage.setItem(LOG_KEY, JSON.stringify(updated));
+        };
+
+        return (
+          <div className="space-y-6">
+            <div className="flex gap-2 border-b border-slate-700/50 pb-3 overflow-x-auto -mx-4 px-4">
+              {trainingSubTabs.map((st) => (
+                <button
+                  key={st.id}
+                  onClick={() => setTrainingTab(st.id)}
+                  className={`text-sm px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap shrink-0 ${
+                    trainingTab === st.id ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white border border-transparent"
+                  }`}
+                >
+                  {st.label}
+                </button>
+              ))}
+            </div>
+
+            {trainingTab === "routines" && (
+              <div className="space-y-6">
+                {!hasIdols ? (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <Link href="/idol-capture" className="group flex flex-col items-center gap-4 hover:scale-105 transition-transform">
+                      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-shadow">
+                        <svg className="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9" />
+                        </svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-white">Idol Capture</p>
+                        <p className="text-sm text-slate-400 mt-1">Select cricket legends as your idols to build your training routine</p>
+                      </div>
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    {totalRoutines > 0 && (pendingDaily > 0 || pendingWeekly > 0) && (
+                      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+                          <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" /></svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-amber-400">Pending Routines</p>
+                          <p className="text-xs text-slate-400">
+                            {pendingDaily > 0 && <span>{pendingDaily} daily routine{pendingDaily > 1 ? "s" : ""} pending</span>}
+                            {pendingDaily > 0 && pendingWeekly > 0 && <span> &middot; </span>}
+                            {pendingWeekly > 0 && <span>{pendingWeekly} weekly routine{pendingWeekly > 1 ? "s" : ""} pending</span>}
+                          </p>
+                        </div>
+                        <span className="text-xs text-slate-500">{completedCount}/{totalRoutines} done today</span>
+                      </div>
+                    )}
+
+                    {totalRoutines > 0 && completedCount === totalRoutines && (
+                      <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                          <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-emerald-400">All routines completed!</p>
+                          <p className="text-xs text-slate-400">Great work today. Keep up the consistency.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-bold text-white">Your Idol Selections</h2>
+                      <Link href="/idol-capture" className="text-sm text-amber-400 hover:text-amber-300 flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" /></svg>
+                        Edit Idols
+                      </Link>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {savedLegends.map(({ skill, legend }) => {
+                        const colors = skillColors[skill];
+                        return (
+                          <div key={skill} className={`rounded-xl p-4 border ${colors.border} ${colors.bg}`}>
+                            <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${colors.text}`}>{skill}</p>
+                            <div className="flex items-center gap-2">
+                              <img src={legend.photo} alt={legend.name} className="w-8 h-8 rounded-full object-cover shrink-0 bg-slate-700" />
+                              <div>
+                                <p className="text-white font-semibold text-sm">{legend.name}</p>
+                                <p className="text-xs text-slate-400">{legend.country}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {totalRoutines > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-lg font-bold text-white">Training Routines</h2>
+                          <span className="text-xs bg-slate-700 text-slate-300 px-3 py-1 rounded-full">{completedCount}/{totalRoutines} completed</span>
+                        </div>
+
+                        {(["Daily", "Weekly", "Monthly"] as const).map((freq) => {
+                          const items = groupedRoutines[freq];
+                          if (items.length === 0) return null;
+                          const freqColors = { Daily: { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-400", badge: "bg-emerald-500/20" }, Weekly: { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-400", badge: "bg-blue-500/20" }, Monthly: { bg: "bg-purple-500/10", border: "border-purple-500/30", text: "text-purple-400", badge: "bg-purple-500/20" } };
+                          const fc = freqColors[freq];
+                          const doneInGroup = items.filter((item) => completedRoutines[item.key]).length;
+                          return (
+                            <div key={freq} className="mb-6">
+                              <div className="flex items-center gap-3 mb-3">
+                                <h3 className={`text-sm font-semibold ${fc.text}`}>{freq} Routines</h3>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${fc.badge} ${fc.text}`}>{doneInGroup}/{items.length}</span>
+                              </div>
+                              <div className={`border rounded-xl ${fc.border} ${fc.bg} overflow-hidden`}>
+                                {items.map((item, i) => {
+                                  const sc = skillColors[item.skill];
+                                  const done = !!completedRoutines[item.key];
+                                  return (
+                                    <div key={i} className={`px-4 py-3 ${i < items.length - 1 ? "border-b border-slate-700/20" : ""} ${done ? "opacity-60" : ""}`}>
+                                      <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center gap-2">
+                                          <button
+                                            onClick={() => toggleRoutine(item.key)}
+                                            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                                              done ? "bg-emerald-500 border-emerald-500" : "border-slate-500 hover:border-emerald-400"
+                                            }`}
+                                          >
+                                            {done && (
+                                              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                            )}
+                                          </button>
+                                          <p className={`text-sm font-semibold ${done ? "text-slate-400 line-through" : "text-white"}`}>{item.routine.name}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${sc.bg} ${sc.text}`}>{item.skill}</span>
+                                          <span className="text-xs text-slate-500">{item.routine.duration}</span>
+                                        </div>
+                                      </div>
+                                      <p className="text-xs text-slate-400 mb-1 ml-8">{item.routine.description}</p>
+                                      <div className="flex items-center gap-3 ml-8">
+                                        <p className="text-xs text-slate-500">Idol: {item.idol} &middot; {item.routine.frequency}</p>
+                                        <button onClick={() => setPlayingVideo(playingVideo === item.key ? null : item.key)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
+                                          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814ZM9.545 15.568V8.432L15.818 12l-6.273 3.568Z"/></svg>
+                                          {playingVideo === item.key ? "Close" : "Watch"}
+                                        </button>
+                                      </div>
+                                      {playingVideo === item.key && (
+                                        <div className="mt-2 ml-8">
+                                          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                                            <iframe
+                                              className="absolute inset-0 w-full h-full rounded-lg"
+                                              src={`https://www.youtube.com/embed/${item.routine.videoUrl.match(/[?&]v=([^&]+)/)?.[1] || ""}?autoplay=1`}
+                                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                              allowFullScreen
+                                            />
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {totalRoutines > 0 && (() => {
+                      const last14: { date: string; done: number; total: number }[] = [];
+                      for (let i = 13; i >= 0; i--) {
+                        const d = new Date();
+                        d.setDate(d.getDate() - i);
+                        const key = d.toISOString().slice(0, 10);
+                        let dayLog: Record<string, boolean> = {};
+                        try { const raw = localStorage.getItem(`cricverse360_routine_log_${key}`); if (raw) dayLog = JSON.parse(raw); } catch {}
+                        const doneCount = Object.values(dayLog).filter(Boolean).length;
+                        last14.push({ date: key, done: doneCount, total: totalRoutines });
+                      }
+                      let streak = 0;
+                      for (let i = last14.length - 1; i >= 0; i--) {
+                        if (last14[i].done > 0) streak++;
+                        else break;
+                      }
+                      const totalDone14 = last14.reduce((s, d) => s + d.done, 0);
+                      const totalPossible14 = last14.reduce((s, d) => s + d.total, 0);
+                      const completionRate = totalPossible14 > 0 ? Math.round((totalDone14 / totalPossible14) * 100) : 0;
+                      const activeDays = last14.filter((d) => d.done > 0).length;
+                      const bestStreak = (() => {
+                        let best = 0, cur = 0;
+                        for (const d of last14) { if (d.done > 0) { cur++; if (cur > best) best = cur; } else { cur = 0; } }
+                        return best;
+                      })();
+                      const maxDone = Math.max(...last14.map((d) => d.total), 1);
+                      const weekDays = last14.slice(-7);
+
+                      return (
+                        <div className="glass-card rounded-xl p-5">
+                          <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Routine Progress</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-emerald-400">{streak}</p>
+                              <p className="text-xs text-slate-400">Day Streak</p>
+                            </div>
+                            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-blue-400">{completionRate}%</p>
+                              <p className="text-xs text-slate-400">Completion Rate</p>
+                            </div>
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-amber-400">{activeDays}/14</p>
+                              <p className="text-xs text-slate-400">Active Days</p>
+                            </div>
+                            <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                              <p className="text-2xl font-bold text-purple-400">{bestStreak}</p>
+                              <p className="text-xs text-slate-400">Best Streak</p>
+                            </div>
+                          </div>
+                          <h4 className="text-xs font-semibold text-slate-400 mb-2">Last 7 Days</h4>
+                          <div className="flex items-end gap-2 h-24 mb-1">
+                            {weekDays.map((d) => {
+                              const pct = d.total > 0 ? (d.done / d.total) * 100 : 0;
+                              const h = Math.max(4, (pct / 100) * 80);
+                              return (
+                                <div key={d.date} className="flex-1 flex flex-col items-center group relative">
+                                  <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    {d.done}/{d.total}
+                                  </div>
+                                  <div className={`w-full rounded-t-sm transition-all ${pct === 100 ? "bg-emerald-500" : pct > 0 ? "bg-amber-500" : "bg-slate-700"} ${pct === 100 ? "opacity-100" : "opacity-70"}`} style={{ height: `${h}px` }} />
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="flex gap-2">
+                            {weekDays.map((d) => (
+                              <div key={d.date} className="flex-1 text-center">
+                                <p className="text-xs text-slate-500">{new Date(d.date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" })}</p>
+                              </div>
+                            ))}
+                          </div>
+                          <h4 className="text-xs font-semibold text-slate-400 mt-4 mb-2">14-Day History</h4>
+                          <div className="grid grid-cols-7 gap-1.5">
+                            {last14.map((d) => {
+                              const pct = d.total > 0 ? (d.done / d.total) * 100 : 0;
+                              return (
+                                <div key={d.date} className="group relative">
+                                  <div className={`aspect-square rounded-md flex items-center justify-center text-xs font-medium ${pct === 100 ? "bg-emerald-500/30 text-emerald-400 border border-emerald-500/40" : pct > 0 ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-slate-800/50 text-slate-600 border border-slate-700/30"}`}>
+                                    {new Date(d.date + "T12:00:00").getDate()}
+                                  </div>
+                                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                    {d.done}/{d.total} done
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    <Link href="/coaches" className="flex items-center justify-center gap-2 w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold rounded-xl transition-colors">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg>
+                      Find Coach
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+
+            {trainingTab === "drills" && (() => {
+              const TAG_SUGGESTIONS = ["Power Hitting", "Defense", "Footwork", "Spin", "Pace", "Yorker", "Short Ball", "Catching", "Ground Fielding", "Throwing", "Cardio", "Strength", "Agility", "Net Session", "Match Prep", "Warm Up"];
+              const myDrills = communityDrills.filter(d => d.author_name === (user?.name || player?.name));
+              const formatDate = (dateStr: string) => { const diff = Date.now() - new Date(dateStr).getTime(); const h = Math.floor(diff / 3600000); if (h < 1) return "Just now"; if (h < 24) return `${h}h ago`; const days = Math.floor(h / 24); if (days < 7) return `${days}d ago`; return new Date(dateStr).toLocaleDateString(); };
+              const browseDrills = communityDrills.filter(d => {
+                if (drillCategory !== "all" && d.category !== drillCategory) return false;
+                if (drillLevel !== "all" && d.skill_level !== drillLevel) return false;
+                if (drillSearch.trim()) { const q = drillSearch.toLowerCase(); if (!d.title.toLowerCase().includes(q) && !d.description.toLowerCase().includes(q) && !d.tags.some(t => t.toLowerCase().includes(q))) return false; }
+                return true;
+              });
+              const submitDrill = () => {
+                if (!uploadTitle.trim()) { setUploadStatus("Title is required"); return; }
+                const drill = { id: `cd-${Date.now()}`, title: uploadTitle.trim(), description: uploadDesc.trim(), video_url: uploadVideo.trim(), category: uploadCategory, skill_level: uploadLevel, duration_minutes: parseInt(uploadDuration) || 0, tags: uploadTags, like_count: 0, comment_count: 0, share_count: 0, visibility: uploadVisibility, author_name: user?.name || player?.name || "You", created_at: new Date().toISOString() };
+                setCommunityDrills(prev => [drill, ...prev]);
+                setUploadStatus("Drill uploaded successfully!");
+                apiRequest("/drills", { method: "POST", body: { title: drill.title, description: drill.description, videoUrl: drill.video_url, category: drill.category, skillLevel: drill.skill_level, durationMinutes: drill.duration_minutes, tags: drill.tags, visibility: drill.visibility } }).catch(() => {});
+                setUploadTitle(""); setUploadDesc(""); setUploadVideo(""); setUploadCategory("batting"); setUploadLevel("beginner"); setUploadDuration(""); setUploadTags([]); setUploadVisibility("public");
+                setTimeout(() => { setUploadStatus(""); setDrillView("my-drills"); }, 1500);
+              };
+              return (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-xl font-bold text-white">Drill Library</h2>
+                    <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-full border border-emerald-500/30">{DRILL_LIBRARY.length + communityDrills.length} Drills</span>
+                  </div>
+                  <p className="text-sm text-slate-400">Curated drills, community uploads, and your own training drills.</p>
+                </div>
+
+                <div className="flex gap-2 border-b border-slate-700/30 pb-3">
+                  {([{ id: "library", label: "Curated Drills" }, { id: "my-drills", label: "My Drills" }, { id: "upload", label: "Upload Drill" }] as const).map(v => (
+                    <button key={v.id} onClick={() => setDrillView(v.id)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillView === v.id ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-white border border-transparent"}`}>
+                      {v.label}
+                    </button>
+                  ))}
+                </div>
+
+                {drillView === "library" && (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="flex gap-1.5">
+                        {(["all", "batting", "bowling", "fielding", "fitness"] as const).map((cat) => (
+                          <button key={cat} onClick={() => setDrillCategory(cat)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillCategory === cat ? "bg-white/10 text-white border border-white/20" : "text-slate-400 hover:text-white border border-transparent"}`}>
+                            {cat === "all" ? "All" : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="border-l border-slate-700 mx-2" />
+                      <div className="flex gap-1.5">
+                        {(["all", "beginner", "intermediate", "advanced"] as const).map((lvl) => (
+                          <button key={lvl} onClick={() => setDrillLevel(lvl)} className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${drillLevel === lvl ? "bg-white/10 text-white border border-white/20" : "text-slate-400 hover:text-white border border-transparent"}`}>
+                            {lvl === "all" ? "All Levels" : lvl.charAt(0).toUpperCase() + lvl.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {filteredDrills.map((drill) => {
+                        const colors = catColors[drill.category];
+                        return (
+                          <div key={drill.id} className="glass-card rounded-xl p-4 hover:border-slate-600 transition-all">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} ${colors.border} border`}>{drill.category}</span>
+                              <span className={`text-xs ${lvlColors[drill.level]}`}>{drill.level}</span>
+                              <span className="text-xs text-slate-600 ml-auto">{drill.duration}</span>
+                            </div>
+                            <h3 className="text-sm font-semibold text-white mb-1">{drill.title}</h3>
+                            <p className="text-xs text-slate-400 line-clamp-2">{drill.description}</p>
+                            {playingVideo === drill.id ? (
+                              <div className="mt-3">
+                                <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                                  <iframe className="absolute inset-0 w-full h-full rounded-lg" src={`https://www.youtube.com/embed/${drill.videoUrl.match(/[?&]v=([^&]+)/)?.[1] || ""}?autoplay=1`} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+                                </div>
+                                <button onClick={() => setPlayingVideo(null)} className="mt-2 text-xs text-slate-400 hover:text-white transition-colors">Close</button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-xs text-slate-500">{drill.channel}</span>
+                                <button onClick={() => setPlayingVideo(drill.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-medium transition-colors">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                  Watch
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {filteredDrills.length === 0 && (
+                      <div className="glass-card rounded-xl p-8 text-center">
+                        <p className="text-slate-400">No drills match your filters.</p>
+                        <button onClick={() => { setDrillCategory("all"); setDrillLevel("all"); }} className="text-xs text-emerald-400 hover:text-emerald-300 mt-2">Reset Filters</button>
+                      </div>
+                    )}
+
+                    <div className="mt-8">
+                      <div className="flex items-center gap-3 mb-4">
+                        <h3 className="text-lg font-bold text-white">Community Drills</h3>
+                        <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded-full border border-blue-500/30">{communityDrills.length}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-3 mb-4">
+                        <input type="text" value={drillSearch} onChange={e => setDrillSearch(e.target.value)} placeholder="Search community drills..." className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 w-full md:w-64" />
+                      </div>
+                      <div className="space-y-3">
+                        {browseDrills.map(drill => (
+                          <div key={drill.id} className="glass-card rounded-xl p-4">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-medium text-slate-300">{drill.author_name}</span>
+                                  <span className="text-xs text-slate-500">{formatDate(drill.created_at)}</span>
+                                </div>
+                                <h4 className="text-sm font-semibold text-white">{drill.title}</h4>
+                              </div>
+                              {drill.video_url && (
+                                <a href={drill.video_url} target="_blank" rel="noopener noreferrer" className="shrink-0 flex items-center gap-1 text-xs text-red-400 hover:text-red-300">
+                                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                  Watch
+                                </a>
+                              )}
+                            </div>
+                            <p className="text-xs text-slate-400 mb-2">{drill.description}</p>
+                            <div className="flex flex-wrap gap-1.5 mb-2">
+                              <span className={`text-xs px-2 py-0.5 rounded-full border ${catColors[drill.category]?.bg || "bg-slate-800"} ${catColors[drill.category]?.text || "text-slate-400"} ${catColors[drill.category]?.border || "border-slate-700"}`}>{drill.category}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${lvlColors[drill.skill_level] || "text-slate-400"}`}>{drill.skill_level}</span>
+                              {drill.duration_minutes > 0 && <span className="text-xs text-slate-500">{drill.duration_minutes} min</span>}
+                              {drill.tags.map(t => <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">{t}</span>)}
+                            </div>
+                            <div className="flex items-center gap-4 pt-2 border-t border-slate-800/50">
+                              <button onClick={() => { const wasLiked = likedDrills.has(drill.id); setLikedDrills(prev => { const n = new Set(prev); if (n.has(drill.id)) n.delete(drill.id); else n.add(drill.id); return n; }); setCommunityDrills(prev => prev.map(d => d.id === drill.id ? { ...d, like_count: wasLiked ? d.like_count - 1 : d.like_count + 1 } : d)); apiRequest(`/drills/${drill.id}/like`, { method: "POST" }).catch(() => {}); }} className={`flex items-center gap-1 text-xs ${likedDrills.has(drill.id) ? "text-red-400" : "text-slate-400 hover:text-red-400"}`}>
+                                <svg className="w-3.5 h-3.5" fill={likedDrills.has(drill.id) ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
+                                {drill.like_count}
+                              </button>
+                              <span className="flex items-center gap-1 text-xs text-slate-500">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                                {drill.comment_count}
+                              </span>
+                              <button onClick={() => { setCommunityDrills(prev => prev.map(d => d.id === drill.id ? { ...d, share_count: d.share_count + 1 } : d)); apiRequest(`/drills/${drill.id}/share`, { method: "POST" }).catch(() => {}); }} className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400">
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                                {drill.share_count}
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                        {browseDrills.length === 0 && <div className="glass-card rounded-xl p-8 text-center"><p className="text-slate-400 text-sm">No community drills match your search.</p></div>}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {drillView === "my-drills" && (
+                  <div className="space-y-4">
+                    {myDrills.length === 0 ? (
+                      <div className="text-center py-16 glass-card rounded-xl">
+                        <p className="text-lg font-medium mb-1">No drills uploaded yet</p>
+                        <p className="text-slate-400 text-sm mb-4">Upload your first drill to share with the community!</p>
+                        <button onClick={() => setDrillView("upload")} className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm font-medium transition-colors">Upload Your First Drill</button>
+                      </div>
+                    ) : (
+                      myDrills.map(drill => (
+                        <div key={drill.id} className="glass-card rounded-xl p-4">
+                          <div className="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                              <h4 className="text-sm font-semibold text-white">{drill.title}</h4>
+                              <span className="text-xs text-slate-500">{formatDate(drill.created_at)}</span>
+                            </div>
+                            <button onClick={() => { setCommunityDrills(prev => prev.filter(d => d.id !== drill.id)); apiRequest(`/drills/${drill.id}`, { method: "DELETE" }).catch(() => {}); }} className="text-red-400 hover:text-red-300 text-xs px-2 py-1 rounded border border-red-500/30 hover:bg-red-500/10 transition-colors">Delete</button>
+                          </div>
+                          <p className="text-xs text-slate-400 mb-2">{drill.description}</p>
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className={`text-xs px-2 py-0.5 rounded-full border ${catColors[drill.category]?.bg || "bg-slate-800"} ${catColors[drill.category]?.text || "text-slate-400"} ${catColors[drill.category]?.border || "border-slate-700"}`}>{drill.category}</span>
+                            <span className={`text-xs ${lvlColors[drill.skill_level] || "text-slate-400"}`}>{drill.skill_level}</span>
+                            {drill.duration_minutes > 0 && <span className="text-xs text-slate-500">{drill.duration_minutes} min</span>}
+                            {drill.tags.map(t => <span key={t} className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">{t}</span>)}
+                          </div>
+                          {drill.video_url && <a href={drill.video_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 text-xs text-red-400 hover:text-red-300"><svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Watch Video</a>}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {drillView === "upload" && (
+                  <div className="glass-card rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-white mb-4">Upload New Drill</h3>
+                    {uploadStatus && <div className={`mb-4 p-3 rounded-lg text-sm ${uploadStatus.includes("success") ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>{uploadStatus}</div>}
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Drill Title *</label>
+                        <input type="text" value={uploadTitle} onChange={e => setUploadTitle(e.target.value)} placeholder="e.g. Front Foot Drive Practice" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Description</label>
+                        <textarea value={uploadDesc} onChange={e => setUploadDesc(e.target.value)} placeholder="Describe the drill..." rows={3} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 resize-none" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Video URL (YouTube or direct link)</label>
+                        <input type="url" value={uploadVideo} onChange={e => setUploadVideo(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1">Category</label>
+                          <select value={uploadCategory} onChange={e => setUploadCategory(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                            <option value="batting">Batting</option><option value="bowling">Bowling</option><option value="fielding">Fielding</option><option value="fitness">Fitness</option><option value="wicketkeeping">Wicketkeeping</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1">Skill Level</label>
+                          <select value={uploadLevel} onChange={e => setUploadLevel(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                            <option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-slate-300 mb-1">Duration (min)</label>
+                          <input type="number" value={uploadDuration} onChange={e => setUploadDuration(e.target.value)} placeholder="15" min="1" max="180" className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-2">Tags</label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {TAG_SUGGESTIONS.map(tag => (
+                            <button key={tag} onClick={() => setUploadTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag])} className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-colors ${uploadTags.includes(tag) ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" : "bg-slate-900 text-slate-400 border-slate-700 hover:border-slate-600"}`}>
+                              {tag}
+                            </button>
+                          ))}
+                        </div>
+                        {uploadTags.length > 0 && <p className="text-xs text-slate-500 mt-1.5">Selected: {uploadTags.join(", ")}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-300 mb-1">Visibility</label>
+                        <div className="flex gap-2">
+                          {(["public", "academy", "private"] as const).map(v => (
+                            <button key={v} onClick={() => setUploadVisibility(v)} className={`px-3 py-1.5 rounded-lg text-xs border transition-colors ${uploadVisibility === v ? "bg-emerald-600/20 text-emerald-400 border-emerald-500/50" : "bg-slate-900 text-slate-400 border-slate-700 hover:border-slate-600"}`}>
+                              {v === "public" ? "Public" : v === "academy" ? "Academy Only" : "Private"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button onClick={submitDrill} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-lg text-sm transition-colors">Upload Drill</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              );
+            })()}
+
+            {trainingTab === "planner" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">Weekly Training Plan</h2>
+                  <p className="text-sm text-slate-400">Plan your weekly training schedule. Click activities to toggle them for each day.</p>
+                </div>
+                <div className="flex items-center justify-between glass-card rounded-xl p-3">
+                  <button onClick={() => { setWeekOffset(w => w - 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                    Prev Week
+                  </button>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-white">{getWeekDateRange(weekOffset)}</p>
+                    <p className="text-[10px] text-slate-500">{weekOffset === 0 ? "This Week" : weekOffset > 0 ? `${weekOffset} week${weekOffset > 1 ? "s" : ""} ahead` : `${Math.abs(weekOffset)} week${Math.abs(weekOffset) > 1 ? "s" : ""} ago`}{isPastWeek ? " (archived)" : ""}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {weekOffset !== 0 && (
+                      <button onClick={() => { setWeekOffset(0); setPlannerDays({}); }} className="text-xs text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded-lg border border-emerald-500/30 transition-colors">This Week</button>
+                    )}
+                    <button onClick={() => { setWeekOffset(w => w + 1); setPlannerDays({}); }} className="text-sm text-slate-400 hover:text-white flex items-center gap-1 transition-colors">
+                      Next Week
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                  </div>
+                </div>
+                {isPastWeek && (
+                  <div className="bg-slate-700/30 border border-slate-600/30 rounded-xl p-3 flex items-center gap-2">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m0 0v2m0-2h2m-2 0H10m9.364-10.364A9 9 0 1015.536 4.636" /></svg>
+                    <p className="text-xs text-slate-400">This is an archived week. Plans are read-only.</p>
+                  </div>
+                )}
+                <div className="overflow-x-auto">
+                  <div className="min-w-[700px]">
+                    <div className="grid grid-cols-8 gap-1 mb-2">
+                      <div className="text-xs text-slate-500 p-2">Activity</div>
+                      {days.map((d) => (
+                        <div key={d} className="text-xs text-slate-300 font-semibold p-2 text-center">{d.slice(0, 3)}</div>
+                      ))}
+                    </div>
+                    {defaultActivities.map((activity) => (
+                      <div key={activity} className="grid grid-cols-8 gap-1 mb-1">
+                        <div className="text-xs text-slate-400 p-2 flex items-center">{activity}</div>
+                        {days.map((day) => {
+                          const active = (currentPlan[day] || []).includes(activity);
+                          return (
+                            <button
+                              key={day}
+                              onClick={() => togglePlanActivity(day, activity)}
+                              className={`p-2 rounded-lg text-center transition-all ${
+                                active
+                                  ? activity === "Rest Day" ? "bg-purple-500/20 border border-purple-500/30" : "bg-emerald-500/20 border border-emerald-500/30"
+                                  : "bg-slate-800/30 border border-slate-700/30 hover:border-slate-600"
+                              }`}
+                            >
+                              {active && (
+                                <svg className={`w-4 h-4 mx-auto ${activity === "Rest Day" ? "text-purple-400" : "text-emerald-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-4">
+                  <h3 className="text-sm font-semibold text-white mb-3">Week Summary</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-emerald-400">{days.filter((d) => (currentPlan[d] || []).length > 0 && !(currentPlan[d] || []).includes("Rest Day")).length}</p>
+                      <p className="text-xs text-slate-400">Training Days</p>
+                    </div>
+                    <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-purple-400">{days.filter((d) => (currentPlan[d] || []).includes("Rest Day")).length}</p>
+                      <p className="text-xs text-slate-400">Rest Days</p>
+                    </div>
+                    <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-blue-400">{Object.values(currentPlan).flat().filter((a) => a !== "Rest Day").length}</p>
+                      <p className="text-xs text-slate-400">Total Activities</p>
+                    </div>
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                      <p className="text-lg font-bold text-amber-400">{new Set(Object.values(currentPlan).flat().filter((a) => a !== "Rest Day")).size}</p>
+                      <p className="text-xs text-slate-400">Unique Activities</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {trainingTab === "log" && (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-xl font-bold text-white mb-1">Session Log</h2>
+                  <p className="text-sm text-slate-400">Record what you practiced today and track your training consistency.</p>
+                </div>
+                <div className="glass-card rounded-xl p-5">
+                  <h3 className="text-sm font-semibold text-white mb-3">Log New Session</h3>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const form = e.target as HTMLFormElement;
+                      const type = (form.elements.namedItem("logType") as HTMLSelectElement).value;
+                      const duration = (form.elements.namedItem("logDuration") as HTMLInputElement).value;
+                      const notes = (form.elements.namedItem("logNotes") as HTMLTextAreaElement).value;
+                      const dateVal = (form.elements.namedItem("logDate") as HTMLInputElement).value;
+                      if (type && duration) { addSessionLog(type, duration, notes, dateVal); form.reset(); }
+                    }}
+                    className="space-y-3"
+                  >
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      <input name="logDate" type="date" defaultValue={new Date().toISOString().slice(0, 10)} className="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg p-2.5" required />
+                      <select name="logType" className="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg p-2.5" required>
+                        <option value="">Select type...</option>
+                        <option value="Batting Nets">Batting Nets</option>
+                        <option value="Bowling Practice">Bowling Practice</option>
+                        <option value="Fielding Drills">Fielding Drills</option>
+                        <option value="Fitness & Conditioning">Fitness & Conditioning</option>
+                        <option value="Match Simulation">Match Simulation</option>
+                        <option value="Match">Match</option>
+                        <option value="Video Analysis">Video Analysis</option>
+                      </select>
+                      <input name="logDuration" type="text" placeholder="Duration (e.g. 45 min, 1.5 hrs)" className="bg-slate-700 border border-slate-600 text-white text-sm rounded-lg p-2.5" required />
+                    </div>
+                    <textarea name="logNotes" rows={2} placeholder="Notes (optional): What did you work on? How did it feel?" className="w-full bg-slate-700 border border-slate-600 text-white text-sm rounded-lg p-2.5" />
+                    <button type="submit" className="bg-emerald-500 hover:bg-emerald-600 text-white text-sm px-4 py-2 rounded-lg transition-colors">Log Session</button>
+                  </form>
+                </div>
+                {currentLogs.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-white">Recent Sessions ({currentLogs.length})</h3>
+                    </div>
+                    {currentLogs.slice(0, 20).map((log) => (
+                      <div key={log.id} className="space-y-2">
+                      <div className="glass-card rounded-xl p-4 flex items-start gap-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                          log.type.includes("Bat") ? "bg-emerald-500/20" : log.type.includes("Bowl") ? "bg-blue-500/20" : log.type.includes("Field") ? "bg-amber-500/20" : log.type.includes("Match") ? "bg-red-500/20" : "bg-purple-500/20"
+                        }`}>
+                          <span className={`text-xs font-bold ${
+                            log.type.includes("Bat") ? "text-emerald-400" : log.type.includes("Bowl") ? "text-blue-400" : log.type.includes("Field") ? "text-amber-400" : log.type.includes("Match") ? "text-red-400" : "text-purple-400"
+                          }`}>{log.type.charAt(0)}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-semibold text-white">{log.type}</p>
+                            <span className="text-xs text-slate-500">{log.duration}</span>
+                          </div>
+                          <p className="text-xs text-slate-500 mt-0.5">{new Date(log.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>
+                          {log.notes && <p className="text-xs text-slate-400 mt-1">{log.notes}</p>}
+                        </div>
+                        <div className="flex flex-col gap-1 items-end shrink-0">
+                          <button onClick={() => deleteSessionLog(log.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                          {log.notes && (
+                            <button
+                              disabled={sessionAiLoading === log.id}
+                              onClick={async () => {
+                                const cached = localStorage.getItem(`cv360_session_ai_${log.id}`);
+                                if (cached) { setSessionAiResults(p => ({ ...p, [log.id]: cached })); return; }
+                                setSessionAiLoading(log.id);
+                                try {
+                                  const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this training session and give improvement tips: Type: ${log.type}, Duration: ${log.duration}, Notes: ${log.notes}` }) });
+                                  const data = await res.json();
+                                  if (data.reply) { setSessionAiResults(p => ({ ...p, [log.id]: data.reply })); try { localStorage.setItem(`cv360_session_ai_${log.id}`, data.reply); } catch {} }
+                                } catch {} finally { setSessionAiLoading(null); }
+                              }}
+                              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                            >
+                              {sessionAiLoading === log.id ? "Analyzing..." : sessionAiResults[log.id] ? "Re-analyze" : "AI Analyze"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {sessionAiResults[log.id] && (
+                        <div className="ml-13 mt-2 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                          <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Analysis</p>
+                          <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{sessionAiResults[log.id]}</p>
+                        </div>
+                      )}
+                    </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="glass-card rounded-xl p-8 text-center">
+                    <p className="text-slate-400">No sessions logged yet.</p>
+                    <p className="text-xs text-slate-500 mt-1">Use the form above to record your first training session.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {trainingTab === "progress" && (() => {
+              const filtered = analysisHistory
+                .filter((a) => progressFilter === "all" || a.summary.type === progressFilter)
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+              const scoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
+              const barColor = (s: number) => s >= 75 ? "bg-emerald-500" : s >= 60 ? "bg-amber-500" : "bg-red-500";
+              const allCategories = Array.from(new Set(filtered.flatMap((a) => a.summary.categories.map((c) => c.category))));
+              const getTrend = (scores: number[]) => {
+                if (scores.length < 2) return { direction: "neutral" as const, change: 0 };
+                const recent = scores.slice(-3);
+                const earlier = scores.slice(0, Math.max(1, scores.length - 3));
+                const recentAvg = recent.reduce((a, b) => a + b, 0) / recent.length;
+                const earlierAvg = earlier.reduce((a, b) => a + b, 0) / earlier.length;
+                const change = Math.round(recentAvg - earlierAvg);
+                return { direction: change > 2 ? "up" as const : change < -2 ? "down" as const : "neutral" as const, change };
+              };
+              const overallScores = filtered.map((a) => a.summary.overallScore);
+              const overallTrend = getTrend(overallScores);
+              const avgScore = overallScores.length > 0 ? Math.round(overallScores.reduce((a, b) => a + b, 0) / overallScores.length) : 0;
+              const bestScore = overallScores.length > 0 ? Math.max(...overallScores) : 0;
+              const latestScore = overallScores.length > 0 ? overallScores[overallScores.length - 1] : 0;
+
+              return (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1">Progress Dashboard</h2>
+                      <p className="text-sm text-slate-400">Track your technique improvement over time.</p>
+                    </div>
+                    <select value={progressFilter} onChange={(e) => setProgressFilter(e.target.value as typeof progressFilter)} className="bg-slate-800/50 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-amber-500">
+                      <option value="all">All Types</option>
+                      <option value="batting">Batting</option>
+                      <option value="bowling">Bowling</option>
+                      <option value="fielding">Fielding</option>
+                    </select>
+                  </div>
+                  {filtered.length === 0 ? (
+                    <div className="glass-card rounded-xl p-12 text-center">
+                      <p className="text-slate-400 font-medium">No analysis data yet</p>
+                      <p className="text-xs text-slate-500 mt-1">Analyze multiple videos to see your progress over time.</p>
+                      <Link href="/analyze" className="inline-block mt-4 text-sm text-amber-400 hover:text-amber-300">Go to Analysis &rarr;</Link>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="glass-card rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Sessions</p>
+                          <p className="text-2xl font-bold text-white">{filtered.length}</p>
+                        </div>
+                        <div className="glass-card rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Average Score</p>
+                          <p className={`text-2xl font-bold ${scoreColor(avgScore)}`}>{avgScore}</p>
+                        </div>
+                        <div className="glass-card rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Best Score</p>
+                          <p className={`text-2xl font-bold ${scoreColor(bestScore)}`}>{bestScore}</p>
+                        </div>
+                        <div className="glass-card rounded-xl p-5">
+                          <p className="text-xs text-slate-500 mb-1">Trend</p>
+                          <div className="flex items-center gap-2">
+                            <p className={`text-2xl font-bold ${overallTrend.direction === "up" ? "text-emerald-400" : overallTrend.direction === "down" ? "text-red-400" : "text-slate-400"}`}>
+                              {overallTrend.direction === "up" ? "+" : ""}{overallTrend.change}
+                            </p>
+                            <span className="text-lg">{overallTrend.direction === "up" ? "\u2191" : overallTrend.direction === "down" ? "\u2193" : "\u2192"}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="glass-card rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-white mb-4">Score Over Time</h3>
+                        <div className="flex items-end gap-1.5 h-32">
+                          {filtered.map((a, i) => {
+                            const height = (a.summary.overallScore / 100) * 120;
+                            return (
+                              <div key={a.id} className="flex-1 flex flex-col items-center group relative" style={{ minWidth: "20px", maxWidth: "60px" }}>
+                                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                  {a.summary.overallScore} &mdash; {new Date(a.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                </div>
+                                <div className={`w-full rounded-t-sm transition-all duration-500 ${barColor(a.summary.overallScore)} ${i === filtered.length - 1 ? "opacity-100" : "opacity-60"}`} style={{ height: `${height}px` }} />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs text-slate-600">{filtered.length > 0 ? new Date(filtered[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                          <span className="text-xs text-slate-600">{filtered.length > 0 ? new Date(filtered[filtered.length - 1].date).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}</span>
+                        </div>
+                      </div>
+                      {allCategories.length > 0 && (
+                        <div className="glass-card rounded-xl p-5">
+                          <h3 className="text-sm font-semibold text-white mb-4">Category Trends</h3>
+                          <div className="space-y-4">
+                            {allCategories.map((cat) => {
+                              const catScores = filtered.map((a) => a.summary.categories.find((c) => c.category === cat)?.score).filter((s): s is number => s !== undefined);
+                              const trend = getTrend(catScores);
+                              const latest = catScores.length > 0 ? catScores[catScores.length - 1] : 0;
+                              const avg = catScores.length > 0 ? Math.round(catScores.reduce((a, b) => a + b, 0) / catScores.length) : 0;
+                              return (
+                                <div key={cat}>
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-sm text-white font-medium">{cat}</span>
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-xs text-slate-500">Avg: {avg}</span>
+                                      <span className={`text-xs font-bold ${scoreColor(latest)}`}>{latest}</span>
+                                      <span className={`text-xs ${trend.direction === "up" ? "text-emerald-400" : trend.direction === "down" ? "text-red-400" : "text-slate-500"}`}>
+                                        {trend.direction === "up" ? `+${trend.change}` : trend.direction === "down" ? `${trend.change}` : "="}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  <div className="w-full bg-slate-700 rounded-full h-2">
+                                    <div className={`h-2 rounded-full transition-all duration-700 ${barColor(latest)}`} style={{ width: `${latest}%` }} />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      <div className="glass-card rounded-xl p-5">
+                        <h3 className="text-sm font-semibold text-white mb-4">Session History</h3>
+                        <div className="space-y-2">
+                          {[...filtered].reverse().map((a) => (
+                            <div key={a.id} className="flex items-center justify-between p-3 rounded-lg border border-slate-700/50 hover:border-slate-600 transition-colors">
+                              <div>
+                                <p className="text-sm text-white font-medium truncate">{a.fileName}</p>
+                                <p className="text-xs text-slate-500">{new Date(a.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })} &middot; {a.summary.type}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className={`text-lg font-bold ${scoreColor(a.summary.overallScore)}`}>{a.summary.overallScore}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {latestScore > 0 && (
+                        <div className={`rounded-xl p-5 border ${overallTrend.direction === "up" ? "bg-emerald-500/5 border-emerald-500/20" : overallTrend.direction === "down" ? "bg-amber-500/5 border-amber-500/20" : "bg-blue-500/5 border-blue-500/20"}`}>
+                          <h3 className={`text-sm font-semibold mb-2 ${overallTrend.direction === "up" ? "text-emerald-400" : overallTrend.direction === "down" ? "text-amber-400" : "text-blue-400"}`}>
+                            {overallTrend.direction === "up" ? "Great Progress!" : overallTrend.direction === "down" ? "Room for Improvement" : "Steady Performance"}
+                          </h3>
+                          <p className="text-sm text-slate-300">
+                            {overallTrend.direction === "up"
+                              ? `Your scores are trending up by ${overallTrend.change} points. Keep up the great work!`
+                              : overallTrend.direction === "down"
+                                ? `Your recent scores have dipped by ${Math.abs(overallTrend.change)} points. Focus on the areas highlighted above.`
+                                : "Your performance is consistent. Challenge yourself with more complex drills to push beyond your current level."}
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {trainingTab === "notes" && (() => {
+              const noteCategoryColors: Record<string, { text: string; bg: string }> = {
+                technique: { text: "text-emerald-400", bg: "bg-emerald-500/10" },
+                fitness: { text: "text-blue-400", bg: "bg-blue-500/10" },
+                mental: { text: "text-purple-400", bg: "bg-purple-500/10" },
+                general: { text: "text-slate-400", bg: "bg-slate-500/10" },
+              };
+              const noteScoreColor = (s: number) => s >= 75 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
+              const filteredNotes = noteFilter ? coachNotes.filter((n) => n.analysisId === noteFilter) : coachNotes;
+              const manualNoteCount = coachNotes.filter((n) => n.analysisId === "manual").length;
+
+              return (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-white mb-1">Coach Notes & Reports</h2>
+                      <p className="text-sm text-slate-400">Add coaching notes manually or link them to analysis sessions.</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select value={exportFormat} onChange={(e) => setExportFormat(e.target.value as "text" | "csv")} className="bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                        <option value="text">Text Report</option>
+                        <option value="csv">CSV Export</option>
+                      </select>
+                      <button onClick={exportCoachNotes} disabled={coachNotes.length === 0} className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${coachNotes.length > 0 ? "bg-orange-500/20 text-orange-400 border border-orange-500/30 hover:bg-orange-500/30" : "bg-slate-700 text-slate-500 cursor-not-allowed border border-slate-700"}`}>Export</button>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setNotesView("my")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${notesView === "my" ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white"}`}>My Notes ({coachNotes.length})</button>
+                    <button onClick={() => setNotesView("coach")} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${notesView === "coach" ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30" : "bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white"}`}>
+                      From Coach ({coachInboxNotes.length})
+                      {coachInboxNotes.length > 0 && notesView !== "coach" && <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />}
+                    </button>
+                  </div>
+                  {notesView === "coach" && (
+                    <div className="space-y-3">
+                      {coachInboxNotes.length === 0 ? (
+                        <div className="glass-card rounded-xl p-8 text-center">
+                          <p className="text-xs text-slate-500">No notes from your coach yet.</p>
+                        </div>
+                      ) : (
+                        coachInboxNotes.map((cn) => (
+                          <div key={cn.id} className="bg-indigo-500/5 border border-indigo-500/20 rounded-xl p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-[10px] font-bold">{cn.coachName.split(" ").map(n => n[0]).join("")}</div>
+                              <span className="text-xs text-indigo-400 font-medium">{cn.coachName}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[cn.category].bg} ${noteCategoryColors[cn.category].text}`}>{cn.category}</span>
+                              <span className="text-xs text-slate-600 ml-auto">{cn.date}</span>
+                              <span className="text-[9px] text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Read-only</span>
+                            </div>
+                            <p className="text-sm text-slate-300">{cn.text}</p>
+                            {noteAiResults[cn.id] && (
+                              <div className="mt-3 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                                <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Drill Suggestions</p>
+                                <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{noteAiResults[cn.id]}</p>
+                              </div>
+                            )}
+                            <button
+                              disabled={noteAiLoading === cn.id}
+                              onClick={async () => {
+                                const cached = localStorage.getItem(`cv360_note_ai_${cn.id}`);
+                                if (cached) { setNoteAiResults(p => ({ ...p, [cn.id]: cached })); return; }
+                                setNoteAiLoading(cn.id);
+                                try {
+                                  const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this coaching note and suggest actionable drills: Category: ${cn.category}, Note: ${cn.text}` }) });
+                                  const data = await res.json();
+                                  if (data.reply) { setNoteAiResults(p => ({ ...p, [cn.id]: data.reply })); try { localStorage.setItem(`cv360_note_ai_${cn.id}`, data.reply); } catch {} }
+                                } catch {} finally { setNoteAiLoading(null); }
+                              }}
+                              className="mt-2 text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                            >
+                              {noteAiLoading === cn.id ? "Analyzing..." : noteAiResults[cn.id] ? "Re-analyze" : "AI Analyze"}
+                            </button>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                  {notesView === "my" && (<>
+                  <div className="glass-card rounded-xl p-5">
+                    <h3 className="text-sm font-semibold text-white mb-3">Add Note</h3>
+                    <div className="flex gap-2 mb-3">
+                      {(["technique", "fitness", "mental", "general"] as const).map((cat) => (
+                        <button key={cat} onClick={() => setNoteCategory(cat)} className={`px-3 py-1 rounded-lg text-xs font-medium transition-all border ${noteCategory === cat ? `${noteCategoryColors[cat].bg} ${noteCategoryColors[cat].text} border-current` : "border-slate-700 text-slate-400 hover:text-white"}`}>
+                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid sm:grid-cols-2 gap-2 mb-3">
+                      <div>
+                        <label className="text-xs text-slate-500 mb-1 block">Date</label>
+                        <input type="date" value={noteDate} onChange={(e) => setNoteDate(e.target.value)} className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500" />
+                      </div>
+                      <div>
+                        <label className="text-xs text-slate-500 mb-1 block">Location</label>
+                        <input type="text" value={noteLocation} onChange={(e) => setNoteLocation(e.target.value)} placeholder="e.g. Indoor Nets, Ground A" className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <textarea value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Add coaching observation, feedback, or drill suggestion..." className="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 resize-none" rows={2} />
+                      <button onClick={addCoachNote} disabled={!newNote.trim()} className={`px-4 py-2.5 rounded-lg font-medium text-sm self-end transition-colors ${newNote.trim() ? "bg-orange-500 hover:bg-orange-600 text-white" : "bg-slate-700 text-slate-500 cursor-not-allowed"}`}>Add</button>
+                    </div>
+                    {selectedAnalysis && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-xs text-slate-500">Linked to:</span>
+                        <span className="text-xs text-orange-400">{selectedAnalysis.fileName}</span>
+                        <button onClick={() => setSelectedAnalysis(null)} className="text-xs text-slate-600 hover:text-white">(clear)</button>
+                      </div>
+                    )}
+                  </div>
+                  <div className="grid lg:grid-cols-4 gap-6">
+                    <div className="lg:col-span-1 space-y-4">
+                      <div className="glass-card rounded-xl p-4">
+                        <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">Filter by Source</h3>
+                        <div className="space-y-2">
+                          <button onClick={() => setNoteFilter(null)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${!noteFilter ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                            <p className="text-white font-medium">All Notes</p>
+                            <span className="text-slate-500">{coachNotes.length} total</span>
+                          </button>
+                          <button onClick={() => setNoteFilter("manual")} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${noteFilter === "manual" ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                            <p className="text-white font-medium">Manual Notes</p>
+                            <span className="text-slate-500">{manualNoteCount} notes</span>
+                          </button>
+                        </div>
+                        {analysisHistory.length > 0 && (
+                          <>
+                            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2 mt-4">Sessions</h3>
+                            <div className="space-y-2 max-h-60 overflow-y-auto">
+                              {analysisHistory.map((a) => {
+                                const noteCount = coachNotes.filter((n) => n.analysisId === a.id).length;
+                                return (
+                                  <button key={a.id} onClick={() => setNoteFilter(a.id)} className={`w-full text-left p-2 rounded-lg border text-xs transition-all ${noteFilter === a.id ? "border-orange-500 bg-orange-500/10" : "border-slate-700/50 hover:border-slate-600"}`}>
+                                    <p className="text-white font-medium truncate">{a.fileName}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                      <span className={noteScoreColor(a.summary.overallScore)}>{a.summary.overallScore}</span>
+                                      <span className="text-slate-500 capitalize">{a.summary.type}</span>
+                                      {noteCount > 0 && <span className="text-orange-400 ml-auto">{noteCount}</span>}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div className="lg:col-span-3 space-y-2">
+                      {filteredNotes.length === 0 ? (
+                        <div className="glass-card rounded-xl p-8 text-center">
+                          <p className="text-xs text-slate-500">No notes yet. Add your first coaching note above.</p>
+                        </div>
+                      ) : (
+                        filteredNotes.map((note) => (
+                          <div key={note.id} className="glass-card rounded-xl p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${noteCategoryColors[note.category].bg} ${noteCategoryColors[note.category].text}`}>{note.category}</span>
+                                <span className="text-xs text-slate-600">{note.date || new Date(note.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                                {note.location && <span className="text-xs text-cyan-400/70">@ {note.location}</span>}
+                                {note.analysisId === "manual" && <span className="text-xs text-slate-600 bg-slate-700/50 px-1.5 py-0.5 rounded">Manual</span>}
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  disabled={noteAiLoading === note.id}
+                                  onClick={async () => {
+                                    const cached = localStorage.getItem(`cv360_note_ai_${note.id}`);
+                                    if (cached) { setNoteAiResults(p => ({ ...p, [note.id]: cached })); return; }
+                                    setNoteAiLoading(note.id);
+                                    try {
+                                      const res = await fetch("/api/cricket-coach", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: `Analyze this coaching note and suggest actionable drills: Category: ${note.category}, Note: ${note.text}` }) });
+                                      const data = await res.json();
+                                      if (data.reply) { setNoteAiResults(p => ({ ...p, [note.id]: data.reply })); try { localStorage.setItem(`cv360_note_ai_${note.id}`, data.reply); } catch {} }
+                                    } catch {} finally { setNoteAiLoading(null); }
+                                  }}
+                                  className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                                >
+                                  {noteAiLoading === note.id ? "Analyzing..." : noteAiResults[note.id] ? "Re-analyze" : "AI Analyze"}
+                                </button>
+                                <button onClick={() => deleteCoachNote(note.id)} className="text-xs text-slate-600 hover:text-red-400 transition-colors">Delete</button>
+                              </div>
+                            </div>
+                            <p className="text-sm text-slate-300">{note.text}</p>
+                            {noteAiResults[note.id] && (
+                              <div className="mt-3 p-3 bg-indigo-500/5 border border-indigo-500/20 rounded-xl">
+                                <p className="text-[10px] text-indigo-400 font-semibold uppercase mb-1">AI Drill Suggestions</p>
+                                <p className="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed">{noteAiResults[note.id]}</p>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </>)}
+                </div>
+              );
+            })()}
+          </div>
+        );
+      })()}
+
+      {tab === "ai" && (
+        <div className="glass-card rounded-xl p-5">
+          <h2 className="text-xl font-semibold text-white mb-2">Full Track AI</h2>
+          <p className="text-slate-400 text-sm mb-4">Upload a batting/bowling/fielding video and get instant AI feedback.</p>
+          <Link href="/analyze" className="inline-block text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg transition-colors">Start Analysis</Link>
+        </div>
+      )}
+
+      {tab === "store" && (
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-bold text-white mb-1">Cricket Stores</h2>
+            <p className="text-slate-400 text-sm">Shop from top cricket equipment stores worldwide</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: "CricMax", url: "https://www.cricmax.com", desc: "Premium cricket bats, pads & gear for all levels", tag: "Popular", color: "emerald" },
+              { name: "Dream Cricket", url: "https://www.dreamcricket.com", desc: "Professional cricket equipment & training aids", tag: "Pro Gear", color: "blue" },
+              { name: "Kookaburra", url: "https://www.kookaburra.com.au", desc: "Official balls, bats & protective equipment", tag: "Official", color: "amber" },
+              { name: "Gray-Nicolls", url: "https://www.gray-nicolls.co.uk", desc: "Heritage cricket bats, gloves & pads since 1855", tag: "Heritage", color: "purple" },
+              { name: "SG Cricket", url: "https://www.sgcricket.com", desc: "India's top cricket brand - bats, balls & kits", tag: "India #1", color: "red" },
+              { name: "SS Cricket", url: "https://www.sscricket.com", desc: "Sareen Sports - premium English willow bats", tag: "Bats", color: "cyan" },
+              { name: "GM Cricket", url: "https://www.gmcricket.com", desc: "Gunn & Moore - world-class cricket equipment", tag: "UK Brand", color: "indigo" },
+              { name: "MRF Cricket", url: "https://www.mrfcricket.com", desc: "Match-quality bats endorsed by legends", tag: "Legend Choice", color: "orange" },
+              { name: "Cricket Store Online", url: "https://www.cricketstoreonline.com", desc: "Largest online cricket store with global shipping", tag: "Online", color: "teal" },
+            ].map((store) => (
+              <a key={store.name} href={store.url} target="_blank" rel="noopener noreferrer" className="glass-card rounded-xl p-5 hover:border-emerald-500/40 transition-all group block">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-white font-semibold group-hover:text-emerald-400 transition-colors">{store.name}</h3>
+                  <span className={`text-xs px-2 py-0.5 rounded-full bg-${store.color}-500/20 text-${store.color}-400`}>{store.tag}</span>
+                </div>
+                <p className="text-slate-400 text-sm mb-3">{store.desc}</p>
+                <span className="text-xs text-emerald-400 group-hover:underline flex items-center gap-1">
+                  Visit Store <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg>
+                </span>
+              </a>
+            ))}
+          </div>
+          <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-4">
+            <p className="text-slate-500 text-xs text-center">CricVerse360 is not affiliated with these stores. Links open in a new tab.</p>
+          </div>
         </div>
       )}
     </div>

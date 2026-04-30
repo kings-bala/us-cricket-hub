@@ -1,9 +1,9 @@
 export type PlayerRole = "Batsman" | "Bowler" | "All-Rounder" | "Wicket-Keeper";
 export type BowlingStyle = "Right-arm Fast" | "Right-arm Medium" | "Left-arm Fast" | "Left-arm Medium" | "Right-arm Off-spin" | "Left-arm Orthodox" | "Left-arm Chinaman" | "Right-arm Leg-spin";
 export type BattingStyle = "Right-hand Bat" | "Left-hand Bat";
-export type AgeGroup = "U15" | "U17" | "U19" | "U21" | "U23";
+export type AgeGroup = "U13" | "U15" | "U17" | "U19" | "U21" | "U23" | "Men";
 export type ProfileTier = "Free" | "Premium" | "Elite";
-export type UserRole = "player" | "agent" | "owner" | "sponsor";
+export type UserRole = "player" | "agent" | "owner" | "sponsor" | "coach" | "academy_admin";
 export type Region = "South Asia" | "Oceania" | "Europe" | "Caribbean" | "Africa" | "Americas" | "Middle East" | "East Asia";
 export type T20LeagueId = "IPL" | "BBL" | "CPL" | "PSL" | "SA20" | "BPL" | "LPL" | "ILT20" | "MLC" | "THE100" | "SSA" | "GT20";
 
@@ -48,6 +48,7 @@ export interface Player {
 export interface PlayerStats {
   matches: number;
   innings: number;
+  notOuts: number;
   runs: number;
   battingAverage: number;
   strikeRate: number;
@@ -179,4 +180,109 @@ export interface AIFeedback {
   score: number;
   comment: string;
   suggestion: string;
+}
+
+export type FormStatus = "Red Hot" | "In Form" | "Steady" | "Cold";
+
+export interface MatchPerformance {
+  matchId: string;
+  date: string;
+  opponent: string;
+  venue: string;
+  league: string;
+  runsScored: number;
+  ballsFaced: number;
+  wicketsTaken: number;
+  oversBowled: number;
+  runsConceded: number;
+  catches: number;
+  runOuts: number;
+  stumpings: number;
+  manOfMatch: boolean;
+}
+
+export interface CPIScore {
+  overall: number;
+  matchPerformance: number;
+  athleticMetrics: number;
+  formIndex: number;
+  consistency: number;
+  nationalRank: number;
+  stateRank: number;
+  rankChange: number;
+}
+
+export interface CombineData {
+  yoYoScore: number;
+  sprint20m: number;
+  bowlingSpeed?: number;
+  batSpeed?: number;
+  verticalJump: number;
+  fieldingEfficiency: number;
+  throwAccuracy: number;
+  reactionTime: number;
+  assessmentDate: string;
+  nextAssessmentDate: string;
+  verifiedAthlete: boolean;
+  history: CombineHistory[];
+}
+
+export interface CombineHistory {
+  date: string;
+  yoYoScore: number;
+  sprint20m: number;
+  verticalJump: number;
+  fieldingEfficiency: number;
+}
+
+export interface PerformanceFeedItem {
+  id: string;
+  playerId: string;
+  playerName: string;
+  type: "top-score" | "best-bowling" | "fastest-innings" | "form-spike" | "hot-prospect" | "rank-movement";
+  title: string;
+  description: string;
+  value: string;
+  date: string;
+  state: string;
+  league: string;
+}
+
+export type PlayerLevel = "Beginner" | "Intermediate" | "Advanced";
+
+export type AcademySeatPlan = "free" | "starter" | "pro" | "enterprise";
+
+export interface Academy {
+  id: string;
+  name: string;
+  location: string;
+  logo: string;
+  headCoach: string;
+  contactEmail: string;
+  adminEmail: string;
+  joinCode: string;
+  seatPlan: AcademySeatPlan;
+  maxSeats: number;
+  playerEmails: string[];
+  coachEmails: string[];
+  createdAt: string;
+}
+
+export interface AcademyAttendance {
+  date: string;
+  playerEmail: string;
+  present: boolean;
+}
+
+export type StaffRole = "Head Coach" | "Assistant Coach" | "Bowling Coach" | "Batting Coach" | "Fielding Coach" | "Fitness Trainer" | "Physio" | "Manager" | "Analyst" | "Other";
+
+export interface AcademyStaff {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: StaffRole;
+  specialization: string;
+  joinedAt: string;
+  academyId: string;
 }
