@@ -8,12 +8,12 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm text-white">
-                CH
+                CV
               </div>
-              <span className="font-bold text-lg text-white">CricketHub Global</span>
+              <span className="font-bold text-lg text-white">CricVerse360</span>
             </div>
             <p className="text-sm">
-              Connecting street cricket talent worldwide with T20 leagues. From gully cricket to global stardom.
+              The global cricket platform connecting talent with opportunity. AI-powered video analysis and coaching.
             </p>
           </div>
           <div>
@@ -39,7 +39,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm">Contact</h4>
             <div className="space-y-2">
-              <span className="block text-sm">info@crickethubglobal.com</span>
+              <span className="block text-sm">info@cricverse360.com</span>
               <span className="block text-sm">Available Worldwide</span>
               <div className="flex gap-3 mt-3">
                 <span className="text-xs bg-slate-800 px-2 py-1 rounded">Twitter</span>
@@ -50,7 +50,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; 2026 CricketHub Global. All rights reserved. Connecting cricket talent worldwide.</p>
+          <p>&copy; 2026 CricVerse360. All rights reserved. AI-powered cricket analysis platform.</p>
         </div>
       </div>
     </footer>
