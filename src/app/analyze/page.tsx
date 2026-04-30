@@ -477,7 +477,7 @@ export default function AnalyzePage() {
           >
             {cloudAnalyzing ? "Uploading & Analyzing..." : "Get AI-Powered Analysis"}
           </button>
-          <p className="text-xs text-slate-500 text-center mt-1">Upload to cloud for GPT-4o expert analysis{!user && " (sign in required)"}</p>
+          <p className="text-xs text-slate-500 text-center mt-1">Upload to cloud for AI expert analysis{!user && " (sign in required)"}</p>
           {cloudError && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mt-2">
               <p className="text-xs text-red-400">{cloudError}</p>
