@@ -22,7 +22,7 @@ export default function AuthPage() {
   const router = useRouter();
 
   if (user) {
-    router.push("/dashboard");
+    router.push("/analyze");
     return null;
   }
 
@@ -53,7 +53,7 @@ export default function AuthPage() {
       } else {
         await login(email, password);
         trackEvent("signin_completed", {});
-        router.push("/dashboard");
+        router.push("/analyze");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

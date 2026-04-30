@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { apiPost, apiGet } from "./api";
 
 interface User {
@@ -36,6 +37,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 const TOKENS_KEY = "cricverse360_tokens";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     clearAuth();
+    router.push("/");
   };
 
   return (
