@@ -271,10 +271,13 @@ export default function AnalyzePage() {
       <div className="mb-8 animate-fade-up">
         <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Analysis Suite</p>
         <h1 className="text-3xl font-bold text-white mb-2">AI Video Analysis</h1>
-        <p className="text-slate-400">
+        <p className="text-slate-400 mb-2">
           Upload your cricket videos and get instant AI-powered technique
           analysis with personalized feedback. On-device analysis runs locally in your browser.
           Cloud AI analysis uploads your video securely to our servers for processing by Google Gemini.
+        </p>
+        <p className="text-sm text-emerald-400 font-medium">
+          Upload now to get your score and improvement plan.
         </p>
       </div>
 

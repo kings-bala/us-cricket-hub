@@ -72,8 +72,11 @@ function UpgradeCard({ tokens, router }: { tokens: { accessToken?: string } | nu
         <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
           Unlock Your Full Cricket Analysis
         </h2>
-        <p className="text-slate-300 max-w-lg mx-auto">
+        <p className="text-slate-300 max-w-lg mx-auto mb-2">
           Your free score shows where you stand. The full report shows how to improve.
+        </p>
+        <p className="text-sm text-amber-400 font-medium">
+          Unlock before your next practice session.
         </p>
       </div>
 
