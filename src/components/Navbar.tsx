@@ -34,6 +34,9 @@ export default function Navbar() {
             ))}
             {user && (
               <>
+                <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
+                  Dashboard
+                </Link>
                 <Link href="/profile" className="text-sm text-slate-300 hover:text-white transition-colors">
                   My Profile
                 </Link>
@@ -101,6 +104,13 @@ export default function Navbar() {
             ))}
             {user && (
               <>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2 text-sm text-slate-300 hover:text-white"
+                >
+                  Dashboard
+                </Link>
                 <Link
                   href="/profile"
                   onClick={() => setMobileOpen(false)}
