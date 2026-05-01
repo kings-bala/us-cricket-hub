@@ -13,9 +13,9 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
           <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Get Your Cricket Technique Score{" "}
+              {"Get Your Cricket Technique Score "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                in 60 Seconds
+                {"in 60 Seconds"}
               </span>
             </h1>
             <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
@@ -50,7 +50,7 @@ export default function Home() {
           {[
             { label: "AI-Powered Analysis", value: "Gemini", icon: "\u{1F3AF}" },
             { label: "Batting & Bowling", value: "Video", icon: "\u{1F4C8}" },
-            { label: "Instant Reports", value: "< 60s", icon: "\u{1F3CB}" },
+            { label: "Instant Reports", value: "Under 60s", icon: "\u26A1" },
             { label: "Available", value: "Worldwide", icon: "\u{1F30D}" },
           ].map((stat) => (
             <div key={stat.label} className="bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-xl p-4 text-center">

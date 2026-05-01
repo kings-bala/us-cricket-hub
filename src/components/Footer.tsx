@@ -51,7 +51,7 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-3 text-sm">Contact</h4>
             <div className="space-y-2">
               <span className="block text-sm">info@cricverse360.com</span>
-              <span className="block text-sm">Available Worldwide</span>
+              <span className="block text-sm mt-2">Available Worldwide</span>
               <div className="flex gap-3 mt-3">
                 <span className="text-xs bg-slate-800 px-2 py-1 rounded">Twitter</span>
                 <span className="text-xs bg-slate-800 px-2 py-1 rounded">Instagram</span>
