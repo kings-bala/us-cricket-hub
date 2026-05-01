@@ -63,10 +63,10 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Videos Analyzed", value: "500+", icon: "\u{1F3AF}" },
-            { label: "Avg Score Improvement", value: "23%", icon: "\u{1F4C8}" },
-            { label: "Expert Coaches", value: "50+", icon: "\u{1F3CB}" },
-            { label: "Countries", value: "12+", icon: "\u{1F30D}" },
+            { label: "AI-Powered Analysis", value: "Gemini", icon: "\u{1F3AF}" },
+            { label: "Batting & Bowling", value: "Video", icon: "\u{1F4C8}" },
+            { label: "Instant Reports", value: "< 60s", icon: "\u{1F3CB}" },
+            { label: "Available", value: "Worldwide", icon: "\u{1F30D}" },
           ].map((stat) => (
             <div key={stat.label} className="bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-xl p-4 text-center">
               <span className="text-lg block mb-1">{stat.icon}</span>
@@ -435,44 +435,22 @@ export default function Home() {
       <section className="bg-slate-800/30 border-y border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-3">What Players Are Saying</h2>
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <span className="text-yellow-400 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-              <span className="text-sm text-slate-400">4.8 out of 5 &middot; 200+ player reviews</span>
-            </div>
+            <h2 className="text-3xl font-bold text-white mb-3">How It Helps</h2>
+            <p className="text-sm text-slate-400">Here&apos;s what CricVerse360 AI analysis can do for you</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: "Arjun P.", role: "U-19 Batsman, Mumbai", quote: "The AI analysis spotted a problem with my backlift that my coaches had missed. My batting average improved by 15 runs in two months.", rating: 5, verified: true },
-              { name: "James W.", role: "Club Bowler, Sydney", quote: "CricVerse360 showed me my front arm was dropping too early. The drill recommendations were spot on. I am bowling faster and more accurately now.", rating: 5, verified: true },
-              { name: "Coach Malik", role: "Academy Director, Lahore", quote: "I use CricVerse360 to give every student objective feedback. The AI analysis saves me hours and helps me focus coaching on what matters most.", rating: 5, verified: true },
-              { name: "Priya S.", role: "State Player, Chennai", quote: "I was skeptical about AI cricket analysis but the timestamp observations were incredibly accurate. It caught my balance issue at the crease that I never noticed.", rating: 4, verified: true },
-              { name: "Meena D.", role: "Cricket Parent, Brisbane", quote: "As a parent, I wanted objective feedback on my son's technique. CricVerse360 gave us a clear report we could share with his academy coach. It helped us focus practice time on what actually matters.", rating: 5, verified: true },
-              { name: "Hassan R.", role: "Fast Bowler, Karachi", quote: "I uploaded my bowling video and got specific feedback about my release point. The recommended drills actually made a difference in my next match.", rating: 5, verified: true },
-            ].map((t) => (
-              <div key={t.name} className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6">
-                <div className="flex items-center gap-1 mb-3">
-                  {Array.from({ length: 5 }, (_, i) => (
-                    <span key={i} className={i < t.rating ? "text-yellow-400" : "text-slate-600"}>&#9733;</span>
-                  ))}
-                </div>
-                <p className="text-slate-300 mb-4 italic">&ldquo;{t.quote}&rdquo;</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
-                    {t.name.split(" ").map((n) => n[0]).join("")}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-white font-semibold text-sm">{t.name}</p>
-                      {t.verified && (
-                        <svg className="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                    <p className="text-xs text-slate-400">{t.role}</p>
-                  </div>
-                </div>
+              { icon: "\u{1F3AF}", title: "Spot Hidden Technique Issues", desc: "AI analyzes your stance, footwork, backlift, and follow-through frame by frame. Get feedback your coach might miss in real-time." },
+              { icon: "\u{1F4CB}", title: "Personalized Drill Plans", desc: "Every report includes recommended drills and a 7-day improvement plan tailored to your specific weaknesses." },
+              { icon: "\u{1F4C8}", title: "Track Your Progress", desc: "Upload multiple videos over time to see your scores improve. Pro users get full trend charts and repeated weakness analysis." },
+              { icon: "\u{1F3AC}", title: "Timestamp Coaching Notes", desc: "See exactly which moments in your video need attention, with specific observations at each timestamp." },
+              { icon: "\u{1F4E2}", title: "Shareable Player Cards", desc: "Generate a branded player card with your score and share it on WhatsApp, X, or download it to show your coach." },
+              { icon: "\u{1F3C6}", title: "Get Ranked on the Leaderboard", desc: "Your scores appear on the CricVerse360 leaderboard. Compete with players worldwide and get noticed." },
+            ].map((item) => (
+              <div key={item.title} className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6">
+                <span className="text-2xl mb-3 block">{item.icon}</span>
+                <h3 className="text-white font-semibold mb-2">{item.title}</h3>
+                <p className="text-slate-400 text-sm">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -497,23 +475,22 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-10">
             {[
-              { rank: 1, name: "Arjun Patel", role: "Batsman", location: "Mumbai, India", score: 92, emoji: "\u{1F947}", border: "border-yellow-500/40", bg: "bg-yellow-500/10" },
-              { rank: 2, name: "Jake Thompson", role: "Bowler", location: "Sydney, Australia", score: 89, emoji: "\u{1F948}", border: "border-slate-400/40", bg: "bg-slate-400/10" },
-              { rank: 3, name: "Ravi Sharma", role: "All-Rounder", location: "Delhi, India", score: 87, emoji: "\u{1F949}", border: "border-amber-600/40", bg: "bg-amber-600/10" },
+              { rank: 1, emoji: "\u{1F947}", border: "border-yellow-500/40", bg: "bg-yellow-500/10", label: "1st Place" },
+              { rank: 2, emoji: "\u{1F948}", border: "border-slate-400/40", bg: "bg-slate-400/10", label: "2nd Place" },
+              { rank: 3, emoji: "\u{1F949}", border: "border-amber-600/40", bg: "bg-amber-600/10", label: "3rd Place" },
             ].map((p) => (
               <div key={p.rank} className={`${p.bg} border ${p.border} rounded-2xl p-6 text-center`}>
                 <span className="text-3xl mb-2 block">{p.emoji}</span>
-                <div className={`w-16 h-16 rounded-full border-3 border-emerald-500 flex items-center justify-center mx-auto mb-3 bg-slate-900/50`}>
-                  <span className="text-2xl font-bold text-emerald-400">{p.score}</span>
+                <div className={`w-16 h-16 rounded-full border-3 border-slate-600 flex items-center justify-center mx-auto mb-3 bg-slate-900/50`}>
+                  <span className="text-xl font-bold text-slate-500">?</span>
                 </div>
-                <h3 className="text-lg font-bold text-white">{p.name}</h3>
-                <p className="text-sm text-slate-400">{p.role}</p>
-                <p className="text-xs text-slate-500 mt-1">{p.location}</p>
+                <h3 className="text-lg font-bold text-slate-500">{p.label}</h3>
+                <p className="text-sm text-slate-500">Could be you</p>
                 <Link
-                  href="/leaderboard"
+                  href="/analyze"
                   className="inline-block mt-3 text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
                 >
-                  View Profile &rarr;
+                  Upload to Compete &rarr;
                 </Link>
               </div>
             ))}
@@ -614,19 +591,19 @@ export default function Home() {
       {/* Academy trust bar — moved lower */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="text-center">
-          <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Used by players from leading cricket academies</p>
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Built for cricket players worldwide</p>
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
             {[
-              "MRF Pace Foundation",
-              "Tendulkar Middlesex Global",
-              "Dennis Lillee Academy",
-              "National Cricket Academy",
-              "ICC Development Program",
-            ].map((academy) => (
-              <span key={academy} className="text-sm text-slate-500 font-medium">{academy}</span>
+              "Youth Academies",
+              "Club Players",
+              "School Teams",
+              "Private Coaches",
+              "Self-Training Players",
+            ].map((audience) => (
+              <span key={audience} className="text-sm text-slate-500 font-medium">{audience}</span>
             ))}
           </div>
-          <p className="text-xs text-slate-600 mt-3">25+ academies worldwide</p>
+          <p className="text-xs text-slate-600 mt-3">Upload your first video free</p>
         </div>
       </section>
 

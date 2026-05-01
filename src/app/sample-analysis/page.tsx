@@ -15,7 +15,7 @@ const player = {
   location: "Mumbai, India",
   battingStyle: "Right-Hand Bat",
   bowlingStyle: "Right-Arm Medium",
-  academy: "MCC Cricket Academy",
+  academy: "Sample Academy",
   analysis_type: "batting",
   overall_score: 78,
   confidence_score: 85,

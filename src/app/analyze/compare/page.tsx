@@ -66,6 +66,7 @@ export default function ComparePage() {
           <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded-full border border-cyan-500/30">Side-by-Side</span>
         </div>
         <p className="text-sm text-slate-400">Compare your technique scores against professional cricket players.</p>
+        <p className="text-xs text-slate-500 mt-1">Pro benchmark scores are estimated based on publicly available coaching analysis. These players are not affiliated with CricVerse360.</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">
