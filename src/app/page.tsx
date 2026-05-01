@@ -542,13 +542,13 @@ export default function Home() {
             <div className="order-2 md:order-1">
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { title: "Batting Coaches", desc: "Technique, stance, footwork" },
-                  { title: "Bowling Coaches", desc: "Pace, spin, swing" },
-                  { title: "All-Round Coaches", desc: "Complete game development" },
-                  { title: "Fielding Coaches", desc: "Catching, throwing, agility" },
+                  { title: "Batting Coaches", desc: "Technique, stance, footwork", emoji: "\u{1F3CF}", bg: "bg-emerald-500/10 border-emerald-500/20" },
+                  { title: "Bowling Coaches", desc: "Pace, spin, swing", emoji: "\u{1F3D0}", bg: "bg-blue-500/10 border-blue-500/20" },
+                  { title: "All-Round Coaches", desc: "Complete game development", emoji: "\u2B50", bg: "bg-purple-500/10 border-purple-500/20" },
+                  { title: "Fielding Coaches", desc: "Catching, throwing, agility", emoji: "\u{1F9E4}", bg: "bg-amber-500/10 border-amber-500/20" },
                 ].map((coach) => (
                   <div key={coach.title} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 mb-3" />
+                    <div className={`w-10 h-10 rounded-xl ${coach.bg} border flex items-center justify-center mb-3 text-xl`}>{coach.emoji}</div>
                     <p className="text-white font-semibold text-sm">{coach.title}</p>
                     <p className="text-xs text-slate-400 mt-1">{coach.desc}</p>
                     <p className="text-xs text-emerald-400 mt-2">Available worldwide</p>
