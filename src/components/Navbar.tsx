@@ -8,12 +8,19 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
 
-  const navLinks = [
-    { href: "/analyze", label: "AI Analysis" },
-    { href: "/coaches", label: "Coaches" },
+  const loggedOutLinks = [
+    { href: "/analyze", label: "Analyze" },
     { href: "/pricing", label: "Pricing" },
-    { href: "/players", label: "Players" },
+    { href: "/sample-analysis", label: "Sample Analysis" },
   ];
+
+  const loggedInLinks = [
+    { href: "/analyze", label: "Analyze" },
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/profile", label: "Profile" },
+  ];
+
+  const navLinks = user ? loggedInLinks : loggedOutLinks;
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -32,20 +39,10 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            {user && (
-              <>
-                <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
-                  Dashboard
-                </Link>
-                <Link href="/profile" className="text-sm text-slate-300 hover:text-white transition-colors">
-                  My Profile
-                </Link>
-                {user.role === "admin" && (
-                  <Link href="/admin" className="text-sm text-slate-300 hover:text-white transition-colors">
-                    Admin
-                  </Link>
-                )}
-              </>
+            {user?.role === "admin" && (
+              <Link href="/admin" className="text-sm text-slate-300 hover:text-white transition-colors">
+                Admin
+              </Link>
             )}
           </div>
 
@@ -102,32 +99,14 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            {user && (
-              <>
-                <Link
-                  href="/dashboard"
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm text-slate-300 hover:text-white"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  href="/profile"
-                  onClick={() => setMobileOpen(false)}
-                  className="block py-2 text-sm text-slate-300 hover:text-white"
-                >
-                  My Profile
-                </Link>
-                {user.role === "admin" && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileOpen(false)}
-                    className="block py-2 text-sm text-slate-300 hover:text-white"
-                  >
-                    Admin
-                  </Link>
-                )}
-              </>
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm text-slate-300 hover:text-white"
+              >
+                Admin
+              </Link>
             )}
           </div>
         </div>
