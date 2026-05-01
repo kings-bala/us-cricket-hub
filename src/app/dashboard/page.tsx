@@ -275,6 +275,43 @@ export default function ProgressDashboard() {
               </div>
             </div>
 
+            {/* Goal Message + Latest Report */}
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
+              {/* Goal Message */}
+              <div className="bg-gradient-to-r from-amber-900/20 to-emerald-900/20 border border-amber-500/20 rounded-xl p-5 flex items-center gap-4">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-2xl">&#x1F3AF;</span>
+                </div>
+                <div>
+                  <p className="text-white font-semibold">Your next goal: beat your previous score.</p>
+                  <p className="text-sm text-slate-400 mt-0.5">
+                    {bestScore !== null
+                      ? `Your best is ${bestScore}/100. Upload a new video to beat it.`
+                      : "Upload again to start tracking improvement."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Latest Report Quick Access */}
+              {analyses[0] && (
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                  <p className="text-xs text-slate-400 mb-2">Latest Report</p>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getScoreBg(parseScore(analyses[0].scores))} flex items-center justify-center`}>
+                      <span className={`text-xl font-bold ${getScoreColor(parseScore(analyses[0].scores))}`}>{parseScore(analyses[0].scores)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium capitalize">{analyses[0].analysis_type} Analysis</p>
+                      <p className="text-xs text-slate-500">{formatDate(analyses[0].created_at)}</p>
+                      {analyses[0].feedback && (
+                        <p className="text-xs text-slate-400 mt-1 truncate">{analyses[0].feedback}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Score Trend */}
             {analyses.length >= 2 && (
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
@@ -332,6 +369,76 @@ export default function ProgressDashboard() {
                       {battingCount > bowlingCount ? "Batting" : bowlingCount > battingCount ? "Bowling" : "All-Round"}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">{battingCount} batting / {bowlingCount} bowling sessions</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pro: Repeated Weaknesses Across Reports */}
+            {isPro && analyses.length >= 2 && (
+              <div className="bg-gradient-to-br from-red-900/10 to-amber-900/10 border border-amber-500/15 rounded-xl p-6 mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">Pro</span>
+                  <h2 className="text-lg font-semibold text-white">Repeated Weaknesses</h2>
+                </div>
+                <p className="text-sm text-slate-400 mb-4">Issues that appear across multiple reports — focus here for the biggest improvement.</p>
+                {(() => {
+                  const feedbackKeys: Record<string, number> = {};
+                  analyses.forEach((a) => {
+                    try {
+                      const sc = typeof a.scores === "string" ? JSON.parse(a.scores) : a.scores;
+                      Object.entries(sc).forEach(([key, val]) => {
+                        if (key !== "overall" && typeof val === "string" && val.length > 10) {
+                          const k = key.replace(/_/g, " ");
+                          feedbackKeys[k] = (feedbackKeys[k] || 0) + 1;
+                        }
+                      });
+                    } catch { /* skip */ }
+                  });
+                  const repeated = Object.entries(feedbackKeys)
+                    .filter(([, count]) => count >= 2)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                  if (repeated.length === 0) {
+                    return (
+                      <p className="text-sm text-slate-500">Not enough data yet. Upload more videos to identify recurring patterns.</p>
+                    );
+                  }
+                  return (
+                    <div className="space-y-2">
+                      {repeated.map(([area, count]) => (
+                        <div key={area} className="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-3">
+                          <span className="text-sm text-white capitalize font-medium">{area}</span>
+                          <span className="text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                            Flagged in {count} report{count > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Upgrade tease for free users: repeated weaknesses */}
+            {!isPro && analyses.length >= 2 && (
+              <div className="relative mb-8">
+                <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-6 blur-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-lg font-semibold text-white">Repeated Weaknesses</h2>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-8 w-full bg-slate-700/30 rounded-lg" />
+                    <div className="h-8 w-3/4 bg-slate-700/30 rounded-lg" />
+                    <div className="h-8 w-5/6 bg-slate-700/30 rounded-lg" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-slate-300 font-medium mb-1">See which weaknesses repeat across reports</p>
+                    <Link href="/pricing" className="text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-full font-medium transition-colors">
+                      Upgrade to Pro
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -447,12 +554,13 @@ export default function ProgressDashboard() {
 
             {/* Bottom CTA */}
             <div className="text-center py-6">
-              <p className="text-slate-400 mb-4">Ready to improve your score?</p>
+              <p className="text-white font-semibold text-lg mb-2">Ready to beat your score?</p>
+              <p className="text-slate-400 mb-4">Every upload helps you track improvement and climb the leaderboard.</p>
               <Link
                 href="/analyze"
                 className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
               >
-                Upload Another Video to Improve Your Score
+                Upload Again to Improve Your Score
               </Link>
               <p className="text-sm text-slate-500 mt-3">Upload your video and get instant AI feedback in seconds.</p>
             </div>
