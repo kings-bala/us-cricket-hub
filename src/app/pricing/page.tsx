@@ -108,8 +108,11 @@ export default function PricingPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
             Simple, Transparent Pricing
           </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-            Start with a free analysis. Upgrade when you need more insights to improve your game.
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-2">
+            Start free. Upgrade only if the analysis helps.
+          </p>
+          <p className="text-sm text-emerald-400 font-medium">
+            No commitment. Cancel anytime.
           </p>
         </div>
 

@@ -46,8 +46,11 @@ export default function Home() {
                 See Sample Analysis
               </Link>
             </div>
-            <p className="text-xs text-slate-500 mt-4">
-              No credit card required. First analysis is free.
+            <p className="text-sm text-emerald-400/80 font-medium mt-4">
+              Free first analysis available for new players.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              No credit card required.
             </p>
           </div>
         </div>
