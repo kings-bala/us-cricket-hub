@@ -13,24 +13,39 @@ interface LeaderboardPlayer {
   analysisType: string;
   location: string;
   featured: boolean;
+  badges: string[];
+  bestBowlingScore?: number;
 }
 
 const LEADERBOARD_DATA: LeaderboardPlayer[] = [
-  { rank: 1, name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 92, analysisType: "batting", location: "Mumbai, India", featured: true },
-  { rank: 2, name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 89, analysisType: "bowling", location: "Sydney, Australia", featured: true },
-  { rank: 3, name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 87, analysisType: "batting", location: "Delhi, India", featured: false },
-  { rank: 4, name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 85, analysisType: "batting", location: "London, UK", featured: false },
-  { rank: 5, name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 84, analysisType: "bowling", location: "Lahore, Pakistan", featured: true },
-  { rank: 6, name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 82, analysisType: "batting", location: "Bangalore, India", featured: false },
-  { rank: 7, name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 81, analysisType: "batting", location: "Cape Town, SA", featured: false },
-  { rank: 8, name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 80, analysisType: "bowling", location: "Chennai, India", featured: false },
-  { rank: 9, name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 79, analysisType: "batting", location: "Auckland, NZ", featured: false },
-  { rank: 10, name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 78, analysisType: "batting", location: "Karachi, Pakistan", featured: false },
-  { rank: 11, name: "Tom Bradley", username: "tom-bradley", role: "All-Rounder", score: 77, analysisType: "bowling", location: "Melbourne, Australia", featured: false },
-  { rank: 12, name: "Kiran Nair", username: "kiran-nair", role: "Batsman", score: 76, analysisType: "batting", location: "Hyderabad, India", featured: false },
-  { rank: 13, name: "David Marsh", username: "david-marsh", role: "Bowler", score: 75, analysisType: "bowling", location: "Birmingham, UK", featured: false },
-  { rank: 14, name: "Aarav Singh", username: "aarav-singh", role: "Batsman", score: 74, analysisType: "batting", location: "Kolkata, India", featured: false },
-  { rank: 15, name: "Chris Patel", username: "chris-patel", role: "All-Rounder", score: 73, analysisType: "batting", location: "Toronto, Canada", featured: false },
+  { rank: 1, name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 92, analysisType: "batting", location: "Mumbai, India", featured: true, badges: ["Top 10 This Week", "Featured Player"] },
+  { rank: 2, name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 89, analysisType: "bowling", location: "Sydney, Australia", featured: true, badges: ["Top 10 This Week", "Featured Player", "Best Bowling Score"], bestBowlingScore: 89 },
+  { rank: 3, name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 87, analysisType: "batting", location: "Delhi, India", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 4, name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 85, analysisType: "batting", location: "London, UK", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 5, name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 84, analysisType: "bowling", location: "Lahore, Pakistan", featured: true, badges: ["Top 10 This Week", "Featured Player"] },
+  { rank: 6, name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 82, analysisType: "batting", location: "Bangalore, India", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 7, name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 81, analysisType: "batting", location: "Cape Town, SA", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 8, name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 80, analysisType: "bowling", location: "Chennai, India", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 9, name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 79, analysisType: "batting", location: "Auckland, NZ", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 10, name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 78, analysisType: "batting", location: "Karachi, Pakistan", featured: false, badges: ["Top 10 This Week"] },
+  { rank: 11, name: "Tom Bradley", username: "tom-bradley", role: "All-Rounder", score: 77, analysisType: "bowling", location: "Melbourne, Australia", featured: false, badges: [] },
+  { rank: 12, name: "Kiran Nair", username: "kiran-nair", role: "Batsman", score: 76, analysisType: "batting", location: "Hyderabad, India", featured: false, badges: [] },
+  { rank: 13, name: "David Marsh", username: "david-marsh", role: "Bowler", score: 75, analysisType: "bowling", location: "Birmingham, UK", featured: false, badges: [] },
+  { rank: 14, name: "Aarav Singh", username: "aarav-singh", role: "Batsman", score: 74, analysisType: "batting", location: "Kolkata, India", featured: false, badges: [] },
+  { rank: 15, name: "Chris Patel", username: "chris-patel", role: "All-Rounder", score: 73, analysisType: "batting", location: "Toronto, Canada", featured: false, badges: [] },
+];
+
+const ALL_TIME_DATA: LeaderboardPlayer[] = [
+  { rank: 1, name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 95, analysisType: "batting", location: "Mumbai, India", featured: true, badges: ["Featured Player"] },
+  { rank: 2, name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 93, analysisType: "batting", location: "Delhi, India", featured: false, badges: [] },
+  { rank: 3, name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 91, analysisType: "bowling", location: "Sydney, Australia", featured: true, badges: ["Featured Player", "Best Bowling Score"], bestBowlingScore: 91 },
+  { rank: 4, name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 90, analysisType: "bowling", location: "Lahore, Pakistan", featured: true, badges: ["Featured Player"] },
+  { rank: 5, name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 88, analysisType: "batting", location: "London, UK", featured: false, badges: [] },
+  { rank: 6, name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 87, analysisType: "batting", location: "Bangalore, India", featured: false, badges: [] },
+  { rank: 7, name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 86, analysisType: "batting", location: "Cape Town, SA", featured: false, badges: [] },
+  { rank: 8, name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 85, analysisType: "batting", location: "Auckland, NZ", featured: false, badges: [] },
+  { rank: 9, name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 84, analysisType: "bowling", location: "Chennai, India", featured: false, badges: [] },
+  { rank: 10, name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 83, analysisType: "batting", location: "Karachi, Pakistan", featured: false, badges: [] },
 ];
 
 function getRankBadge(rank: number) {
@@ -54,16 +69,43 @@ function getScoreBorder(score: number) {
   return "border-red-500";
 }
 
+function PlayerBadges({ badges }: { badges: string[] }) {
+  if (!badges.length) return null;
+
+  const badgeStyles: Record<string, string> = {
+    "Top 10 This Week": "bg-yellow-500/15 text-yellow-400 border-yellow-500/30",
+    "Featured Player": "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+    "Best Bowling Score": "bg-purple-500/15 text-purple-400 border-purple-500/30",
+  };
+
+  return (
+    <div className="flex flex-wrap gap-1 mt-1">
+      {badges.map((badge) => (
+        <span
+          key={badge}
+          className={`text-[10px] px-1.5 py-0.5 rounded border ${badgeStyles[badge] || "bg-slate-500/15 text-slate-400 border-slate-500/30"}`}
+        >
+          {badge}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 export default function LeaderboardPage() {
-  const [filter, setFilter] = useState<"all" | "batting" | "bowling">("all");
+  const [filter, setFilter] = useState<"all" | "batting" | "bowling" | "all-rounder">("all");
+  const [tab, setTab] = useState<"weekly" | "alltime">("weekly");
 
   useEffect(() => {
     trackEvent("leaderboard_viewed");
   }, []);
 
+  const sourceData = tab === "weekly" ? LEADERBOARD_DATA : ALL_TIME_DATA;
   const filtered = filter === "all"
-    ? LEADERBOARD_DATA
-    : LEADERBOARD_DATA.filter((p) => p.analysisType === filter);
+    ? sourceData
+    : filter === "all-rounder"
+      ? sourceData.filter((p) => p.role.toLowerCase() === "all-rounder")
+      : sourceData.filter((p) => p.analysisType === filter);
 
   return (
     <div className="min-h-screen">
@@ -75,10 +117,13 @@ export default function LeaderboardPage() {
             <span className="text-sm text-yellow-400 font-semibold">Player Rankings</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Top Players This Week
+            Get Discovered on CricVerse360
           </h1>
-          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8">
-            See who&apos;s scoring the highest on CricVerse360. Upload your video to get ranked and get discovered by coaches and scouts.
+          <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-4">
+            Upload your video, earn your score, and appear among top players of the week. Coaches and scouts are watching.
+          </p>
+          <p className="text-sm text-emerald-400 font-medium mb-8">
+            Top players get featured, badged, and discovered by academies worldwide.
           </p>
           <Link
             href="/analyze"
@@ -89,29 +134,46 @@ export default function LeaderboardPage() {
         </div>
       </section>
 
-      {/* Filters */}
+      {/* Tabs + Filters */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="flex gap-2">
-            {(["all", "batting", "bowling"] as const).map((f) => (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Tabs */}
+          <div className="flex gap-1 bg-slate-800/50 rounded-full p-1 border border-slate-700/50">
+            {(["weekly", "alltime"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-5 py-2 rounded-full text-sm font-semibold transition-all ${
+                  tab === t
+                    ? "bg-emerald-500 text-white shadow-lg"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                {t === "weekly" ? "This Week" : "All Time"}
+              </button>
+            ))}
+          </div>
+
+          {/* Filters */}
+          <div className="flex gap-2 flex-wrap">
+            {(["all", "batting", "bowling", "all-rounder"] as const).map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
                   filter === f
-                    ? "bg-emerald-500 text-white shadow-lg"
+                    ? "bg-blue-500 text-white shadow-lg"
                     : "bg-slate-800/50 text-slate-400 hover:text-white border border-slate-700/50"
                 }`}
               >
-                {f === "all" ? "All Players" : f.charAt(0).toUpperCase() + f.slice(1)}
+                {f === "all" ? "All Players" : f === "all-rounder" ? "All-Rounder" : f.charAt(0).toUpperCase() + f.slice(1)}
               </button>
             ))}
           </div>
-          <p className="text-sm text-slate-500">Updated weekly</p>
         </div>
       </div>
 
-      {/* Leaderboard Table */}
+      {/* Leaderboard */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Top 3 Cards */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
@@ -134,6 +196,7 @@ export default function LeaderboardPage() {
                 <h3 className="text-lg font-bold text-white">{player.name}</h3>
                 <p className="text-sm text-slate-400 capitalize">{player.role}</p>
                 <p className="text-xs text-slate-500 mt-1">{player.location}</p>
+                <PlayerBadges badges={player.badges} />
                 <div className="mt-3 flex items-center justify-center gap-2">
                   <span className="text-xs bg-slate-800/80 text-slate-300 px-2 py-0.5 rounded capitalize">{player.analysisType}</span>
                 </div>
@@ -149,58 +212,67 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Rest of leaderboard */}
-        <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden">
-          {/* Header */}
-          <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-slate-800/50 text-xs text-slate-500 font-semibold uppercase tracking-wide">
-            <div className="col-span-1">Rank</div>
-            <div className="col-span-4">Player</div>
-            <div className="col-span-2">Role</div>
-            <div className="col-span-2">Score</div>
-            <div className="col-span-2">Location</div>
-            <div className="col-span-1"></div>
-          </div>
-
-          {/* Rows */}
-          {filtered.slice(3).map((player) => (
-            <div
-              key={player.username}
-              className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-t border-slate-700/30 hover:bg-slate-800/40 transition-colors"
-            >
-              <div className="col-span-1">
-                <span className="text-lg font-bold text-slate-400">#{player.rank}</span>
-              </div>
-              <div className="col-span-4 flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {player.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-sm">{player.name}</p>
-                  {player.featured && (
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">Featured</span>
-                  )}
-                </div>
-              </div>
-              <div className="col-span-2">
-                <span className="text-sm text-slate-300 capitalize">{player.role}</span>
-              </div>
-              <div className="col-span-2">
-                <span className={`text-lg font-bold ${getScoreColor(player.score)}`}>{player.score}</span>
-                <span className="text-xs text-slate-500">/100</span>
-              </div>
-              <div className="col-span-2">
-                <span className="text-sm text-slate-400">{player.location}</span>
-              </div>
-              <div className="col-span-1 text-right">
-                <Link
-                  href="/analyze"
-                  className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
-                  Get Ranked
-                </Link>
-              </div>
+        {filtered.length > 3 && (
+          <div className="bg-slate-800/30 border border-slate-700/50 rounded-2xl overflow-hidden">
+            {/* Header */}
+            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-slate-800/50 text-xs text-slate-500 font-semibold uppercase tracking-wide">
+              <div className="col-span-1">Rank</div>
+              <div className="col-span-4">Player</div>
+              <div className="col-span-2">Role</div>
+              <div className="col-span-2">Score</div>
+              <div className="col-span-2">Location</div>
+              <div className="col-span-1"></div>
             </div>
-          ))}
-        </div>
+
+            {/* Rows */}
+            {filtered.slice(3).map((player) => (
+              <div
+                key={player.username}
+                className="grid grid-cols-12 gap-4 px-6 py-4 items-center border-t border-slate-700/30 hover:bg-slate-800/40 transition-colors"
+              >
+                <div className="col-span-1">
+                  <span className="text-lg font-bold text-slate-400">#{player.rank}</span>
+                </div>
+                <div className="col-span-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                    {player.name.split(" ").map((n) => n[0]).join("")}
+                  </div>
+                  <div>
+                    <p className="text-white font-semibold text-sm">{player.name}</p>
+                    <PlayerBadges badges={player.badges} />
+                  </div>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-sm text-slate-300 capitalize">{player.role}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className={`text-lg font-bold ${getScoreColor(player.score)}`}>{player.score}</span>
+                  <span className="text-xs text-slate-500">/100</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-sm text-slate-400">{player.location}</span>
+                </div>
+                <div className="col-span-1 text-right">
+                  <Link
+                    href="/analyze"
+                    className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    Get Ranked
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {filtered.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-slate-400">No players found for this filter. Be the first!</p>
+            <Link href="/analyze" className="text-emerald-400 hover:text-emerald-300 font-semibold text-sm mt-2 inline-block">
+              Upload Your Video &rarr;
+            </Link>
+          </div>
+        )}
 
         {/* Bottom CTA */}
         <div className="mt-12 text-center">
@@ -208,8 +280,11 @@ export default function LeaderboardPage() {
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
               Want to See Your Name Here?
             </h2>
-            <p className="text-slate-300 mb-6 max-w-lg mx-auto">
-              Upload your cricket video, get your AI score, and climb the leaderboard. Top players get featured and discovered by coaches.
+            <p className="text-slate-300 mb-2 max-w-lg mx-auto">
+              Upload your cricket video, get your AI score, and climb the leaderboard.
+            </p>
+            <p className="text-sm text-emerald-400 font-medium mb-6">
+              Top players get featured and discovered by coaches and academies.
             </p>
             <Link
               href="/analyze"

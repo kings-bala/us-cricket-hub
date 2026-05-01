@@ -454,42 +454,59 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Top Players This Week */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-1.5 mb-4">
-            <span className="text-lg">{"\u{1F3C6}"}</span>
-            <span className="text-sm text-yellow-400 font-semibold">Leaderboard</span>
-          </div>
-          <h2 className="text-3xl font-bold text-white mb-3">Top Players This Week</h2>
-          <p className="text-slate-400 max-w-xl mx-auto">See who&apos;s scoring the highest. Upload your video to join the rankings.</p>
-        </div>
-        <div className="grid md:grid-cols-5 gap-4 max-w-4xl mx-auto mb-8">
-          {[
-            { rank: 1, name: "Arjun Patel", role: "Batsman", score: 92, emoji: "\u{1F947}" },
-            { rank: 2, name: "Jake Thompson", role: "Bowler", score: 89, emoji: "\u{1F948}" },
-            { rank: 3, name: "Ravi Sharma", role: "All-Rounder", score: 87, emoji: "\u{1F949}" },
-            { rank: 4, name: "Oliver Hughes", role: "Batsman", score: 85, emoji: "" },
-            { rank: 5, name: "Hassan Ali", role: "Bowler", score: 84, emoji: "" },
-          ].map((p) => (
-            <div key={p.rank} className={`text-center p-4 rounded-xl border ${p.rank <= 3 ? "bg-yellow-500/5 border-yellow-500/20" : "bg-slate-800/50 border-slate-700/50"}`}>
-              {p.emoji && <span className="text-2xl block mb-1">{p.emoji}</span>}
-              {!p.emoji && <span className="text-lg font-bold text-slate-500 block mb-1">#{p.rank}</span>}
-              <div className={`w-12 h-12 rounded-full border-2 ${p.score >= 85 ? "border-emerald-500" : "border-blue-500"} flex items-center justify-center mx-auto mb-2 bg-slate-900/50`}>
-                <span className={`text-lg font-bold ${p.score >= 85 ? "text-emerald-400" : "text-blue-400"}`}>{p.score}</span>
-              </div>
-              <p className="text-sm font-semibold text-white">{p.name}</p>
-              <p className="text-xs text-slate-400">{p.role}</p>
+      {/* Get Discovered — Prominent Section */}
+      <section className="bg-gradient-to-br from-yellow-900/20 via-slate-900 to-emerald-900/20 border-y border-yellow-500/10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-1.5 mb-6">
+              <span className="text-lg">{"\u{1F3C6}"}</span>
+              <span className="text-sm text-yellow-400 font-semibold">Get Discovered</span>
             </div>
-          ))}
-        </div>
-        <div className="text-center space-y-3">
-          <Link href="/leaderboard" className="text-emerald-400 hover:text-emerald-300 font-semibold text-sm transition-colors">
-            View Full Leaderboard &rarr;
-          </Link>
-          <p className="text-sm text-slate-500">
-            <Link href="/analyze" className="text-emerald-400 hover:underline">Upload your video</Link> to get ranked
-          </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+              Get Discovered on the CricVerse360 Leaderboard
+            </h2>
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
+              Upload your video, earn your score, and appear among top players of the week. Coaches and scouts are watching.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-10">
+            {[
+              { rank: 1, name: "Arjun Patel", role: "Batsman", location: "Mumbai, India", score: 92, emoji: "\u{1F947}", border: "border-yellow-500/40", bg: "bg-yellow-500/10" },
+              { rank: 2, name: "Jake Thompson", role: "Bowler", location: "Sydney, Australia", score: 89, emoji: "\u{1F948}", border: "border-slate-400/40", bg: "bg-slate-400/10" },
+              { rank: 3, name: "Ravi Sharma", role: "All-Rounder", location: "Delhi, India", score: 87, emoji: "\u{1F949}", border: "border-amber-600/40", bg: "bg-amber-600/10" },
+            ].map((p) => (
+              <div key={p.rank} className={`${p.bg} border ${p.border} rounded-2xl p-6 text-center`}>
+                <span className="text-3xl mb-2 block">{p.emoji}</span>
+                <div className={`w-16 h-16 rounded-full border-3 border-emerald-500 flex items-center justify-center mx-auto mb-3 bg-slate-900/50`}>
+                  <span className="text-2xl font-bold text-emerald-400">{p.score}</span>
+                </div>
+                <h3 className="text-lg font-bold text-white">{p.name}</h3>
+                <p className="text-sm text-slate-400">{p.role}</p>
+                <p className="text-xs text-slate-500 mt-1">{p.location}</p>
+                <Link
+                  href="/leaderboard"
+                  className="inline-block mt-3 text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+                >
+                  View Profile &rarr;
+                </Link>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center space-y-4">
+            <Link
+              href="/analyze"
+              className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
+            >
+              Upload Your Video to Get Ranked
+            </Link>
+            <div>
+              <Link href="/leaderboard" className="text-yellow-400 hover:text-yellow-300 font-semibold text-sm transition-colors">
+                View Full Leaderboard &rarr;
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
 
