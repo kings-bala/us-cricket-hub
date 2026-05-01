@@ -1,8 +1,10 @@
 import Link from "next/link";
+import PageViewTracker from "@/components/PageViewTracker";
 
 export default function Home() {
   return (
     <div>
+      <PageViewTracker event="landing_page_viewed" />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-slate-900 to-blue-900/30" />

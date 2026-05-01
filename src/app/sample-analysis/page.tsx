@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import PageViewTracker from "@/components/PageViewTracker";
 
 export const metadata: Metadata = {
   title: "Sample AI Cricket Analysis | CricVerse360",
@@ -165,6 +166,7 @@ export default function SampleAnalysisPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <PageViewTracker event="sample_analysis_viewed" />
       {/* Top CTA */}
       <CTABanner variant="primary" />
 
