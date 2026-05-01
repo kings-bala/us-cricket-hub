@@ -80,6 +80,7 @@ export default function PricingPage() {
   const { user, tokens } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState("");
+  const [error, setError] = useState<{ message: string; planKey: string } | null>(null);
 
   useEffect(() => {
     trackEvent("pricing_viewed", {}, tokens?.accessToken);
@@ -94,6 +95,7 @@ export default function PricingPage() {
     if (!user) { router.push("/auth"); return; }
     if (planKey === "free") { router.push("/analyze"); return; }
     setLoading(planKey);
+    setError(null);
     trackEvent("checkout_started", { plan: planKey }, tokens?.accessToken);
     try {
       const data = await apiPost<{ url: string }>("/checkout", {
@@ -105,7 +107,10 @@ export default function PricingPage() {
         window.location.href = data.url;
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Checkout failed. Please try again.");
+      setError({
+        message: err instanceof Error ? err.message : "Payment failed. Please try again.",
+        planKey,
+      });
     } finally {
       setLoading("");
     }
@@ -153,7 +158,7 @@ export default function PricingPage() {
               <button
                 onClick={() => handleCheckout(plan.planKey)}
                 disabled={!!loading}
-                className={`w-full text-center px-6 py-3 rounded-full font-semibold transition-colors mb-8 ${
+                className={`w-full text-center px-6 py-3 rounded-full font-semibold transition-colors ${
                   plan.highlight
                     ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                     : "bg-slate-700 hover:bg-slate-600 text-white"
@@ -161,6 +166,24 @@ export default function PricingPage() {
               >
                 {loading === plan.planKey ? "Redirecting..." : plan.cta}
               </button>
+              {plan.planKey !== "free" && (
+                <p className="text-xs text-slate-500 text-center mt-2 mb-6 flex items-center justify-center gap-1">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  Secure checkout via Stripe
+                </p>
+              )}
+              {plan.planKey === "free" && <div className="mb-6" />}
+              {error?.planKey === plan.planKey && (
+                <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-400">{error.message}</p>
+                  <button
+                    onClick={() => { setError(null); handleCheckout(plan.planKey); }}
+                    className="text-xs text-red-300 hover:text-white underline mt-1"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {plan.features.map((feature) => (
@@ -211,6 +234,21 @@ export default function PricingPage() {
           >
             {loading === "one_time" ? "Redirecting..." : "Buy Single Analysis"}
           </button>
+          <p className="text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            Secure checkout via Stripe
+          </p>
+          {error?.planKey === "one_time" && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center max-w-sm mx-auto">
+              <p className="text-sm text-red-400">{error.message}</p>
+              <button
+                onClick={() => { setError(null); handleCheckout("one_time"); }}
+                className="text-xs text-red-300 hover:text-white underline mt-1"
+              >
+                Try again
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Feature comparison */}
