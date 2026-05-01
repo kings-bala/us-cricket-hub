@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 };
 
 const player = {
-  name: "Rahul Sharma",
+  name: "Sample Player",
   age: 22,
   role: "Right-Hand Top-Order Batsman",
-  location: "Mumbai, India",
+  location: "Example Location",
   battingStyle: "Right-Hand Bat",
   bowlingStyle: "Right-Arm Medium",
   academy: "Sample Academy",
@@ -23,7 +23,7 @@ const player = {
 
 const report = {
   summary:
-    "Rahul shows a strong batting foundation with excellent head position and natural balance at the crease. His back-foot play is instinctive and powerful. However, front-foot commitment on drives is his biggest weakness, causing mistimed shots and reduced power on fuller deliveries. Grip pressure from the bottom hand is limiting his ability to play late and adjust against both pace and spin.",
+    "This player shows a strong batting foundation with excellent head position and natural balance at the crease. Back-foot play is instinctive and powerful. However, front-foot commitment on drives is the biggest weakness, causing mistimed shots and reduced power on fuller deliveries. Grip pressure from the bottom hand is limiting the ability to play late and adjust against both pace and spin.",
   video_quality_notes:
     "Good side-on angle with adequate lighting. Camera distance allows full body tracking. Frame rate suitable for slow-motion analysis.",
   strengths: [
@@ -50,7 +50,7 @@ const report = {
     {
       timestamp: "00:12",
       observation: "Back foot pull shot -- excellent weight transfer and hip rotation",
-      coaching_note: "Textbook pull shot. Natural power through the hips. This is Rahul's strongest shot.",
+      coaching_note: "Textbook pull shot. Natural power through the hips. This is the player's strongest shot.",
     },
     {
       timestamp: "00:18",
@@ -113,9 +113,9 @@ const report = {
     { day: "Day 7", focus: "Upload New Video", detail: "Record a new batting session with the same camera angle. Upload to CricVerse360 for AI comparison. Track your score improvement." },
   ],
   fix_first: {
-    title: "What Rahul Should Fix First",
+    title: "What to Fix First",
     issue: "Front-foot balance is reducing shot power and causing mistimed drives.",
-    explanation: "Rahul's front foot consistently lands 6-8 inches short of the ball's pitch. This means he's playing drives with his weight still on the back foot, which reduces power by ~30% and makes timing inconsistent. On 4 of 6 front-foot shots in this video, the ball was hit off the lower half of the bat.",
+    explanation: "The front foot consistently lands 6-8 inches short of the ball's pitch. This means drives are played with weight still on the back foot, which reduces power by ~30% and makes timing inconsistent. On 4 of 6 front-foot shots in this video, the ball was hit off the lower half of the bat.",
     fix: "Fix this first to immediately improve timing, power, and control on front-foot shots. The Front Foot Commitment Drill (above) targets this directly.",
     impact: "Expected score improvement: 78 to 85+ within 2 weeks of consistent practice.",
   },
@@ -181,8 +181,14 @@ export default function SampleAnalysisPage() {
       {/* Top CTA */}
       <CTASection variant="primary" />
 
+      {/* Sample Report Banner */}
+      <div className="mt-10 mb-4 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 text-center">
+        <p className="text-sm text-amber-400 font-semibold">This is a sample report</p>
+        <p className="text-xs text-amber-400/70">Upload your own video to get a personalized analysis</p>
+      </div>
+
       {/* Badge Row */}
-      <div className="mt-10 mb-6 flex items-center gap-3 flex-wrap">
+      <div className="mb-6 flex items-center gap-3 flex-wrap">
         <span className="text-xs px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 font-semibold">Sample Report</span>
         <span className="text-xs px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400">Confidence: {player.confidence_score}%</span>
         <span className="text-xs px-3 py-1 rounded-full bg-purple-500/20 text-purple-400">Powered by Gemini AI</span>
