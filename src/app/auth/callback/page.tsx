@@ -85,7 +85,9 @@ function CallbackInner() {
 
           trackEvent("signup_completed", { method: "google" });
           setStatus("Sign-in successful! Redirecting...");
-          window.location.href = "/analyze";
+          const redirectTo = sessionStorage.getItem("cricverse360_auth_redirect") || "/analyze";
+          sessionStorage.removeItem("cricverse360_auth_redirect");
+          window.location.href = redirectTo;
         } else {
           throw new Error("No access token in response");
         }

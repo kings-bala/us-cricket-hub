@@ -39,6 +39,7 @@ function AuthPageInner() {
     const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
     const redirectUri = `${window.location.origin}/auth/callback`;
     if (cognitoDomain && clientId) {
+      sessionStorage.setItem('cricverse360_auth_redirect', nextUrl);
       window.location.href = `${cognitoDomain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Google`;
     } else {
       setError("Google Sign-In is not configured yet. Please use email and password.");

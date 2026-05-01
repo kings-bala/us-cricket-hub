@@ -63,6 +63,7 @@ export default function AnalyzePage() {
 
   const [cloudAnalyzing, setCloudAnalyzing] = useState(false);
   const [cloudError, setCloudError] = useState("");
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
   const router = useRouter();
   const { user, tokens } = useAuth();
 
@@ -79,6 +80,11 @@ export default function AnalyzePage() {
     processVideo,
     drawLandmarks,
   } = usePoseDetection();
+
+  // Dismiss auth prompt when user signs in
+  useEffect(() => {
+    if (user) setShowAuthPrompt(false);
+  }, [user]);
 
   const [historyLoaded, setHistoryLoaded] = useState(false);
 
@@ -461,7 +467,7 @@ export default function AnalyzePage() {
           <button
             onClick={async () => {
               if (!videoFile) return;
-              if (!user) { router.push("/auth"); return; }
+              if (!user) { setShowAuthPrompt(true); return; }
               setCloudAnalyzing(true);
               setCloudError("");
               trackEvent("video_upload_started", { analysisType }, tokens?.accessToken);
@@ -486,7 +492,9 @@ export default function AnalyzePage() {
                   videoKey: uploadRes.key,
                 }, tokens?.accessToken);
                 trackEvent("analysis_completed", { analysisType, score: analysis.overall_score }, tokens?.accessToken);
-                sessionStorage.setItem("latestAnalysis", JSON.stringify(analysis));
+                const analysisJson = JSON.stringify(analysis);
+                sessionStorage.setItem("latestAnalysis", analysisJson);
+                localStorage.setItem("cricverse360_latestAnalysis", analysisJson);
                 router.push("/analysis/results");
               } catch (err) {
                 const msg = err instanceof Error ? err.message : "Analysis failed";
@@ -509,7 +517,40 @@ export default function AnalyzePage() {
           >
             {cloudAnalyzing ? "Uploading & Analyzing..." : "Get AI-Powered Analysis"}
           </button>
-          <p className="text-xs text-slate-500 text-center mt-1">Upload to cloud for AI expert analysis{!user && " (sign in required)"}</p>
+          <p className="text-xs text-slate-500 text-center mt-1">Upload to cloud for AI expert analysis</p>
+          {showAuthPrompt && !user && (
+            <div className="mt-3 bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-blue-500/30 rounded-xl p-5">
+              <div className="text-center mb-3">
+                <p className="text-sm font-semibold text-white mb-1">Sign in to unlock AI-powered analysis</p>
+                <p className="text-xs text-slate-400">Your video stays here. Sign in and click again.</p>
+              </div>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    sessionStorage.setItem('cricverse360_auth_redirect', '/analyze');
+                    const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+                    const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+                    if (cognitoDomain && clientId) {
+                      const redirectUri = `${window.location.origin}/auth/callback`;
+                      window.location.href = `${cognitoDomain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Google`;
+                    } else {
+                      router.push("/auth?next=/analyze");
+                    }
+                  }}
+                  className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-800 py-2.5 rounded-lg font-medium text-sm transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                  Continue with Google
+                </button>
+                <button
+                  onClick={() => router.push("/auth?next=/analyze")}
+                  className="w-full text-center text-xs text-slate-400 hover:text-white py-1.5 transition-colors"
+                >
+                  Sign in with email instead
+                </button>
+              </div>
+            </div>
+          )}
           {cloudError && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mt-2">
               <p className="text-xs text-red-400">{cloudError}</p>
@@ -637,6 +678,40 @@ export default function AnalyzePage() {
                       </div>
                     </div>
                   </div>
+
+                  {!user && (
+                    <div className="bg-gradient-to-br from-emerald-900/30 to-blue-900/30 border border-emerald-500/30 rounded-xl p-6">
+                      <div className="text-center mb-4">
+                        <p className="text-lg font-bold text-white mb-1">Create a free account to save your results</p>
+                        <p className="text-sm text-slate-400">Track progress over time, get AI-powered cloud analysis, and share your score.</p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                          onClick={() => {
+                            sessionStorage.setItem('cricverse360_auth_redirect', '/analyze');
+                            const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+                            const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+                            if (cognitoDomain && clientId) {
+                              const redirectUri = `${window.location.origin}/auth/callback`;
+                              window.location.href = `${cognitoDomain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Google`;
+                            } else {
+                              router.push("/auth?next=/analyze");
+                            }
+                          }}
+                          className="flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-800 px-6 py-2.5 rounded-lg font-medium text-sm transition-colors"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                          Sign up with Google
+                        </button>
+                        <button
+                          onClick={() => router.push("/auth?next=/analyze")}
+                          className="text-sm text-emerald-400 hover:text-emerald-300 px-6 py-2.5 rounded-lg border border-emerald-500/30 hover:border-emerald-500/50 transition-colors"
+                        >
+                          Sign up with email
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-4">
                     {summary.categories.map((result, i) => (

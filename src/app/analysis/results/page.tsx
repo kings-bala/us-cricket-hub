@@ -42,7 +42,8 @@ function UpgradeCard({ tokens, router }: { tokens: { accessToken?: string } | nu
 
   const handleCheckout = async (planKey: string) => {
     if (!tokens?.accessToken) {
-      router.push("/auth");
+      sessionStorage.setItem('cricverse360_auth_redirect', '/analysis/results');
+      router.push("/auth?next=/analysis/results");
       return;
     }
     setLoading(planKey);
@@ -210,7 +211,7 @@ export default function AnalysisResultsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("latestAnalysis");
+    const stored = sessionStorage.getItem("latestAnalysis") || localStorage.getItem("cricverse360_latestAnalysis");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
