@@ -39,10 +39,11 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm">Resources</h4>
             <div className="space-y-2">
-              <span className="block text-sm">Showcase Calendar</span>
-              <span className="block text-sm">Verified Stats Guide</span>
-              <span className="block text-sm">T20 League Info</span>
-              <span className="block text-sm">Academy Directory</span>
+              <Link href="/sample-analysis" className="block text-sm hover:text-white transition-colors">Sample Analysis</Link>
+              <Link href="/leaderboard" className="block text-sm hover:text-white transition-colors">Player Leaderboard</Link>
+              <Link href="/pricing" className="block text-sm hover:text-white transition-colors">Pricing Plans</Link>
+              <Link href="/privacy" className="block text-sm hover:text-white transition-colors">Privacy Policy</Link>
+              <Link href="/terms" className="block text-sm hover:text-white transition-colors">Terms of Service</Link>
             </div>
           </div>
           <div>
@@ -59,7 +60,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
-          <p>&copy; 2026 CricVerse360. All rights reserved. AI-powered cricket analysis platform.</p>
+          <p>&copy; {new Date().getFullYear()} CricVerse360. All rights reserved. AI-powered cricket analysis platform.</p>
         </div>
       </div>
     </footer>
