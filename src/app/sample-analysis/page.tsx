@@ -148,7 +148,7 @@ function CTASection({ variant = "primary" }: { variant?: "primary" | "mid" | "bo
   const subtexts: Record<string, string> = {
     primary: "Upload your batting or bowling video and get a personalized AI report like this one in minutes.",
     mid: "AI catches technique details that the human eye misses. Get objective, data-driven feedback on every shot.",
-    bottom: "Join 500+ players who have already uploaded their videos. Your first analysis is completely free.",
+    bottom: "Upload your first video and get your score completely free. No commitment required.",
   };
   return (
     <div className="rounded-2xl p-8 md:p-10 text-center bg-gradient-to-r from-emerald-900/60 to-blue-900/60 border border-emerald-500/30">
@@ -189,16 +189,15 @@ export default function SampleAnalysisPage() {
         <span className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-400">Full Premium Report</span>
       </div>
 
-      {/* Embedded Video */}
+      {/* Video Source Indicator */}
       <div className="mb-10">
-        <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-800/80 border border-slate-700/50">
-          <iframe
-            src="https://www.youtube.com/embed/EqHVWZqhSBk?rel=0"
-            title="Sample Cricket Batting Video"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="absolute inset-0 w-full h-full"
-          />
+        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 flex flex-col items-center justify-center">
+          <svg className="w-16 h-16 text-emerald-500/60 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <p className="text-white font-semibold text-lg mb-1">Batting Video Analyzed</p>
+          <p className="text-slate-400 text-sm">Side-on angle &middot; 45 seconds &middot; Outdoor nets</p>
+          <p className="text-xs text-slate-500 mt-3">AI analyzed stance, footwork, backlift, shot execution, and follow-through</p>
         </div>
         <p className="text-xs text-slate-500 mt-2 text-center">Sample cricket batting video analyzed by CricVerse360 AI</p>
       </div>
