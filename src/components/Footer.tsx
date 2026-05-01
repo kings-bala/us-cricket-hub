@@ -8,7 +8,7 @@ export default function Footer() {
           <h3 className="text-xl md:text-2xl font-bold text-white mb-2">Get Your Cricket Score Free</h3>
           <p className="text-sm text-slate-300 mb-5">Upload your video and get instant AI feedback in seconds.</p>
           <Link href="/analyze" className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/25">
-            Upload Your Video Now
+            Upload Your Video Free
           </Link>
         </div>
       </div>
@@ -22,26 +22,21 @@ export default function Footer() {
               <span className="font-bold text-lg text-white">CricVerse360</span>
             </div>
             <p className="text-sm">
-              The global cricket platform connecting talent with opportunity. AI-powered video analysis and coaching.
+              AI-powered cricket video analysis. Upload your video, get your score, improve your game.
             </p>
           </div>
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm">Platform</h4>
             <div className="space-y-2">
-              <Link href="/players" className="block text-sm hover:text-white transition-colors">Player Registry</Link>
-              <Link href="/coming-soon" className="block text-sm hover:text-white transition-colors">Agent Marketplace</Link>
-              <Link href="/coming-soon" className="block text-sm hover:text-white transition-colors">Pro Scouting</Link>
-              <Link href="/coming-soon" className="block text-sm hover:text-white transition-colors">Sponsorships</Link>
               <Link href="/analyze" className="block text-sm hover:text-white transition-colors">AI Video Analysis</Link>
-              <Link href="/coaches" className="block text-sm hover:text-white transition-colors">Coach Directory</Link>
+              <Link href="/sample-analysis" className="block text-sm hover:text-white transition-colors">Sample Analysis</Link>
+              <Link href="/leaderboard" className="block text-sm hover:text-white transition-colors">Leaderboard</Link>
+              <Link href="/pricing" className="block text-sm hover:text-white transition-colors">Pricing</Link>
             </div>
           </div>
           <div>
-            <h4 className="text-white font-semibold mb-3 text-sm">Resources</h4>
+            <h4 className="text-white font-semibold mb-3 text-sm">Legal</h4>
             <div className="space-y-2">
-              <Link href="/sample-analysis" className="block text-sm hover:text-white transition-colors">Sample Analysis</Link>
-              <Link href="/leaderboard" className="block text-sm hover:text-white transition-colors">Player Leaderboard</Link>
-              <Link href="/pricing" className="block text-sm hover:text-white transition-colors">Pricing Plans</Link>
               <Link href="/privacy" className="block text-sm hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="block text-sm hover:text-white transition-colors">Terms of Service</Link>
               <Link href="/processors" className="block text-sm hover:text-white transition-colors">Data Processors</Link>
@@ -52,17 +47,11 @@ export default function Footer() {
             <div className="space-y-2">
               <span className="block text-sm">info@cricverse360.com</span>
               <span className="block text-sm mt-2">Available Worldwide</span>
-              <div className="flex gap-3 mt-3">
-                <span className="text-xs bg-slate-800 px-2 py-1 rounded">Twitter</span>
-                <span className="text-xs bg-slate-800 px-2 py-1 rounded">Instagram</span>
-                <span className="text-xs bg-slate-800 px-2 py-1 rounded">YouTube</span>
-              </div>
             </div>
           </div>
         </div>
         <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm space-y-2">
-          <p>&copy; {new Date().getFullYear()} CricVerse360. All rights reserved. AI-powered cricket analysis platform.</p>
-          <p className="text-xs text-slate-500">A product of Rising Star Cricket League</p>
+          <p>&copy; {new Date().getFullYear()} CricVerse360. All rights reserved.</p>
           <div className="flex justify-center gap-4 text-xs text-slate-500">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>

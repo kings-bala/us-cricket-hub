@@ -920,31 +920,9 @@ export default function AnalyzePage() {
                 </svg>
               </div>
               <p className="text-slate-400 font-medium">Upload a video to get started</p>
-              <p className="text-sm text-slate-500 mt-1">
-                Our AI will detect your body pose and analyze your cricket technique
+              <p className="text-sm text-slate-500 mt-2">
+                AI analyzes your movement and gives feedback on what to fix and how to improve.
               </p>
-              <div className="flex flex-wrap gap-2 justify-center mt-4">
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Pose detection</span>
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Joint angle analysis</span>
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Technique scoring</span>
-                <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Drill recommendations</span>
-              </div>
-              <div className="mt-6 p-4 bg-blue-500/5 border border-blue-500/10 rounded-lg max-w-md mx-auto">
-                <p className="text-xs text-blue-400 font-medium mb-2">How it works</p>
-                <ul className="text-xs text-slate-400 space-y-1.5">
-                  <li className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">1.</span> Upload a video of batting, bowling, or fielding</li>
-                  <li className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">2.</span> Our AI analyzes your technique frame by frame</li>
-                  <li className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">3.</span> Get your score, specific feedback, and drill recommendations</li>
-                </ul>
-                <div className="mt-3 pt-3 border-t border-blue-500/10">
-                  <p className="text-xs text-slate-500 font-medium mb-1">For best results:</p>
-                  <ul className="text-xs text-slate-500 space-y-1">
-                    <li>Record full body — side or front angle</li>
-                    <li>Use good lighting</li>
-                    <li>Max 60 seconds</li>
-                  </ul>
-                </div>
-              </div>
             </div>
           )}
 
@@ -953,7 +931,7 @@ export default function AnalyzePage() {
               <p className="text-slate-400 font-medium">
                 Video loaded! Select analysis type and click &quot;Get AI Analysis&quot;
               </p>
-              <p className="text-sm text-slate-500 mt-1">The AI will process your video frame by frame</p>
+              <p className="text-sm text-slate-500 mt-1">AI will analyze your technique and give specific feedback</p>
             </div>
           )}
         </div>

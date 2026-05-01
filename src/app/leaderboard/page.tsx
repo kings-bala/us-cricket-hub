@@ -17,9 +17,100 @@ interface LeaderboardPlayer {
   bestBowlingScore?: number;
 }
 
-const LEADERBOARD_DATA: LeaderboardPlayer[] = [];
+const LEADERBOARD_DATA: LeaderboardPlayer[] = [
+  {
+    rank: 1,
+    name: "Sample Player 1",
+    username: "sample-player-1",
+    role: "Batsman",
+    score: 91,
+    analysisType: "batting",
+    location: "Sample Location",
+    featured: true,
+    badges: ["Top 10 This Week"],
+  },
+  {
+    rank: 2,
+    name: "Sample Player 2",
+    username: "sample-player-2",
+    role: "Bowler",
+    score: 88,
+    analysisType: "bowling",
+    location: "Sample Location",
+    featured: false,
+    badges: ["Top 10 This Week"],
+  },
+  {
+    rank: 3,
+    name: "Sample Player 3",
+    username: "sample-player-3",
+    role: "All-Rounder",
+    score: 86,
+    analysisType: "batting",
+    location: "Sample Location",
+    featured: false,
+    badges: ["Top 10 This Week"],
+  },
+  {
+    rank: 4,
+    name: "Sample Player 4",
+    username: "sample-player-4",
+    role: "Batsman",
+    score: 82,
+    analysisType: "batting",
+    location: "Sample Location",
+    featured: false,
+    badges: [],
+  },
+  {
+    rank: 5,
+    name: "Sample Player 5",
+    username: "sample-player-5",
+    role: "Bowler",
+    score: 79,
+    analysisType: "bowling",
+    location: "Sample Location",
+    featured: false,
+    badges: [],
+  },
+];
 
-const ALL_TIME_DATA: LeaderboardPlayer[] = [];
+const ALL_TIME_DATA: LeaderboardPlayer[] = [
+  {
+    rank: 1,
+    name: "Sample Player 1",
+    username: "sample-player-1",
+    role: "Batsman",
+    score: 91,
+    analysisType: "batting",
+    location: "Sample Location",
+    featured: true,
+    badges: ["Featured Player"],
+  },
+  {
+    rank: 2,
+    name: "Sample Player 2",
+    username: "sample-player-2",
+    role: "Bowler",
+    score: 88,
+    analysisType: "bowling",
+    location: "Sample Location",
+    featured: false,
+    badges: ["Best Bowling Score"],
+    bestBowlingScore: 88,
+  },
+  {
+    rank: 3,
+    name: "Sample Player 3",
+    username: "sample-player-3",
+    role: "All-Rounder",
+    score: 86,
+    analysisType: "batting",
+    location: "Sample Location",
+    featured: false,
+    badges: [],
+  },
+];
 
 function getRankBadge(rank: number) {
   if (rank === 1) return { emoji: "\u{1F947}", bg: "bg-yellow-500/20", border: "border-yellow-500/40", text: "text-yellow-400" };
@@ -93,10 +184,10 @@ export default function LeaderboardPage() {
             Get Discovered on CricVerse360
           </h1>
           <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-4">
-            Upload your video, earn your score, and appear among top players of the week. Coaches and scouts are watching.
+            Upload your video, earn your score, and appear among top players of the week.
           </p>
           <p className="text-sm text-emerald-400 font-medium mb-8">
-            Top players get featured, badged, and discovered by academies worldwide.
+            Top players get featured and climb the rankings.
           </p>
           <Link
             href="/analyze"
@@ -273,7 +364,7 @@ export default function LeaderboardPage() {
               Upload your cricket video, get your AI score, and climb the leaderboard.
             </p>
             <p className="text-sm text-emerald-400 font-medium mb-6">
-              Top players get featured and discovered by coaches and academies.
+              Top players get featured and climb the rankings.
             </p>
             <Link
               href="/analyze"

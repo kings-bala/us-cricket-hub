@@ -59,7 +59,7 @@ const plans = [
     name: "Pro Plus",
     price: "$19.99",
     period: "/mo",
-    description: "For academies & professionals",
+    description: "For dedicated players",
     planKey: "pro_plus",
     features: [
       "15 video analyses/month",
@@ -67,8 +67,7 @@ const plans = [
       "Priority processing",
       "Scout visibility boost",
       "Advanced improvement plan",
-      "Coach matching priority",
-      "Academy team management",
+      "Detailed trend analysis",
     ],
     notIncluded: [] as { label: string; tag: string }[],
     cta: "Get Pro Plus",
