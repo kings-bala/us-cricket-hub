@@ -128,7 +128,7 @@ export default function HeroSlider() {
             IPL, BBL, CPL, PSL, SA20, The Hundred, and more.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8 pointer-events-auto">
-            <a href="/auth/register" className="bg-emerald-500 hover:bg-emerald-400 text-white px-7 py-3 rounded-full font-semibold transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 text-sm">
+            <a href="/auth" className="bg-emerald-500 hover:bg-emerald-400 text-white px-7 py-3 rounded-full font-semibold transition-all shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 text-sm">
               Get Started Free
             </a>
             <a href="/analyze" className="bg-white/10 hover:bg-white/15 backdrop-blur-sm text-white px-7 py-3 rounded-full font-semibold border border-white/15 hover:border-white/25 transition-all text-sm">

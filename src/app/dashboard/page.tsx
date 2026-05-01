@@ -240,6 +240,27 @@ export default function ProgressDashboard() {
       </section>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Complete Your Profile — optional, non-blocking */}
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">Complete your player profile</p>
+              <p className="text-xs text-slate-400">Add your role, style, and age group to get personalized coaching feedback</p>
+            </div>
+          </div>
+          <Link
+            href="/profile/edit"
+            className="text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap border border-blue-500/30"
+          >
+            Complete Profile
+          </Link>
+        </div>
+
         {/* Empty state */}
         {totalAnalyses === 0 ? (
           <div className="text-center py-20">
