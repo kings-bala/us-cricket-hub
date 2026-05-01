@@ -534,7 +534,7 @@ export default function AnalyzePage() {
                     if (googleClientId) {
                       sessionStorage.setItem('cricverse360_auth_flow', 'google_direct');
                       const redirectUri = `${window.location.origin}/auth/callback`;
-                      const scopes = ["openid", "email", "profile", "https://www.googleapis.com/auth/generative-language"].join(" ");
+                      const scopes = ["openid", "email", "profile", "https://www.googleapis.com/auth/generative-language.retriever"].join(" ");
                       window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent`;
                     } else {
                       router.push("/auth?next=/analyze");
