@@ -44,7 +44,7 @@ function AuthPageInner() {
         "openid",
         "email",
         "profile",
-        "https://www.googleapis.com/auth/generative-language",
+        "https://www.googleapis.com/auth/generative-language.retriever",
       ].join(" ");
       window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent`;
     } else {
