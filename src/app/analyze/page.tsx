@@ -283,7 +283,7 @@ export default function AnalyzePage() {
           Get your cricket technique score and personalized coaching feedback.
         </p>
         <p className="text-sm text-slate-500">
-          On-device analysis runs in your browser. Cloud AI uses Google Gemini for detailed expert feedback.
+          Upload your video and get expert AI coaching feedback in under 60 seconds.
         </p>
       </div>
 
@@ -444,27 +444,6 @@ export default function AnalyzePage() {
           )}
 
           <button
-            onClick={handleAnalyze}
-            disabled={!videoFile || isProcessing || modelLoading}
-            className={`w-full py-3 rounded-xl font-semibold transition-colors ${
-              videoFile && !isProcessing && !modelLoading
-                ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-                : "bg-slate-700 text-slate-500 cursor-not-allowed"
-            }`}
-          >
-            {modelLoading
-              ? "Loading AI Model..."
-              : isProcessing
-                ? `Analyzing... ${progress}%`
-                : "Analyze Video"}
-          </button>
-
-          {/* Cloud AI Analysis */}
-          <div className="mt-3 relative">
-            <div className="absolute inset-0 flex items-center" aria-hidden="true"><div className="w-full border-t border-slate-700" /></div>
-            <div className="relative flex justify-center"><span className="bg-slate-800 px-3 text-xs text-slate-500">or</span></div>
-          </div>
-          <button
             onClick={async () => {
               if (!videoFile) return;
               if (!user) { setShowAuthPrompt(true); return; }
@@ -512,15 +491,14 @@ export default function AnalyzePage() {
               }
             }}
             disabled={!videoFile || cloudAnalyzing}
-            className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+            className={`w-full py-3 rounded-xl font-semibold text-lg transition-colors ${
               videoFile && !cloudAnalyzing
-                ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                ? "bg-emerald-500 hover:bg-emerald-600 text-white"
                 : "bg-slate-700 text-slate-500 cursor-not-allowed"
             }`}
           >
-            {cloudAnalyzing ? "Uploading & Analyzing..." : "Get AI-Powered Analysis"}
+            {cloudAnalyzing ? "Uploading & Analyzing..." : "Get AI Analysis"}
           </button>
-          <p className="text-xs text-slate-500 text-center mt-1">Upload to cloud for AI expert analysis</p>
           {showAuthPrompt && !user && (
             <div className="mt-3 bg-gradient-to-br from-blue-900/40 to-purple-900/40 border border-blue-500/30 rounded-xl p-5">
               <div className="text-center mb-3">
@@ -952,13 +930,20 @@ export default function AnalyzePage() {
                 <span className="text-xs bg-slate-700/50 px-3 py-1 rounded-full text-slate-400">Drill recommendations</span>
               </div>
               <div className="mt-6 p-4 bg-blue-500/5 border border-blue-500/10 rounded-lg max-w-md mx-auto">
-                <p className="text-xs text-blue-400 font-medium mb-1">How it works</p>
-                <p className="text-xs text-slate-400">
-                  1. Upload a video of batting, bowling, or fielding<br />
-                  2. AI detects 33 body landmarks using MediaPipe Pose<br />
-                  3. Joint angles are measured and compared to ideal technique<br />
-                  4. Get scores, specific feedback, and drill recommendations
-                </p>
+                <p className="text-xs text-blue-400 font-medium mb-2">How it works</p>
+                <ul className="text-xs text-slate-400 space-y-1.5">
+                  <li className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">1.</span> Upload a video of batting, bowling, or fielding</li>
+                  <li className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">2.</span> Our AI analyzes your technique frame by frame</li>
+                  <li className="flex items-start gap-2"><span className="text-blue-400 mt-0.5">3.</span> Get your score, specific feedback, and drill recommendations</li>
+                </ul>
+                <div className="mt-3 pt-3 border-t border-blue-500/10">
+                  <p className="text-xs text-slate-500 font-medium mb-1">For best results:</p>
+                  <ul className="text-xs text-slate-500 space-y-1">
+                    <li>Record full body — side or front angle</li>
+                    <li>Use good lighting</li>
+                    <li>Max 60 seconds</li>
+                  </ul>
+                </div>
               </div>
             </div>
           )}
@@ -966,7 +951,7 @@ export default function AnalyzePage() {
           {!isProcessing && !summary && videoUrl && (
             <div className="glass-card rounded-xl p-8 text-center">
               <p className="text-slate-400 font-medium">
-                Video loaded! Select analysis type and click &quot;Analyze Video&quot;
+                Video loaded! Select analysis type and click &quot;Get AI Analysis&quot;
               </p>
               <p className="text-sm text-slate-500 mt-1">The AI will process your video frame by frame</p>
             </div>
