@@ -29,9 +29,9 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-3 text-sm">Platform</h4>
             <div className="space-y-2">
               <Link href="/players" className="block text-sm hover:text-white transition-colors">Player Registry</Link>
-              <Link href="/agents" className="block text-sm hover:text-white transition-colors">Agent Marketplace</Link>
-              <Link href="/scouting" className="block text-sm hover:text-white transition-colors">Pro Scouting</Link>
-              <Link href="/sponsors" className="block text-sm hover:text-white transition-colors">Sponsorships</Link>
+              <Link href="/coming-soon" className="block text-sm hover:text-white transition-colors">Agent Marketplace</Link>
+              <Link href="/coming-soon" className="block text-sm hover:text-white transition-colors">Pro Scouting</Link>
+              <Link href="/coming-soon" className="block text-sm hover:text-white transition-colors">Sponsorships</Link>
               <Link href="/analyze" className="block text-sm hover:text-white transition-colors">AI Video Analysis</Link>
               <Link href="/coaches" className="block text-sm hover:text-white transition-colors">Coach Directory</Link>
             </div>
