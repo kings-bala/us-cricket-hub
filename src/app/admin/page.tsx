@@ -49,13 +49,36 @@ const EVENT_LABELS: Record<string, string> = {
   coach_request_submitted: "Coach Request",
 };
 
+interface FeaturedPlayer {
+  name: string;
+  username: string;
+  role: string;
+  score: number;
+  location: string;
+  featured: boolean;
+}
+
+const ADMIN_PLAYERS: FeaturedPlayer[] = [
+  { name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 92, location: "Mumbai, India", featured: true },
+  { name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 89, location: "Sydney, Australia", featured: true },
+  { name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 87, location: "Delhi, India", featured: false },
+  { name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 85, location: "London, UK", featured: false },
+  { name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 84, location: "Lahore, Pakistan", featured: true },
+  { name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 82, location: "Bangalore, India", featured: false },
+  { name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 81, location: "Cape Town, SA", featured: false },
+  { name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 80, location: "Chennai, India", featured: false },
+  { name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 79, location: "Auckland, NZ", featured: false },
+  { name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 78, location: "Karachi, Pakistan", featured: false },
+];
+
 export default function AdminDashboardPage() {
   const { user, tokens, loading } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [error, setError] = useState("");
   const [fetching, setFetching] = useState(true);
-  const [tab, setTab] = useState<"overview" | "funnel" | "events">("overview");
+  const [tab, setTab] = useState<"overview" | "funnel" | "events" | "players">("overview");
+  const [players, setPlayers] = useState<FeaturedPlayer[]>(ADMIN_PLAYERS);
 
   useEffect(() => {
     if (loading) return;
@@ -128,8 +151,8 @@ export default function AdminDashboardPage() {
       <h1 className="text-3xl font-bold text-white mb-8">Admin Dashboard</h1>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 mb-8">
-        {(["overview", "funnel", "events"] as const).map((t) => (
+      <div className="flex gap-2 mb-8 flex-wrap">
+        {(["overview", "funnel", "events", "players"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -139,7 +162,7 @@ export default function AdminDashboardPage() {
                 : "bg-slate-800/50 text-slate-400 hover:text-white"
             }`}
           >
-            {t === "overview" ? "Overview" : t === "funnel" ? "Conversion Funnel" : "Event Log"}
+            {t === "overview" ? "Overview" : t === "funnel" ? "Conversion Funnel" : t === "events" ? "Event Log" : "Featured Players"}
           </button>
         ))}
       </div>
@@ -358,6 +381,99 @@ export default function AdminDashboardPage() {
       {tab === "events" && !analytics && (
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
           <p className="text-slate-400">No events recorded yet.</p>
+        </div>
+      )}
+
+      {/* Featured Players Tab */}
+      {tab === "players" && (
+        <div className="space-y-6">
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-white">Manage Featured Players</h2>
+                <p className="text-sm text-slate-400 mt-1">Toggle featured status for leaderboard players. Featured players get a badge and higher visibility.</p>
+              </div>
+              <div className="text-sm text-slate-400">
+                {players.filter(p => p.featured).length} featured
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-700">
+                    <th className="text-left py-2 pr-4">Player</th>
+                    <th className="text-left py-2 pr-4">Role</th>
+                    <th className="text-left py-2 pr-4">Score</th>
+                    <th className="text-left py-2 pr-4">Location</th>
+                    <th className="text-left py-2 pr-4">Status</th>
+                    <th className="text-right py-2">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {players.map((p) => (
+                    <tr key={p.username} className="text-slate-300 border-b border-slate-800">
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xs shrink-0">
+                            {p.name.split(" ").map((n) => n[0]).join("")}
+                          </div>
+                          <span className="font-medium text-white">{p.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4 capitalize">{p.role}</td>
+                      <td className="py-3 pr-4">
+                        <span className={`font-bold ${p.score >= 85 ? "text-emerald-400" : p.score >= 70 ? "text-blue-400" : "text-amber-400"}`}>
+                          {p.score}
+                        </span>
+                      </td>
+                      <td className="py-3 pr-4 text-slate-400">{p.location}</td>
+                      <td className="py-3 pr-4">
+                        {p.featured ? (
+                          <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full">Featured</span>
+                        ) : (
+                          <span className="text-xs bg-slate-700/50 text-slate-500 border border-slate-600/30 px-2 py-0.5 rounded-full">Standard</span>
+                        )}
+                      </td>
+                      <td className="py-3 text-right">
+                        <button
+                          onClick={() => {
+                            setPlayers(prev => prev.map(pl =>
+                              pl.username === p.username ? { ...pl, featured: !pl.featured } : pl
+                            ));
+                          }}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                            p.featured
+                              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-500/30"
+                              : "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 border border-emerald-500/30"
+                          }`}
+                        >
+                          {p.featured ? "Unfeature" : "Feature"}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <h3 className="text-lg font-bold text-white mb-3">Badge Guide</h3>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-xs bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 px-2 py-0.5 rounded">Top 10 This Week</span>
+                <span className="text-xs text-slate-400">Auto-assigned to top 10 weekly</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded">Featured Player</span>
+                <span className="text-xs text-slate-400">Admin-toggled featured status</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-xs bg-purple-500/15 text-purple-400 border border-purple-500/30 px-2 py-0.5 rounded">Best Bowling Score</span>
+                <span className="text-xs text-slate-400">Highest bowling analysis score</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
