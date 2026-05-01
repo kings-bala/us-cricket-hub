@@ -497,9 +497,21 @@ export default function AnalysisResultsPage() {
       {/* Bottom Upgrade Card for free users */}
       {isFree && <UpgradeCard tokens={tokens} router={router} />}
 
-      {/* Disclaimer */}
-      <p className="text-xs text-slate-500 text-center mb-8">
-        {a.disclaimer || "AI analysis is for training guidance only and does not guarantee selection, scouting, or professional performance outcomes."}
+      {/* Trust + Disclaimer */}
+      <div className="flex flex-wrap justify-center gap-3 mb-4">
+        {[
+          { icon: "\u{1F512}", text: "Secure Upload" },
+          { icon: "\u{1F3CF}", text: "Training Guidance" },
+          { icon: "\u{1F6E1}", text: "No Guarantees" },
+        ].map((b) => (
+          <div key={b.text} className="flex items-center gap-1 text-xs text-slate-500">
+            <span>{b.icon}</span>
+            <span>{b.text}</span>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-slate-500 text-center mb-8 max-w-2xl mx-auto">
+        {a.disclaimer || "CricVerse360 AI analysis is for cricket training guidance only. It does not guarantee selection, scouting, or professional outcomes. Built for aspiring cricket players."}
       </p>
 
       {/* Actions */}

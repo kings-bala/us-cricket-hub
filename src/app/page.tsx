@@ -74,6 +74,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Trust Badges */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+          {[
+            { icon: "\u{1F512}", text: "Secure Video Upload" },
+            { icon: "\u{1F3AF}", text: "AI Training Guidance" },
+            { icon: "\u{1F3CF}", text: "Built for Aspiring Players" },
+            { icon: "\u{1F4B0}", text: "First Analysis Free" },
+            { icon: "\u{2716}", text: "Cancel Anytime" },
+            { icon: "\u{1F6E1}", text: "No Selection Guarantees" },
+          ].map((badge) => (
+            <div key={badge.text} className="flex items-center gap-1.5 text-xs text-slate-400">
+              <span>{badge.icon}</span>
+              <span>{badge.text}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Player Journey — 5 Steps */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-14">
@@ -425,7 +444,7 @@ export default function Home() {
               { name: "James W.", role: "Club Bowler, Sydney", quote: "CricVerse360 showed me my front arm was dropping too early. The drill recommendations were spot on. I am bowling faster and more accurately now.", rating: 5, verified: true },
               { name: "Coach Malik", role: "Academy Director, Lahore", quote: "I use CricVerse360 to give every student objective feedback. The AI analysis saves me hours and helps me focus coaching on what matters most.", rating: 5, verified: true },
               { name: "Priya S.", role: "State Player, Chennai", quote: "I was skeptical about AI cricket analysis but the timestamp observations were incredibly accurate. It caught my balance issue at the crease that I never noticed.", rating: 4, verified: true },
-              { name: "Oliver T.", role: "Junior Coach, London", quote: "The shareable player cards are brilliant for my students. Parents love seeing objective data about their child's progress. Worth every penny.", rating: 5, verified: true },
+              { name: "Meena D.", role: "Cricket Parent, Brisbane", quote: "As a parent, I wanted objective feedback on my son's technique. CricVerse360 gave us a clear report we could share with his academy coach. It helped us focus practice time on what actually matters.", rating: 5, verified: true },
               { name: "Hassan R.", role: "Fast Bowler, Karachi", quote: "I uploaded my bowling video and got specific feedback about my release point. The recommended drills actually made a difference in my next match.", rating: 5, verified: true },
             ].map((t) => (
               <div key={t.name} className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6">
