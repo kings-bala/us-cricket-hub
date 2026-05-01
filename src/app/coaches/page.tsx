@@ -94,9 +94,8 @@ export default function CoachesPage() {
           <p className="text-slate-300 max-w-2xl mx-auto mb-6">
             Connect with world-class coaches. Get personalized training to take your game to the next level.
           </p>
-          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5">
-            <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-            <span className="text-sm text-emerald-400 font-medium">{coaches.filter((c) => c.availability === "available").length} coaches available now</span>
+          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5">
+            <span className="text-sm text-blue-400 font-medium">Early Access &mdash; Coaches can list their services</span>
           </div>
         </div>
       </section>

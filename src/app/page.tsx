@@ -342,8 +342,8 @@ export default function Home() {
           <p className="text-slate-300 mb-2 max-w-lg mx-auto">
             Upload your video and get instant AI feedback in seconds.
           </p>
-          <p className="text-sm text-slate-400 italic mb-6">
-            &ldquo;I wish I had this when I was training. It would have saved me years of practicing the wrong things.&rdquo;
+          <p className="text-sm text-slate-400 mb-6">
+            Upload your video now and start improving today.
           </p>
           <Link
             href="/analyze"
@@ -504,19 +504,16 @@ export default function Home() {
             <div className="order-2 md:order-1">
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { title: "Batting Coach", location: "Mumbai, India", sessions: "120+", rating: "4.9" },
-                  { title: "Bowling Coach", location: "Sydney, Australia", sessions: "95+", rating: "4.8" },
-                  { title: "All-Round Coach", location: "London, UK", sessions: "80+", rating: "4.7" },
-                  { title: "Fielding Coach", location: "Cape Town, SA", sessions: "60+", rating: "4.9" },
+                  { title: "Batting Coaches", desc: "Technique, stance, footwork" },
+                  { title: "Bowling Coaches", desc: "Pace, spin, swing" },
+                  { title: "All-Round Coaches", desc: "Complete game development" },
+                  { title: "Fielding Coaches", desc: "Catching, throwing, agility" },
                 ].map((coach) => (
                   <div key={coach.title} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/50 transition-all">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 mb-3" />
                     <p className="text-white font-semibold text-sm">{coach.title}</p>
-                    <p className="text-xs text-slate-400 mt-1">{coach.location}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-emerald-400">{coach.sessions} sessions</span>
-                      <span className="text-xs text-yellow-400">{coach.rating}</span>
-                    </div>
+                    <p className="text-xs text-slate-400 mt-1">{coach.desc}</p>
+                    <p className="text-xs text-emerald-400 mt-2">Available worldwide</p>
                   </div>
                 ))}
               </div>

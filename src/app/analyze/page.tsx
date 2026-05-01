@@ -769,7 +769,7 @@ export default function AnalyzePage() {
                       </Link>
                       <Link href="/analyze/compare" className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-4 hover:border-cyan-500/40 transition-colors">
                         <p className="text-sm font-medium text-cyan-400">Compare with Pros</p>
-                        <p className="text-xs text-slate-400 mt-1">See how you compare to Kohli, Bumrah, and more</p>
+                        <p className="text-xs text-slate-400 mt-1">See how you compare to elite-level benchmarks</p>
                       </Link>
                       <Link href="/analyze/progress" className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4 hover:border-amber-500/40 transition-colors">
                         <p className="text-sm font-medium text-amber-400">View Progress</p>

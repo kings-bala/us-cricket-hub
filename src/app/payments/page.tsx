@@ -52,28 +52,9 @@ const FEE_STRUCTURES: FeeStructure[] = [
   { id: "2on1", label: "2:1 Group Session", amounts: { Beginner: 20, Intermediate: 30, Advanced: 40 }, description: "Two students per coach session for focused training (1 hour)", interval: "session" },
 ];
 
-const MOCK_STUDENT_FEES: StudentFee[] = [
-  { studentId: "p1", studentName: "Arjun Patel", avatar: "/avatars/player1.jpg", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
-  { studentId: "p2", studentName: "Jake Thompson", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "paid", paidDate: "2026-02-15", receiptId: "REC-2026-0215" },
-  { studentId: "p3", studentName: "Rashid Mohammed", avatar: "", feeType: "quarterly", amount: 200, dueDate: "2026-03-01", status: "upcoming" },
-  { studentId: "p4", studentName: "Kieron Baptiste", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-15", status: "overdue" },
-  { studentId: "p5", studentName: "Sipho Ndlovu", avatar: "", feeType: "1on1", amount: 40, dueDate: "2026-02-20", status: "paid", paidDate: "2026-02-20", receiptId: "REC-2026-0220" },
-  { studentId: "p8", studentName: "Rahul Desai", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
-  { studentId: "p12", studentName: "Aarav Gupta", avatar: "", feeType: "2on1", amount: 30, dueDate: "2026-02-22", status: "paid", paidDate: "2026-02-22", receiptId: "REC-2026-0222" },
-  { studentId: "p13", studentName: "Navjot Gill", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
-  { studentId: "p10", studentName: "Neel Sharma", avatar: "", feeType: "monthly", amount: 75, dueDate: "2026-02-28", status: "due" },
-  { studentId: "p10", studentName: "Neel Sharma", avatar: "", feeType: "1on1", amount: 40, dueDate: "2026-03-05", status: "upcoming" },
-];
-
-const MOCK_PAYMENTS: PaymentRecord[] = [
-  { id: "pay_1", studentName: "Aarav Gupta", feeType: "2on1", amount: 30, date: "2026-02-22", status: "succeeded", receiptId: "REC-2026-0222", method: "Visa ****4242" },
-  { id: "pay_2", studentName: "Sipho Ndlovu", feeType: "1on1", amount: 40, date: "2026-02-20", status: "succeeded", receiptId: "REC-2026-0220", method: "Mastercard ****8888" },
-  { id: "pay_3", studentName: "Jake Thompson", feeType: "monthly", amount: 75, date: "2026-02-15", status: "succeeded", receiptId: "REC-2026-0215", method: "Visa ****1234" },
-  { id: "pay_4", studentName: "Arjun Patel", feeType: "monthly", amount: 75, date: "2026-01-28", status: "succeeded", receiptId: "REC-2026-0128", method: "Amex ****5678" },
-  { id: "pay_5", studentName: "Rashid Mohammed", feeType: "quarterly", amount: 200, date: "2026-01-01", status: "succeeded", receiptId: "REC-2026-0101", method: "Visa ****9012" },
-  { id: "pay_6", studentName: "Navjot Gill", feeType: "monthly", amount: 75, date: "2026-01-28", status: "succeeded", receiptId: "REC-2026-0128B", method: "Visa ****3456" },
-  { id: "pay_7", studentName: "Neel Sharma", feeType: "monthly", amount: 75, date: "2026-01-28", status: "succeeded", receiptId: "REC-2026-0128C", method: "Visa ****7890" },
-];
+// Student fee and payment data will be populated from real records
+const MOCK_STUDENT_FEES: StudentFee[] = [];
+const MOCK_PAYMENTS: PaymentRecord[] = [];
 
 const statusConfig: Record<StudentFee["status"], { label: string; color: string; bg: string }> = {
   paid: { label: "Paid", color: "text-emerald-400", bg: "bg-emerald-500/20 border-emerald-500/30" },

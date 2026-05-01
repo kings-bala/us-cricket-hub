@@ -66,18 +66,8 @@ interface FeaturedPlayer {
   featured: boolean;
 }
 
-const ADMIN_PLAYERS: FeaturedPlayer[] = [
-  { name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 92, location: "Mumbai, India", featured: true },
-  { name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 89, location: "Sydney, Australia", featured: true },
-  { name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 87, location: "Delhi, India", featured: false },
-  { name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 85, location: "London, UK", featured: false },
-  { name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 84, location: "Lahore, Pakistan", featured: true },
-  { name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 82, location: "Bangalore, India", featured: false },
-  { name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 81, location: "Cape Town, SA", featured: false },
-  { name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 80, location: "Chennai, India", featured: false },
-  { name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 79, location: "Auckland, NZ", featured: false },
-  { name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 78, location: "Karachi, Pakistan", featured: false },
-];
+// Admin player list will be populated from real user data
+const ADMIN_PLAYERS: FeaturedPlayer[] = [];
 
 export default function AdminDashboardPage() {
   const { user, tokens, loading } = useAuth();

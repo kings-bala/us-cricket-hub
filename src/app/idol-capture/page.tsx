@@ -116,6 +116,10 @@ export default function IdolCapturePage() {
           <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-full border border-amber-500/30">Pick Your Legends</span>
         </div>
         <p className="text-slate-400">Search former cricket legends and select one as your idol for each skill. Mirror their technique and routines.</p>
+        <p className="text-xs text-slate-500 mt-2 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2">
+          Educational reference only. Training routines are compiled from publicly available coaching resources and YouTube videos.
+          The cricketers listed are not affiliated with, endorsed by, or partnered with CricVerse360.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
