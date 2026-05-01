@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PageViewTracker from "@/components/PageViewTracker";
+import TrackClick from "@/components/TrackClick";
 
 export default function Home() {
   return (
@@ -33,12 +34,14 @@ export default function Home() {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
+              <TrackClick
                 href="/analyze"
+                event="hero_cta_clicked"
+                data={{ cta: "Get Your Cricket Score Free" }}
                 className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
               >
                 Get Your Cricket Score Free
-              </Link>
+              </TrackClick>
               <Link
                 href="/sample-analysis"
                 className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold border border-slate-700 transition-colors text-lg"

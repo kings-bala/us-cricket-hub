@@ -34,18 +34,26 @@ interface AnalyticsData {
 
 const EVENT_LABELS: Record<string, string> = {
   landing_page_viewed: "Landing Page",
+  hero_cta_clicked: "Hero CTA Click",
   sample_analysis_viewed: "Sample Analysis",
-  signup_completed: "Signup",
-  video_uploaded: "Video Upload",
+  upload_started: "Upload Started",
+  video_uploaded: "Video Uploaded",
+  analysis_started: "Analysis Started",
   analysis_completed: "Analysis Done",
   report_viewed: "Report Viewed",
   paywall_viewed: "Paywall Shown",
+  unlock_clicked: "Unlock Clicked",
   checkout_started: "Checkout Started",
+  one_time_purchase_completed: "One-Time Purchase",
   purchase_completed: "Purchase Done",
   subscription_completed: "Subscription",
+  share_prompt_viewed: "Share Prompt",
   share_card_created: "Card Created",
+  share_card_downloaded: "Card Downloaded",
   share_card_shared: "Card Shared",
+  share_link_copied: "Link Copied",
   leaderboard_viewed: "Leaderboard",
+  profile_shared: "Profile Shared",
   coach_request_submitted: "Coach Request",
 };
 
@@ -288,41 +296,22 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Key Metrics */}
+          {/* Key Conversion Metrics */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              {
-                label: "Landing to Signup",
-                value: analytics.funnel[0]?.count && analytics.funnel[2]?.count
-                  ? ((analytics.funnel[2].count / analytics.funnel[0].count) * 100).toFixed(1) + "%"
-                  : "0%",
-                color: "text-blue-400",
-              },
-              {
-                label: "Signup to Upload",
-                value: analytics.funnel[2]?.count && analytics.funnel[3]?.count
-                  ? ((analytics.funnel[3].count / analytics.funnel[2].count) * 100).toFixed(1) + "%"
-                  : "0%",
-                color: "text-purple-400",
-              },
-              {
-                label: "Paywall to Purchase",
-                value: analytics.funnel[6]?.count && (analytics.funnel[8]?.count + analytics.funnel[9]?.count)
-                  ? (((analytics.funnel[8].count + analytics.funnel[9].count) / analytics.funnel[6].count) * 100).toFixed(1) + "%"
-                  : "0%",
-                color: "text-emerald-400",
-              },
-              {
-                label: "Analysis to Share",
-                value: analytics.funnel[4]?.count && analytics.funnel[11]?.count
-                  ? ((analytics.funnel[11].count / analytics.funnel[4].count) * 100).toFixed(1) + "%"
-                  : "0%",
-                color: "text-amber-400",
-              },
-            ].map((m) => (
+            {(() => {
+              const e = analytics.allEvents;
+              const pct = (num: number, den: number) => den > 0 ? ((num / den) * 100).toFixed(1) + "%" : "0%";
+              return [
+                { label: "Upload Conversion", sub: "Landing \u2192 Upload", value: pct(e["video_uploaded"] || 0, e["landing_page_viewed"] || 0), color: "text-blue-400" },
+                { label: "Paywall \u2192 Purchase", sub: "Paywall view \u2192 paid", value: pct((e["purchase_completed"] || 0) + (e["subscription_completed"] || 0), e["paywall_viewed"] || 0), color: "text-emerald-400" },
+                { label: "Share Card Usage", sub: "Report \u2192 shared", value: pct((e["share_card_downloaded"] || 0) + (e["share_card_shared"] || 0) + (e["share_link_copied"] || 0), e["share_prompt_viewed"] || e["report_viewed"] || 0), color: "text-amber-400" },
+                { label: "Free \u2192 Paid", sub: "Signup \u2192 purchase", value: pct((e["purchase_completed"] || 0) + (e["subscription_completed"] || 0), e["signup_completed"] || 0), color: "text-purple-400" },
+              ];
+            })().map((m) => (
               <div key={m.label} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-                <p className="text-xs text-slate-400 mb-1">{m.label}</p>
+                <p className="text-xs text-slate-400 mb-0.5">{m.label}</p>
                 <p className={`text-2xl font-bold ${m.color}`}>{m.value}</p>
+                <p className="text-[10px] text-slate-500 mt-1">{m.sub}</p>
               </div>
             ))}
           </div>

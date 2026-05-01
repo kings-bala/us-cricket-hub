@@ -295,7 +295,7 @@ export default function AnalyzePage() {
               className="hidden"
             />
             <div
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => { trackEvent("upload_started", { analysisType }); fileInputRef.current?.click(); }}
               className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center cursor-pointer hover:border-emerald-500/50 transition-colors"
             >
               {videoFile ? (
