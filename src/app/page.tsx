@@ -11,49 +11,34 @@ export default function Home() {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-slate-900 to-blue-900/30" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-              <span className="text-sm text-emerald-400">AI-Powered Cricket Coaching</span>
-            </div>
+          <div className="text-center max-w-3xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
               Get Your Cricket Technique Score{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-blue-400">
-                in Seconds
+                in 60 Seconds
               </span>
             </h1>
-            <p className="text-lg md:text-xl text-slate-300 mb-4 max-w-2xl mx-auto">
-              Upload a batting or bowling video and get AI-powered feedback on what to fix, how to improve, and how to stand out.
+            <p className="text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto">
+              Upload your batting or bowling video and get instant AI feedback on what to fix and how to improve.
             </p>
-            <div className="max-w-xl mx-auto mb-8">
-              <p className="text-sm text-slate-400 italic mb-1">
-                Most players practice without knowing what they&apos;re doing wrong.
-              </p>
-              <p className="text-sm text-emerald-400 font-medium">
-                CricVerse360 shows your strengths, weaknesses, and next drills instantly.
-              </p>
-            </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <TrackClick
                 href="/analyze"
                 event="hero_cta_clicked"
-                data={{ cta: "Get Your Cricket Score Free" }}
-                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
+                data={{ cta: "Upload Your Video Free" }}
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-10 py-4 rounded-full font-bold transition-colors text-xl shadow-lg shadow-emerald-500/25"
               >
-                Get Your Cricket Score Free
+                Upload Your Video Free
               </TrackClick>
               <Link
                 href="/sample-analysis"
-                className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-3.5 rounded-full font-semibold border border-slate-700 transition-colors text-lg"
+                className="bg-slate-800 hover:bg-slate-700 text-white px-8 py-4 rounded-full font-semibold border border-slate-700 transition-colors text-lg"
               >
                 See Sample Analysis
               </Link>
             </div>
-            <p className="text-sm text-emerald-400/80 font-medium mt-4">
-              Free first analysis available for new players.
-            </p>
-            <p className="text-xs text-slate-500 mt-1">
-              No credit card required.
+            <p className="text-sm text-slate-400 mt-4">
+              Free first analysis. No commitment.
             </p>
           </div>
         </div>
@@ -178,9 +163,9 @@ export default function Home() {
             href="/analyze"
             className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/25"
           >
-            Get Your Cricket Score Free
+            Upload Your Video Free
           </Link>
-          <p className="text-sm text-slate-400 mt-3">Start at Step 1. Upload your video now.</p>
+          <p className="text-sm text-slate-400 mt-3">Free first analysis. No commitment.</p>
         </div>
       </section>
 
@@ -364,7 +349,7 @@ export default function Home() {
             href="/analyze"
             className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
           >
-            Get Your Cricket Score Free
+            Upload Your Video Free
           </Link>
         </div>
       </section>
@@ -643,8 +628,8 @@ export default function Home() {
             Upload your video. Get your score. Start improving today.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/analyze" className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25">
-              Get Your Cricket Score Free
+            <Link href="/analyze" className="bg-emerald-500 hover:bg-emerald-600 text-white px-10 py-4 rounded-full font-bold transition-colors text-xl shadow-lg shadow-emerald-500/25">
+              Upload Your Video Free
             </Link>
             <Link href="/sample-analysis" className="bg-white/10 hover:bg-white/20 text-white px-8 py-3.5 rounded-full font-semibold border border-white/20 transition-colors">
               See Sample Analysis
