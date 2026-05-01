@@ -35,6 +35,21 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 const TOKENS_KEY = "cricverse360_tokens";
+const USER_KEY = "cricverse360_user";
+
+function parseIdToken(idToken: string): Partial<User> | null {
+  try {
+    const payload = JSON.parse(atob(idToken.split(".")[1]));
+    return {
+      id: payload.sub || "",
+      email: payload.email || "",
+      full_name: payload.name || payload.email || "",
+      role: "player",
+    };
+  } catch {
+    return null;
+  }
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -54,14 +69,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTokens(null);
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKENS_KEY);
+      localStorage.removeItem(USER_KEY);
     }
   };
 
-  const fetchUser = useCallback(async (accessToken: string) => {
+  const fetchUser = useCallback(async (t: AuthTokens) => {
     try {
-      const userData = await apiGet<User>("/auth/me", accessToken);
+      const userData = await apiGet<User>("/auth/me", t.accessToken);
       setUser(userData);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(USER_KEY, JSON.stringify(userData));
+      }
     } catch {
+      // API call failed — try to use ID token data (e.g., Google OAuth users)
+      if (t.idToken) {
+        const idUser = parseIdToken(t.idToken);
+        if (idUser && idUser.email) {
+          const fallbackUser: User = {
+            id: idUser.id || "google-user",
+            email: idUser.email,
+            full_name: idUser.full_name || idUser.email,
+            role: idUser.role || "player",
+          };
+          setUser(fallbackUser);
+          if (typeof window !== "undefined") {
+            localStorage.setItem(USER_KEY, JSON.stringify(fallbackUser));
+          }
+          return;
+        }
+      }
+      // Also check localStorage for previously cached user
+      if (typeof window !== "undefined") {
+        const cachedUser = localStorage.getItem(USER_KEY);
+        if (cachedUser) {
+          try {
+            setUser(JSON.parse(cachedUser) as User);
+            return;
+          } catch {
+            // ignore parse error
+          }
+        }
+      }
       clearAuth();
     }
   }, []);
@@ -72,7 +120,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const parsed = JSON.parse(stored) as AuthTokens;
         setTokens(parsed);
-        fetchUser(parsed.accessToken).finally(() => setLoading(false));
+        fetchUser(parsed).finally(() => setLoading(false));
       } catch {
         clearAuth();
         setLoading(false);
@@ -85,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     const result = await apiPost<AuthTokens & { accessToken: string }>("/auth/login", { email, password });
     saveTokens(result);
-    await fetchUser(result.accessToken);
+    await fetchUser(result);
   };
 
   const register = async (email: string, password: string, fullName: string, role = "player") => {
@@ -107,6 +155,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     clearAuth();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("cricverse360_user_email");
+      localStorage.removeItem("cricverse360_user_name");
+    }
     router.push("/");
   };
 
