@@ -11,6 +11,7 @@ interface ShareCardProps {
   topStrength: string;
   topImprovement: string;
   analysisType: string;
+  leaderboardRank?: number;
 }
 
 function drawCardToCanvas(
@@ -21,7 +22,7 @@ function drawCardToCanvas(
   if (!ctx) return;
 
   const w = 600;
-  const h = 800;
+  const h = 850;
   canvas.width = w * 2;
   canvas.height = h * 2;
   ctx.scale(2, 2);
@@ -68,10 +69,10 @@ function drawCardToCanvas(
   const typeLabel = props.analysisType.charAt(0).toUpperCase() + props.analysisType.slice(1);
   ctx.fillText(`${typeLabel} Analysis`, w - 40, 58);
 
-  // Score circle
+  // Score circle — LARGER
   const cx = w / 2;
-  const cy = 170;
-  const r = 64;
+  const cy = 180;
+  const r = 80;
 
   // Background circle
   ctx.beginPath();
@@ -87,7 +88,7 @@ function drawCardToCanvas(
   ctx.beginPath();
   ctx.arc(cx, cy, r, startAngle, endAngle);
   ctx.strokeStyle = props.overallScore >= 75 ? "#10b981" : props.overallScore >= 60 ? "#f59e0b" : "#ef4444";
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 8;
   ctx.lineCap = "round";
   ctx.stroke();
 
@@ -95,96 +96,125 @@ function drawCardToCanvas(
   ctx.beginPath();
   ctx.arc(cx, cy, r, endAngle, startAngle + Math.PI * 2);
   ctx.strokeStyle = "rgba(71, 85, 105, 0.3)";
-  ctx.lineWidth = 6;
+  ctx.lineWidth = 8;
   ctx.stroke();
 
-  // Score text
+  // Score text — LARGER
   ctx.textAlign = "center";
-  ctx.font = "bold 48px system-ui, -apple-system, sans-serif";
+  ctx.font = "bold 64px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = props.overallScore >= 75 ? "#10b981" : props.overallScore >= 60 ? "#f59e0b" : "#ef4444";
-  ctx.fillText(`${props.overallScore}`, cx, cy + 14);
-  ctx.font = "12px system-ui, -apple-system, sans-serif";
+  ctx.fillText(`${props.overallScore}`, cx, cy + 20);
+  ctx.font = "14px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#94a3b8";
-  ctx.fillText("/100", cx, cy + 32);
+  ctx.fillText("/100", cx, cy + 40);
 
   // Player name
   ctx.font = "bold 28px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#ffffff";
   const name = props.playerName.length > 24 ? props.playerName.slice(0, 22) + "..." : props.playerName;
-  ctx.fillText(name, cx, 280);
+  ctx.fillText(name, cx, 300);
 
   // Role
   ctx.font = "14px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#94a3b8";
   const roleText = props.role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-  ctx.fillText(roleText, cx, 304);
+  ctx.fillText(roleText, cx, 324);
 
-  // Confidence badge
+  // Badges row: Confidence + Leaderboard Rank
+  let badgeY = 348;
   const confText = `AI Confidence: ${props.confidenceScore}%`;
   ctx.font = "12px system-ui, -apple-system, sans-serif";
   const confW = ctx.measureText(confText).width + 24;
-  ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
-  ctx.beginPath();
-  ctx.roundRect(cx - confW / 2, 320, confW, 26, 13);
-  ctx.fill();
-  ctx.fillStyle = "#60a5fa";
-  ctx.fillText(confText, cx, 338);
+
+  if (props.leaderboardRank) {
+    const rankText = `#${props.leaderboardRank} This Week`;
+    const rankW = ctx.measureText(rankText).width + 24;
+    const totalW = confW + rankW + 10;
+    const startX = cx - totalW / 2;
+
+    // Confidence badge
+    ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
+    ctx.beginPath();
+    ctx.roundRect(startX, badgeY, confW, 26, 13);
+    ctx.fill();
+    ctx.fillStyle = "#60a5fa";
+    ctx.textAlign = "center";
+    ctx.fillText(confText, startX + confW / 2, badgeY + 17);
+
+    // Rank badge
+    ctx.fillStyle = "rgba(234, 179, 8, 0.15)";
+    ctx.beginPath();
+    ctx.roundRect(startX + confW + 10, badgeY, rankW, 26, 13);
+    ctx.fill();
+    ctx.fillStyle = "#facc15";
+    ctx.fillText(rankText, startX + confW + 10 + rankW / 2, badgeY + 17);
+  } else {
+    ctx.fillStyle = "rgba(59, 130, 246, 0.15)";
+    ctx.beginPath();
+    ctx.roundRect(cx - confW / 2, badgeY, confW, 26, 13);
+    ctx.fill();
+    ctx.fillStyle = "#60a5fa";
+    ctx.textAlign = "center";
+    ctx.fillText(confText, cx, badgeY + 17);
+  }
 
   // Divider
   ctx.strokeStyle = "rgba(71, 85, 105, 0.3)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(60, 370);
-  ctx.lineTo(w - 60, 370);
+  ctx.moveTo(60, 398);
+  ctx.lineTo(w - 60, 398);
   ctx.stroke();
 
   // Top Strength box
   ctx.textAlign = "left";
   ctx.fillStyle = "rgba(16, 185, 129, 0.08)";
   ctx.beginPath();
-  ctx.roundRect(40, 390, w - 80, 80, 12);
+  ctx.roundRect(40, 418, w - 80, 80, 12);
   ctx.fill();
   ctx.strokeStyle = "rgba(16, 185, 129, 0.2)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.roundRect(40, 390, w - 80, 80, 12);
+  ctx.roundRect(40, 418, w - 80, 80, 12);
   ctx.stroke();
 
   ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#10b981";
-  ctx.fillText("TOP STRENGTH", 60, 416);
+  ctx.fillText("TOP STRENGTH", 60, 444);
   ctx.font = "14px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#e2e8f0";
   const strength = props.topStrength.length > 55 ? props.topStrength.slice(0, 53) + "..." : props.topStrength;
-  wrapText(ctx, strength, 60, 440, w - 120, 20);
+  wrapText(ctx, strength, 60, 468, w - 120, 20);
 
   // Focus Area box
   ctx.fillStyle = "rgba(245, 158, 11, 0.08)";
   ctx.beginPath();
-  ctx.roundRect(40, 490, w - 80, 80, 12);
+  ctx.roundRect(40, 518, w - 80, 80, 12);
   ctx.fill();
   ctx.strokeStyle = "rgba(245, 158, 11, 0.2)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.roundRect(40, 490, w - 80, 80, 12);
+  ctx.roundRect(40, 518, w - 80, 80, 12);
   ctx.stroke();
 
   ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#f59e0b";
-  ctx.fillText("FOCUS AREA", 60, 516);
+  ctx.fillText("TOP IMPROVEMENT AREA", 60, 544);
   ctx.font = "14px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#e2e8f0";
   const weakness = props.topImprovement.length > 55 ? props.topImprovement.slice(0, 53) + "..." : props.topImprovement;
-  wrapText(ctx, weakness, 60, 540, w - 120, 20);
+  wrapText(ctx, weakness, 60, 568, w - 120, 20);
 
   // Stats row
-  const statsY = 610;
+  const statsY = 645;
   const stats = [
     { label: "Score", value: `${props.overallScore}/100` },
     { label: "Confidence", value: `${props.confidenceScore}%` },
     { label: "Type", value: typeLabel },
+    ...(props.leaderboardRank ? [{ label: "Rank", value: `#${props.leaderboardRank}` }] : []),
   ];
-  const statW = (w - 80) / 3;
+  const statCount = stats.length;
+  const statW = (w - 80) / statCount;
   stats.forEach((stat, i) => {
     const sx = 40 + i * statW + statW / 2;
     ctx.textAlign = "center";
@@ -200,25 +230,30 @@ function drawCardToCanvas(
   ctx.strokeStyle = "rgba(71, 85, 105, 0.3)";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(60, 660);
-  ctx.lineTo(w - 60, 660);
+  ctx.moveTo(60, 690);
+  ctx.lineTo(w - 60, 690);
   ctx.stroke();
 
   // CTA bar
-  ctx.fillStyle = "rgba(16, 185, 129, 0.1)";
+  ctx.fillStyle = "rgba(16, 185, 129, 0.12)";
   ctx.beginPath();
-  ctx.roundRect(40, 680, w - 80, 50, 12);
+  ctx.roundRect(40, 710, w - 80, 55, 12);
   ctx.fill();
+  ctx.strokeStyle = "rgba(16, 185, 129, 0.25)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(40, 710, w - 80, 55, 12);
+  ctx.stroke();
 
   ctx.textAlign = "center";
-  ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
+  ctx.font = "bold 15px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#10b981";
-  ctx.fillText("Get your cricket video analyzed at cricverse360.com", cx, 710);
+  ctx.fillText("Get your score at cricverse360.com", cx, 742);
 
   // Bottom branding
   ctx.font = "11px system-ui, -apple-system, sans-serif";
   ctx.fillStyle = "#475569";
-  ctx.fillText("AI-Powered Cricket Analysis", cx, 760);
+  ctx.fillText("AI-Powered Cricket Analysis \u00b7 CricVerse360", cx, 800);
 }
 
 function wrapText(
@@ -250,6 +285,7 @@ export default function ShareCard(props: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [generated, setGenerated] = useState(false);
+  const [shared, setShared] = useState(false);
 
   useEffect(() => {
     if (canvasRef.current) {
@@ -259,6 +295,10 @@ export default function ShareCard(props: ShareCardProps) {
     }
   }, [props]);
 
+  const markShared = () => {
+    setShared(true);
+  };
+
   const downloadAsImage = () => {
     if (!canvasRef.current) return;
     const link = document.createElement("a");
@@ -266,20 +306,23 @@ export default function ShareCard(props: ShareCardProps) {
     link.href = canvasRef.current.toDataURL("image/png");
     link.click();
     trackEvent("share_card_shared", { method: "download", playerName: props.playerName, score: props.overallScore });
+    markShared();
   };
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "https://cricverse360.com";
 
   const shareToWhatsApp = () => {
-    const text = `Check out my cricket analysis on CricVerse360! Score: ${props.overallScore}/100, Confidence: ${props.confidenceScore}%. Get your video analyzed free: ${shareUrl}`;
+    const text = `I scored ${props.overallScore}/100 on my cricket ${props.analysisType} analysis! ${props.leaderboardRank ? `Ranked #${props.leaderboardRank} this week. ` : ""}Can you beat my score? Get yours free: ${shareUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
     trackEvent("share_card_shared", { method: "whatsapp", playerName: props.playerName, score: props.overallScore });
+    markShared();
   };
 
   const shareToTwitter = () => {
-    const text = `Just got my cricket ${props.analysisType} analysis on @CricVerse360! Score: ${props.overallScore}/100. Get yours free:`;
+    const text = `I scored ${props.overallScore}/100 on my cricket ${props.analysisType} analysis on @CricVerse360! ${props.leaderboardRank ? `#${props.leaderboardRank} this week. ` : ""}Can you beat it? Get yours free:`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, "_blank");
     trackEvent("share_card_shared", { method: "twitter", playerName: props.playerName, score: props.overallScore });
+    markShared();
   };
 
   const copyLink = () => {
@@ -287,6 +330,7 @@ export default function ShareCard(props: ShareCardProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       trackEvent("share_card_shared", { method: "copy_link", playerName: props.playerName, score: props.overallScore });
+      markShared();
     });
   };
 
@@ -332,6 +376,14 @@ export default function ShareCard(props: ShareCardProps) {
             <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
             Twitter / X
           </button>
+        </div>
+      )}
+
+      {/* Post-Share Confirmation */}
+      {shared && (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-center">
+          <p className="text-emerald-400 font-semibold text-sm">Your card is ready. Share it with teammates and coaches.</p>
+          <p className="text-slate-400 text-xs mt-1">Challenge others to beat your score!</p>
         </div>
       )}
     </div>
