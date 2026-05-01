@@ -2,22 +2,23 @@
 
 import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/lib/auth";
 import { trackEvent } from "@/lib/analytics";
 
 function CallbackInner() {
   const [error, setError] = useState("");
+  const [status, setStatus] = useState("Signing you in...");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useAuth();
 
   useEffect(() => {
     const code = searchParams.get("code");
     const errorParam = searchParams.get("error");
+    const errorDescription = searchParams.get("error_description");
 
     if (errorParam) {
-      setError("Google sign-in was cancelled or failed. Redirecting...");
-      setTimeout(() => router.push("/auth"), 2000);
+      const msg = errorDescription || "Google sign-in was cancelled or failed.";
+      setError(msg);
+      setTimeout(() => router.push("/auth"), 3000);
       return;
     }
 
@@ -34,9 +35,11 @@ function CallbackInner() {
 
         if (!cognitoDomain || !clientId) {
           setError("Google Sign-In is not fully configured.");
-          setTimeout(() => router.push("/auth"), 2000);
+          setTimeout(() => router.push("/auth"), 3000);
           return;
         }
+
+        setStatus("Exchanging authorization code...");
 
         const tokenRes = await fetch(`${cognitoDomain}/oauth2/token`, {
           method: "POST",
@@ -50,7 +53,8 @@ function CallbackInner() {
         });
 
         if (!tokenRes.ok) {
-          throw new Error("Token exchange failed");
+          const errorBody = await tokenRes.text();
+          throw new Error(`Token exchange failed (${tokenRes.status}): ${errorBody}`);
         }
 
         const tokens = await tokenRes.json();
@@ -64,29 +68,50 @@ function CallbackInner() {
               idToken: tokens.id_token || "",
             })
           );
+
+          if (tokens.id_token) {
+            try {
+              const payload = JSON.parse(atob(tokens.id_token.split(".")[1]));
+              if (payload.email) {
+                localStorage.setItem("cricverse360_user_email", payload.email);
+              }
+              if (payload.name) {
+                localStorage.setItem("cricverse360_user_name", payload.name);
+              }
+            } catch {
+              // ID token parsing is optional
+            }
+          }
+
           trackEvent("signup_completed", { method: "google" });
+          setStatus("Sign-in successful! Redirecting...");
           window.location.href = "/analyze";
         } else {
-          throw new Error("No access token received");
+          throw new Error("No access token in response");
         }
-      } catch {
-        setError("Sign-in failed. Redirecting...");
-        setTimeout(() => router.push("/auth"), 2000);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setError(`Sign-in failed: ${message}`);
+        localStorage.setItem("cricverse360_oauth_error", message);
+        setTimeout(() => router.push("/auth"), 5000);
       }
     };
 
     exchangeCode();
-  }, [searchParams, router, login]);
+  }, [searchParams, router]);
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="text-center">
+      <div className="text-center max-w-md mx-auto px-4">
         {error ? (
-          <p className="text-red-400">{error}</p>
+          <div>
+            <p className="text-red-400 mb-2">{error}</p>
+            <p className="text-slate-500 text-sm">Redirecting to sign-in page...</p>
+          </div>
         ) : (
           <>
             <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-slate-400">Signing you in...</p>
+            <p className="text-slate-400">{status}</p>
           </>
         )}
       </div>
