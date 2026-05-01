@@ -351,7 +351,7 @@ export default function NetSessionTracker() {
                     className="w-16 bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 text-center text-white text-sm"
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-1">= {Math.round(speed * 0.621371)} mph</p>
+                <p className="text-xs text-slate-500 mt-1">{speed} km/h ({Math.round(speed * 0.621371)} mph)</p>
               </div>
 
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
@@ -652,7 +652,7 @@ export default function NetSessionTracker() {
                     const pct = maxSpeed > 0 ? ((d.speed - 30) / (maxSpeed - 30 + 10)) * 100 : 50;
                     return (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-[9px] text-slate-500">{d.speed}</span>
+                        <span className="text-[9px] text-slate-500">{d.speed} km/h</span>
                         <div
                           className={`w-full rounded-t ${d.speed >= 140 ? "bg-red-500" : d.speed >= 120 ? "bg-amber-500" : "bg-blue-500"}`}
                           style={{ height: `${Math.max(pct, 5)}%` }}

@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { trackEvent } from "@/lib/analytics";
 import { UserRole } from "@/types";
 
 export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><p className="text-slate-400">Loading...</p></div>}>
+      <AuthPageInner />
+    </Suspense>
+  );
+}
+
+function AuthPageInner() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>("player");
@@ -20,9 +28,11 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const { login, register, verifyEmail, user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams.get("next") || "/analyze";
 
   if (user) {
-    router.push("/analyze");
+    router.push(nextUrl);
     return null;
   }
 
@@ -53,7 +63,7 @@ export default function AuthPage() {
       } else {
         await login(email, password);
         trackEvent("signin_completed", {});
-        router.push("/analyze");
+        router.push(nextUrl);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

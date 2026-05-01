@@ -1,23 +1,61 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/lib/auth";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+/*
+ * Route classification:
+ * PUBLIC  — accessible without auth (homepage, marketing, legal, tools, etc.)
+ * PROTECTED — requires auth, redirects to /auth?next=<path> if not logged in
+ * ADMIN — requires auth + admin role
+ *
+ * Any route not matched by a public prefix is treated as protected.
+ */
+const PUBLIC_PATHS = [
+  "/",
+  "/auth",
+  "/analyze",
+  "/coaches",
+  "/leaderboard",
+  "/pricing",
+  "/privacy",
+  "/terms",
+  "/sample-analysis",
+  "/sponsors",
+  "/agents",
+  "/scouting",
+  "/community",
+  "/scoring",
+  "/strategy",
+  "/streaming",
+  "/store",
+  "/stats",
+  "/rankings",
+  "/selector",
+  "/squad-builder",
+  "/player",
+];
+
+function isPublicRoute(pathname: string): boolean {
+  return PUBLIC_PATHS.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
+}
+
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, loading: isLoading } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
-  const publicPaths = ["/", "/auth", "/auth/register", "/analyze", "/analyze/live"];
-  const isPublic = publicPaths.includes(pathname);
+  const isPublic = isPublicRoute(pathname);
   const isAdminRoute = pathname.startsWith("/admin");
 
   useEffect(() => {
-    if (!isLoading && !user && !isPublic) {
-      router.replace("/auth");
-    }
-    if (!isLoading && isAdminRoute && (!user || user.role !== "admin")) {
+    if (isLoading) return;
+    if (!user && !isPublic) {
+      router.replace(`/auth?next=${encodeURIComponent(pathname)}`);
+    } else if (isAdminRoute && (!user || user.role !== "admin")) {
       router.replace("/auth");
     }
   }, [user, isLoading, pathname, router, isPublic, isAdminRoute]);
