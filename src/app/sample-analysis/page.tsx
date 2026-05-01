@@ -432,9 +432,27 @@ export default function SampleAnalysisPage() {
         </div>
       </div>
 
+      {/* Trust Signals */}
+      <div className="flex flex-wrap justify-center gap-4 mb-6">
+        {[
+          { icon: "\u{1F512}", text: "Secure Video Upload" },
+          { icon: "\u{1F3CF}", text: "Built for Aspiring Players" },
+          { icon: "\u{1F4B0}", text: "First Analysis Free" },
+          { icon: "\u{1F6E1}", text: "No Selection Guarantees" },
+        ].map((b) => (
+          <div key={b.text} className="flex items-center gap-1.5 bg-slate-800/50 border border-slate-700/50 rounded-full px-3 py-1.5">
+            <span className="text-sm">{b.icon}</span>
+            <span className="text-xs text-slate-400">{b.text}</span>
+          </div>
+        ))}
+      </div>
+
       {/* Disclaimer */}
-      <p className="text-xs text-slate-500 text-center mb-10 max-w-2xl mx-auto">
+      <p className="text-xs text-slate-500 text-center mb-4 max-w-2xl mx-auto">
         {report.disclaimer}
+      </p>
+      <p className="text-xs text-slate-500 text-center mb-10 max-w-2xl mx-auto">
+        CricVerse360 AI analysis is for cricket training guidance only. It does not guarantee selection, scouting, or professional outcomes.
       </p>
 
       {/* Bottom CTA */}
