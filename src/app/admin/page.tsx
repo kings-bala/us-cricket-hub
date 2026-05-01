@@ -69,14 +69,65 @@ interface FeaturedPlayer {
 // Admin player list will be populated from real user data
 const ADMIN_PLAYERS: FeaturedPlayer[] = [];
 
+interface TestUser {
+  id: string;
+  name: string;
+  email: string;
+  source: "Instagram" | "WhatsApp" | "Academy" | "Direct" | "Other";
+  uploaded: boolean;
+  analysisCompleted: boolean;
+  paid: boolean;
+  feedbackNotes: string;
+  issueReported: string;
+  contactedAgain: boolean;
+}
+
+const STORAGE_KEY = "cricverse360_test_users";
+
+function loadTestUsers(): TestUser[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch { return []; }
+}
+
+function saveTestUsers(users: TestUser[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+}
+
+function exportCSV(users: TestUser[]) {
+  const headers = ["Name", "Email", "Source", "Uploaded", "Analysis Completed", "Paid", "Feedback", "Issue Reported", "Contacted Again"];
+  const rows = users.map(u => [
+    u.name, u.email, u.source, u.uploaded ? "Yes" : "No",
+    u.analysisCompleted ? "Yes" : "No", u.paid ? "Yes" : "No",
+    u.feedbackNotes, u.issueReported, u.contactedAgain ? "Yes" : "No",
+  ]);
+  const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `cricverse360-test-users-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminDashboardPage() {
   const { user, tokens, loading } = useAuth();
   const [data, setData] = useState<DashboardData | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [error, setError] = useState("");
   const [fetching, setFetching] = useState(true);
-  const [tab, setTab] = useState<"overview" | "funnel" | "events" | "players">("overview");
+  const [tab, setTab] = useState<"overview" | "funnel" | "events" | "players" | "test_users">("overview");
   const [players, setPlayers] = useState<FeaturedPlayer[]>(ADMIN_PLAYERS);
+  const [testUsers, setTestUsers] = useState<TestUser[]>([]);
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUser, setNewUser] = useState<Omit<TestUser, "id">>({ name: "", email: "", source: "Direct", uploaded: false, analysisCompleted: false, paid: false, feedbackNotes: "", issueReported: "", contactedAgain: false });
+
+  useEffect(() => {
+    setTestUsers(loadTestUsers());
+  }, []);
 
   useEffect(() => {
     if (loading) return;
@@ -150,7 +201,7 @@ export default function AdminDashboardPage() {
 
       {/* Tab Navigation */}
       <div className="flex gap-2 mb-8 flex-wrap">
-        {(["overview", "funnel", "events", "players"] as const).map((t) => (
+        {(["overview", "funnel", "events", "players", "test_users"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -160,7 +211,7 @@ export default function AdminDashboardPage() {
                 : "bg-slate-800/50 text-slate-400 hover:text-white"
             }`}
           >
-            {t === "overview" ? "Overview" : t === "funnel" ? "Conversion Funnel" : t === "events" ? "Event Log" : "Featured Players"}
+            {t === "overview" ? "Overview" : t === "funnel" ? "Conversion Funnel" : t === "events" ? "Event Log" : t === "players" ? "Featured Players" : "First 50 Users"}
           </button>
         ))}
       </div>
@@ -452,6 +503,186 @@ export default function AdminDashboardPage() {
                 <span className="text-xs text-slate-400">Highest bowling analysis score</span>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* First 50 Users Tab */}
+      {tab === "test_users" && (
+        <div className="space-y-6">
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">First 50 Users Tracker</h2>
+                <p className="text-sm text-slate-400 mt-1">Manually track early users for follow-up and feedback collection.</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => exportCSV(testUsers)}
+                  disabled={testUsers.length === 0}
+                  className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Export CSV
+                </button>
+                <button
+                  onClick={() => setShowAddUser(true)}
+                  className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                >
+                  + Add User
+                </button>
+              </div>
+            </div>
+
+            {/* Summary stats */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+              {[
+                { label: "Total Tracked", value: testUsers.length, color: "text-blue-400" },
+                { label: "Uploaded Video", value: testUsers.filter(u => u.uploaded).length, color: "text-purple-400" },
+                { label: "Analysis Done", value: testUsers.filter(u => u.analysisCompleted).length, color: "text-cyan-400" },
+                { label: "Paid", value: testUsers.filter(u => u.paid).length, color: "text-emerald-400" },
+                { label: "Contacted", value: testUsers.filter(u => u.contactedAgain).length, color: "text-amber-400" },
+              ].map(s => (
+                <div key={s.label} className="bg-slate-900/50 border border-slate-700/30 rounded-lg p-3 text-center">
+                  <p className={`text-xl font-bold ${s.color}`}>{s.value}</p>
+                  <p className="text-[10px] text-slate-400">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Add User Form */}
+            {showAddUser && (
+              <div className="bg-slate-900/60 border border-slate-700/50 rounded-xl p-4 mb-6">
+                <h3 className="text-sm font-bold text-white mb-3">Add Test User</h3>
+                <div className="grid md:grid-cols-3 gap-3 mb-3">
+                  <input
+                    value={newUser.name}
+                    onChange={e => setNewUser(p => ({ ...p, name: e.target.value }))}
+                    placeholder="Name"
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                  />
+                  <input
+                    value={newUser.email}
+                    onChange={e => setNewUser(p => ({ ...p, email: e.target.value }))}
+                    placeholder="Email or Phone"
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500"
+                  />
+                  <select
+                    value={newUser.source}
+                    onChange={e => setNewUser(p => ({ ...p, source: e.target.value as TestUser["source"] }))}
+                    className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white"
+                  >
+                    {["Instagram", "WhatsApp", "Academy", "Direct", "Other"].map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (!newUser.name.trim()) return;
+                      const user: TestUser = { ...newUser, id: crypto.randomUUID() };
+                      const updated = [...testUsers, user];
+                      setTestUsers(updated);
+                      saveTestUsers(updated);
+                      setNewUser({ name: "", email: "", source: "Direct", uploaded: false, analysisCompleted: false, paid: false, feedbackNotes: "", issueReported: "", contactedAgain: false });
+                      setShowAddUser(false);
+                    }}
+                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-lg"
+                  >
+                    Save
+                  </button>
+                  <button onClick={() => setShowAddUser(false)} className="px-4 py-2 bg-slate-700 text-slate-300 text-sm rounded-lg">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Users Table */}
+            {testUsers.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-slate-400 mb-2">No test users tracked yet.</p>
+                <p className="text-xs text-slate-500">Click &quot;+ Add User&quot; to start tracking your first 50 users.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-slate-400 border-b border-slate-700 text-xs">
+                      <th className="text-left py-2 pr-3">Name</th>
+                      <th className="text-left py-2 pr-3">Email/Phone</th>
+                      <th className="text-left py-2 pr-3">Source</th>
+                      <th className="text-center py-2 pr-3">Uploaded</th>
+                      <th className="text-center py-2 pr-3">Analyzed</th>
+                      <th className="text-center py-2 pr-3">Paid</th>
+                      <th className="text-left py-2 pr-3">Feedback</th>
+                      <th className="text-left py-2 pr-3">Issue</th>
+                      <th className="text-center py-2 pr-3">Contacted</th>
+                      <th className="text-right py-2">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {testUsers.map((tu) => (
+                      <tr key={tu.id} className="text-slate-300 border-b border-slate-800 hover:bg-slate-800/30">
+                        <td className="py-2 pr-3 font-medium text-white">{tu.name}</td>
+                        <td className="py-2 pr-3 text-xs">{tu.email || "\u2014"}</td>
+                        <td className="py-2 pr-3">
+                          <span className="text-xs bg-slate-700/50 px-2 py-0.5 rounded">{tu.source}</span>
+                        </td>
+                        <td className="py-2 pr-3 text-center">
+                          <button onClick={() => { const updated = testUsers.map(u => u.id === tu.id ? { ...u, uploaded: !u.uploaded } : u); setTestUsers(updated); saveTestUsers(updated); }}
+                            className={`w-5 h-5 rounded border ${tu.uploaded ? "bg-emerald-500 border-emerald-500" : "border-slate-600"} flex items-center justify-center mx-auto`}>
+                            {tu.uploaded && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                        </td>
+                        <td className="py-2 pr-3 text-center">
+                          <button onClick={() => { const updated = testUsers.map(u => u.id === tu.id ? { ...u, analysisCompleted: !u.analysisCompleted } : u); setTestUsers(updated); saveTestUsers(updated); }}
+                            className={`w-5 h-5 rounded border ${tu.analysisCompleted ? "bg-emerald-500 border-emerald-500" : "border-slate-600"} flex items-center justify-center mx-auto`}>
+                            {tu.analysisCompleted && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                        </td>
+                        <td className="py-2 pr-3 text-center">
+                          <button onClick={() => { const updated = testUsers.map(u => u.id === tu.id ? { ...u, paid: !u.paid } : u); setTestUsers(updated); saveTestUsers(updated); }}
+                            className={`w-5 h-5 rounded border ${tu.paid ? "bg-emerald-500 border-emerald-500" : "border-slate-600"} flex items-center justify-center mx-auto`}>
+                            {tu.paid && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                        </td>
+                        <td className="py-2 pr-3">
+                          <input
+                            value={tu.feedbackNotes}
+                            onChange={e => { const updated = testUsers.map(u => u.id === tu.id ? { ...u, feedbackNotes: e.target.value } : u); setTestUsers(updated); saveTestUsers(updated); }}
+                            placeholder="Notes..."
+                            className="bg-transparent border-b border-slate-700 text-xs text-slate-300 w-full py-0.5 focus:outline-none focus:border-emerald-500"
+                          />
+                        </td>
+                        <td className="py-2 pr-3">
+                          <input
+                            value={tu.issueReported}
+                            onChange={e => { const updated = testUsers.map(u => u.id === tu.id ? { ...u, issueReported: e.target.value } : u); setTestUsers(updated); saveTestUsers(updated); }}
+                            placeholder="Issues..."
+                            className="bg-transparent border-b border-slate-700 text-xs text-slate-300 w-full py-0.5 focus:outline-none focus:border-emerald-500"
+                          />
+                        </td>
+                        <td className="py-2 pr-3 text-center">
+                          <button onClick={() => { const updated = testUsers.map(u => u.id === tu.id ? { ...u, contactedAgain: !u.contactedAgain } : u); setTestUsers(updated); saveTestUsers(updated); }}
+                            className={`w-5 h-5 rounded border ${tu.contactedAgain ? "bg-emerald-500 border-emerald-500" : "border-slate-600"} flex items-center justify-center mx-auto`}>
+                            {tu.contactedAgain && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                          </button>
+                        </td>
+                        <td className="py-2 text-right">
+                          <button
+                            onClick={() => { if (confirm(`Remove ${tu.name}?`)) { const updated = testUsers.filter(u => u.id !== tu.id); setTestUsers(updated); saveTestUsers(updated); } }}
+                            className="text-xs text-red-400 hover:text-red-300"
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}

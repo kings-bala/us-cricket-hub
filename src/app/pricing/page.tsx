@@ -78,6 +78,11 @@ export default function PricingPage() {
 
   useEffect(() => {
     trackEvent("pricing_viewed", {}, tokens?.accessToken);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      trackEvent("subscription_completed", {}, tokens?.accessToken);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, [tokens?.accessToken]);
 
   const handleCheckout = async (planKey: string) => {

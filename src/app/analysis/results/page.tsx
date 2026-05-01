@@ -222,6 +222,12 @@ export default function AnalysisResultsPage() {
         }
       } catch { /* noop */ }
     }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("upgraded") === "true") {
+      trackEvent("one_time_purchase_completed", {}, tokens?.accessToken);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }, [tokens]);
 
   if (!result) {
