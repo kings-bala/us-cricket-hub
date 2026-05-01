@@ -44,6 +44,7 @@ export default function Footer() {
               <Link href="/pricing" className="block text-sm hover:text-white transition-colors">Pricing Plans</Link>
               <Link href="/privacy" className="block text-sm hover:text-white transition-colors">Privacy Policy</Link>
               <Link href="/terms" className="block text-sm hover:text-white transition-colors">Terms of Service</Link>
+              <Link href="/processors" className="block text-sm hover:text-white transition-colors">Data Processors</Link>
             </div>
           </div>
           <div>
@@ -59,8 +60,14 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm">
+        <div className="border-t border-slate-800 mt-8 pt-8 text-center text-sm space-y-2">
           <p>&copy; {new Date().getFullYear()} CricVerse360. All rights reserved. AI-powered cricket analysis platform.</p>
+          <p className="text-xs text-slate-500">A product of Rising Star Cricket League</p>
+          <div className="flex justify-center gap-4 text-xs text-slate-500">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+            <Link href="/privacy#ccpa" className="hover:text-white transition-colors">Do Not Sell or Share My Personal Information</Link>
+          </div>
         </div>
       </div>
     </footer>

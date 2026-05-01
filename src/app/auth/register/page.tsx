@@ -85,6 +85,11 @@ export default function RegisterPage() {
   const [saving, setSaving] = useState(false);
   const [backendError, setBackendError] = useState("");
 
+  const [parentEmail, setParentEmail] = useState("");
+  const [parentConsent, setParentConsent] = useState(false);
+
+  const isMinorAge = (ageGroup: AgeGroup) => ageGroup === "U13" || ageGroup === "U15" || ageGroup === "U17";
+
   const [basic, setBasic] = useState<BasicInfo>({
     fullName: "",
     email: "",
@@ -286,6 +291,10 @@ export default function RegisterPage() {
       if (basic.password.length < 6) errs.push("Password must be at least 6 characters");
       if (basic.password !== basic.confirmPassword) errs.push("Passwords do not match");
       if (!basic.country.trim()) errs.push("Country is required");
+      if (isMinorAge(basic.ageGroup)) {
+        if (!parentEmail.trim()) errs.push("Parent/guardian email is required for players under 18");
+        if (!parentConsent) errs.push("Parent/guardian consent is required for players under 18");
+      }
     }
     return errs;
   };
@@ -560,6 +569,33 @@ export default function RegisterPage() {
                     <option value="Men">Men</option>
                   </select>
                 </div>
+
+                {isMinorAge(basic.ageGroup) && (
+                  <div className="col-span-2 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
+                    <p className="text-amber-300 text-sm font-semibold">Parental / Guardian Consent Required</p>
+                    <p className="text-slate-400 text-xs">Players under 18 need a parent or guardian to authorize their account. We&apos;ll use this to verify consent.</p>
+                    <div>
+                      <label className={labelClass}>Parent / Guardian Email</label>
+                      <input
+                        type="email"
+                        value={parentEmail}
+                        onChange={(e) => setParentEmail(e.target.value)}
+                        placeholder="parent@example.com"
+                        className={inputClass}
+                      />
+                    </div>
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={parentConsent}
+                        onChange={(e) => setParentConsent(e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-slate-600 bg-slate-800 text-emerald-500 focus:ring-emerald-500"
+                      />
+                      <span className="text-xs text-slate-300">I confirm that I am the parent/legal guardian of this player, and I consent to their use of CricVerse360 and the processing of their data as described in the <a href="/privacy" target="_blank" className="text-emerald-400 hover:underline">Privacy Policy</a>.</span>
+                    </label>
+                  </div>
+                )}
+
                 <div>
                   <label className={labelClass}>Date of Birth</label>
                   <input

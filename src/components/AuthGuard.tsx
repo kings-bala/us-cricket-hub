@@ -35,6 +35,7 @@ const PUBLIC_PATHS = [
   "/selector",
   "/squad-builder",
   "/player",
+  "/processors",
 ];
 
 function isPublicRoute(pathname: string): boolean {
