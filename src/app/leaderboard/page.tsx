@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { trackEvent } from "@/lib/analytics";
 
 interface LeaderboardPlayer {
   rank: number;
@@ -55,6 +56,10 @@ function getScoreBorder(score: number) {
 
 export default function LeaderboardPage() {
   const [filter, setFilter] = useState<"all" | "batting" | "bowling">("all");
+
+  useEffect(() => {
+    trackEvent("leaderboard_viewed");
+  }, []);
 
   const filtered = filter === "all"
     ? LEADERBOARD_DATA

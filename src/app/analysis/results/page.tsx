@@ -175,9 +175,16 @@ export default function AnalysisResultsPage() {
   useEffect(() => {
     const stored = sessionStorage.getItem("latestAnalysis");
     if (stored) {
-      try { setResult(JSON.parse(stored)); } catch { /* noop */ }
+      try {
+        const parsed = JSON.parse(stored);
+        setResult(parsed);
+        trackEvent("report_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score, isPaid: !!parsed.isPaid }, tokens?.accessToken);
+        if (!parsed.isPaid) {
+          trackEvent("paywall_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
+        }
+      } catch { /* noop */ }
     }
-  }, []);
+  }, [tokens]);
 
   if (!result) {
     return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 interface ShareCardProps {
   playerName: string;
@@ -254,6 +255,7 @@ export default function ShareCard(props: ShareCardProps) {
     if (canvasRef.current) {
       drawCardToCanvas(canvasRef.current, props);
       setGenerated(true);
+      trackEvent("share_card_created", { playerName: props.playerName, score: props.overallScore });
     }
   }, [props]);
 
@@ -263,6 +265,7 @@ export default function ShareCard(props: ShareCardProps) {
     link.download = `cricverse360-${props.playerName.replace(/\s+/g, "-").toLowerCase()}.png`;
     link.href = canvasRef.current.toDataURL("image/png");
     link.click();
+    trackEvent("share_card_shared", { method: "download", playerName: props.playerName, score: props.overallScore });
   };
 
   const shareUrl = typeof window !== "undefined" ? window.location.href : "https://cricverse360.com";
@@ -270,17 +273,20 @@ export default function ShareCard(props: ShareCardProps) {
   const shareToWhatsApp = () => {
     const text = `Check out my cricket analysis on CricVerse360! Score: ${props.overallScore}/100, Confidence: ${props.confidenceScore}%. Get your video analyzed free: ${shareUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    trackEvent("share_card_shared", { method: "whatsapp", playerName: props.playerName, score: props.overallScore });
   };
 
   const shareToTwitter = () => {
     const text = `Just got my cricket ${props.analysisType} analysis on @CricVerse360! Score: ${props.overallScore}/100. Get yours free:`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, "_blank");
+    trackEvent("share_card_shared", { method: "twitter", playerName: props.playerName, score: props.overallScore });
   };
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      trackEvent("share_card_shared", { method: "copy_link", playerName: props.playerName, score: props.overallScore });
     });
   };
 
