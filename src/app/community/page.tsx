@@ -118,110 +118,11 @@ const BADGE_ICONS: Record<string, string> = {
   crown: "\u{1F451}",
 };
 
-const mockPosts: FeedPost[] = [
-  {
-    id: "fp1", authorName: "Rahul Desai", authorAvatar: "/avatars/player8.jpg", authorRole: "player", authorVerified: true,
-    type: "performance",
-    content: "Unbeaten 142 off 98 balls against Michigan XI in the MLC Development League! Feeling great about my form heading into the national squad trials. Thanks to my coaches at Chicago Cricket Academy for the preparation.",
-    regions: ["All USA", "Illinois"], images: [],
-    statCard: { runs: 142, balls: 98, fours: 14, sixes: 6, strikeRate: 144.9, opponent: "Michigan XI", event: "MLC Development League", date: "2025-10-05", result: "Won by 45 runs" },
-    likes: 234, comments: [
-      { id: "c1", authorName: "Coach Martinez", content: "Outstanding knock! Keep it up champ.", timestamp: "2h ago" },
-      { id: "c2", authorName: "Arjun Patel", content: "What an innings! See you at the trials.", timestamp: "1h ago" },
-    ], shares: 45, timestamp: "3h ago", badges: ["Century Maker", "Match Winner"], isTopPerformer: true, isVerifiedStat: true,
-  },
-  {
-    id: "fp2", authorName: "Garden State Cricket Academy", authorAvatar: "", authorRole: "academy", authorVerified: true,
-    type: "spotlight",
-    content: "Player Spotlight: Congratulations to Vikram Singh on being named Player of the Month! 3 fifties in 4 matches with a batting average of 67.5. Vikram has been training with us for 2 years and his growth has been incredible.",
-    regions: ["All USA", "New Jersey"], images: [],
-    statCard: { runs: 270, balls: 220, fours: 28, sixes: 8, strikeRate: 122.7, event: "NJ Premier League", date: "2025-11-15" },
-    likes: 189, comments: [{ id: "c3", authorName: "Vikram Singh", content: "Thank you GSCA! Grateful for the support.", timestamp: "5h ago" }],
-    shares: 32, timestamp: "6h ago", badges: ["Player Spotlight", "Rising Star"], isRising: true, isVerifiedStat: true,
-  },
-  {
-    id: "fp3", authorName: "Texas Cricket United", authorAvatar: "", authorRole: "team", authorVerified: true,
-    type: "scorecard",
-    content: "What a match! Texas Cricket United defeats Houston Hurricanes by 6 wickets in the South Central T20 Championship semi-final. On to the finals!",
-    regions: ["All USA", "Texas"], images: [],
-    statCard: { opponent: "Houston Hurricanes", event: "South Central T20 Championship", date: "2025-11-20", result: "Won by 6 wickets" },
-    likes: 312, comments: [
-      { id: "c4", authorName: "Cricket Fan TX", content: "Let's go Texas! Finals bound!", timestamp: "1h ago" },
-      { id: "c5", authorName: "Raj Patel", content: "Dominant performance by the whole team!", timestamp: "45m ago" },
-    ], shares: 78, timestamp: "2h ago", badges: ["Match Result"], isVerifiedStat: true,
-  },
-  {
-    id: "fp4", authorName: "Aditya Krishnan", authorAvatar: "", authorRole: "player", authorVerified: false,
-    type: "performance",
-    content: "5 wickets for 22 runs in the weekend league! My best bowling figures yet. Working on my yorkers at the nets has really paid off. Looking for opportunities to trial with MLC development squads.",
-    regions: ["All USA", "California"], images: [],
-    statCard: { wickets: 5, overs: "4", economy: 5.5, opponent: "Bay Area XI", event: "CA Weekend League", date: "2025-11-18", result: "Won by 32 runs" },
-    likes: 156, comments: [{ id: "c6", authorName: "SF Cricket Club", content: "Impressive spell! Come trial with us.", timestamp: "3h ago" }],
-    shares: 28, timestamp: "8h ago", badges: ["5-Wicket Haul"], isRising: true,
-  },
-  {
-    id: "fp5", authorName: "NYC Cricket Association", authorAvatar: "", authorRole: "academy", authorVerified: true,
-    type: "highlight",
-    content: "Weekend recap: 12 matches played across NYC leagues. Top performers this week - Sameer Khan (89* off 52 balls), Priya Reddy (4/18), and Omar Hassan (3 catches + 67 runs). The talent in NYC is on fire!",
-    regions: ["All USA", "New York"], images: [],
-    likes: 267, comments: [
-      { id: "c7", authorName: "Sameer Khan", content: "Thanks for the recognition! More to come.", timestamp: "4h ago" },
-      { id: "c8", authorName: "Cricket NYC Fan", content: "NYC cricket is growing so fast!", timestamp: "2h ago" },
-    ], shares: 56, timestamp: "5h ago", badges: ["Weekly Recap"],
-  },
-  {
-    id: "fp6", authorName: "Florida Cricket Hub", authorAvatar: "", authorRole: "team", authorVerified: true,
-    type: "general",
-    content: "Registration now open for the Florida Winter T20 Championship 2025! 32-team tournament starting January 15th. $5000 prize pool. Open to all skill levels.",
-    regions: ["All USA", "Florida"], images: [],
-    likes: 145, comments: [{ id: "c9", authorName: "Miami Strikers", content: "Count us in! Defending champs coming back.", timestamp: "1h ago" }],
-    shares: 89, timestamp: "1d ago", badges: ["Tournament"],
-  },
-  {
-    id: "fp7", authorName: "Coach Venkat Raman", authorAvatar: "", authorRole: "coach", authorVerified: true,
-    type: "spotlight",
-    content: "After watching 200+ players across 3 states this month, here are my top 5 rising talents to watch in US cricket: 1) Rahul Desai (IL), 2) Aditya K (CA), 3) Sameer Khan (NY), 4) David Williams (TX), 5) Vikram Singh (NJ). Selectors, take note!",
-    regions: ["All USA"], images: [],
-    likes: 478, comments: [
-      { id: "c10", authorName: "USA Cricket Official", content: "Noted! Great insights coach.", timestamp: "12h ago" },
-      { id: "c11", authorName: "Cricket Analyst", content: "Agreed on Rahul Desai. The kid is special.", timestamp: "8h ago" },
-    ], shares: 134, timestamp: "1d ago", badges: ["Coach Picks", "Talent Watch"], isTopPerformer: true,
-  },
-  {
-    id: "fp8", authorName: "Nikhil Sharma", authorAvatar: "", authorRole: "player", authorVerified: true,
-    type: "performance",
-    content: "Back-to-back fifties in the Georgia Premier League! 67(41) and 53(38) this weekend. Working hard on my power hitting and it is paying off.",
-    regions: ["All USA", "Georgia"], images: [],
-    statCard: { runs: 120, balls: 79, fours: 12, sixes: 5, strikeRate: 151.9, event: "Georgia Premier League", date: "2025-11-22", result: "Won both matches" },
-    likes: 198, comments: [{ id: "c13", authorName: "ATL Cricket Club", content: "Proud of you Nikhil!", timestamp: "7h ago" }],
-    shares: 41, timestamp: "10h ago", badges: ["Consistent Performer"], isVerifiedStat: true,
-  },
-  {
-    id: "fp9", authorName: "DMV Cricket League", authorAvatar: "", authorRole: "team", authorVerified: true,
-    type: "scorecard",
-    content: "Season recap: 48 matches, 15 teams, 600+ players. Congratulations to Northern Virginia CC for winning the DMV T20 Championship!",
-    regions: ["All USA", "Virginia"], images: [],
-    likes: 356, comments: [{ id: "c14", authorName: "NVCC Captain", content: "What a season! Grateful to the whole squad.", timestamp: "2d ago" }],
-    shares: 92, timestamp: "2d ago", badges: ["Season Recap", "Champions"],
-  },
-  {
-    id: "fp10", authorName: "Boston Cricket Academy", authorAvatar: "", authorRole: "academy", authorVerified: true,
-    type: "highlight",
-    content: "Our U19 squad just completed an unbeaten season in the New England Youth League! 8 wins from 8 matches. Special mention to captain Arjun Mehta (347 runs, avg 69.4) and pace spearhead Dev Patel (19 wickets, avg 11.2).",
-    regions: ["All USA", "Massachusetts"], images: [],
-    statCard: { event: "New England Youth League", date: "2025-11-25", result: "Unbeaten Season - 8/8 wins" },
-    likes: 289, comments: [{ id: "c15", authorName: "Arjun Mehta", content: "Team effort all the way! Proud to lead this group.", timestamp: "1d ago" }],
-    shares: 67, timestamp: "1d ago", badges: ["Unbeaten Season", "Youth Excellence"], isTopPerformer: true,
-  },
-];
+// Feed posts will come from real user activity
+const mockPosts: FeedPost[] = [];
 
-const SEED_LEADERBOARD: LeaderboardEntry[] = [
-  { rank: 1, user_id: "p1", full_name: "Arjun Patel", email: "arjun@cricverse360.com", academy: "Rising Star Cricket Academy", total_ce: 820, weekly_ce: 145, level: 4, level_name: "Rising Star", streak_count: 12 },
-  { rank: 2, user_id: "p10", full_name: "Neel Sharma", email: "neel@risingstar.com", academy: "Rising Star Cricket Academy", total_ce: 710, weekly_ce: 120, level: 4, level_name: "Rising Star", streak_count: 9 },
-  { rank: 3, user_id: "p3", full_name: "Rashid Mohammed", email: "rashid@cricverse360.com", academy: "Rising Star Cricket Academy", total_ce: 520, weekly_ce: 95, level: 3, level_name: "Prospect", streak_count: 7 },
-  { rank: 4, user_id: "p2", full_name: "Jake Thompson", email: "jake@cricverse360.com", academy: "Rising Star Cricket Academy", total_ce: 450, weekly_ce: 80, level: 3, level_name: "Prospect", streak_count: 5 },
-  { rank: 5, user_id: "p8", full_name: "Rahul Desai", email: "rahul@cricverse360.com", academy: "Rising Star Cricket Academy", total_ce: 310, weekly_ce: 65, level: 3, level_name: "Prospect", streak_count: 4 },
-];
+// Leaderboard will be populated from real user data
+const SEED_LEADERBOARD: LeaderboardEntry[] = [];
 
 const SEED_BADGES: Badge[] = [
   { id: "badge_first_step", name: "First Step", description: "Attend your 1st session", icon: "footprints", category: "attendance" },

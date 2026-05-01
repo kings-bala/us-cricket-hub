@@ -216,13 +216,9 @@ export default function RankingsPage() {
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-slate-500 text-lg">No players match your filters</p>
-          <button
-            onClick={() => { setSearch(""); setAgeGroup("All"); setRole("All"); setRegion("All"); }}
-            className="mt-4 text-emerald-400 hover:text-emerald-300 text-sm"
-          >
-            Clear all filters
-          </button>
+          <p className="text-slate-400 font-medium text-lg mb-2">No Rankings Yet</p>
+          <p className="text-slate-500 text-sm max-w-md mx-auto mb-4">Player rankings will populate as users upload videos and build their profiles on CricVerse360.</p>
+          <Link href="/analyze" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium">Be the First &mdash; Upload Your Video &rarr;</Link>
         </div>
       )}
     </div>

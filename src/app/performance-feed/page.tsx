@@ -160,13 +160,9 @@ export default function PerformanceFeedPage() {
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-slate-500 text-lg">No feed items match your filters</p>
-          <button
-            onClick={() => { setSearch(""); setTypeFilter("all"); setDateFilter(""); }}
-            className="mt-4 text-cyan-400 hover:text-cyan-300 text-sm"
-          >
-            Clear all filters
-          </button>
+          <p className="text-slate-400 font-medium text-lg mb-2">No Performance Updates Yet</p>
+          <p className="text-slate-500 text-sm max-w-md mx-auto mb-4">Performance highlights will appear here as players upload videos and complete analyses on CricVerse360.</p>
+          <Link href="/analyze" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium">Upload Your Video to Get Started &rarr;</Link>
         </div>
       )}
     </div>

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MOCK_PLAYERS = [
-  { id: "p1", name: "Arjun Patel", country: "USA", region: "Americas", role: "Batsman", ageGroup: "U19", stats: { matches: 45, runs: 1247, battingAverage: 34.6, wickets: 0, economy: 0 } },
-  { id: "p2", name: "Jake Thompson", country: "USA", region: "Americas", role: "All-Rounder", ageGroup: "U17", stats: { matches: 38, runs: 890, battingAverage: 28.7, wickets: 42, economy: 6.2 } },
-  { id: "p3", name: "Rashid Mohammed", country: "USA", region: "Americas", role: "Bowler", ageGroup: "U19", stats: { matches: 40, runs: 312, battingAverage: 12.0, wickets: 68, economy: 5.8 } },
-];
+// Empty — player data will be populated from real user profiles
+const MOCK_PLAYERS: { id: string; name: string; country: string; region: string; role: string; ageGroup: string; stats: { matches: number; runs: number; battingAverage: number; wickets: number; economy: number } }[] = [];
 
 export async function GET(req: NextRequest) {
   const apiKey = req.headers.get("x-api-key");

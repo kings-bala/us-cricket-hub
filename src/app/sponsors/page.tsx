@@ -93,7 +93,22 @@ export default function SponsorsPage() {
 
       <div className="mb-12">
         <h2 className="text-2xl font-bold text-white mb-2">Available Sponsorship Opportunities</h2>
-        <p className="text-slate-400 mb-6">Claim your digital real estate in the global cricket ecosystem</p>
+        <p className="text-slate-400 mb-6">Sponsor leaderboards, tournaments, player profiles, and more</p>
+        {availableSponsorships.length === 0 ? (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+            <span className="text-4xl mb-3 block">{"\u{1F4CB}"}</span>
+            <h3 className="text-lg font-semibold text-white mb-2">Sponsorship Packages Coming Soon</h3>
+            <p className="text-slate-400 text-sm max-w-md mx-auto mb-4">
+              We&apos;re finalizing our sponsorship tiers. Contact us to discuss early-access partnership opportunities.
+            </p>
+            <button
+              onClick={() => setInquiryTarget({ name: "Early Access Partnership", type: "partnership" })}
+              className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 px-6 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              Express Interest
+            </button>
+          </div>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {availableSponsorships.map((asset) => (
             <div key={asset.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-amber-500/50 transition-all group">
@@ -120,11 +135,21 @@ export default function SponsorsPage() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       <div className="mb-12">
         <h2 className="text-2xl font-bold text-white mb-2">Upcoming Sponsorable Events</h2>
         <p className="text-slate-400 mb-6">Showcase series and tournaments open for sponsorship</p>
+        {upcomingTournaments.length === 0 ? (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+            <span className="text-4xl mb-3 block">{"\u{1F3C6}"}</span>
+            <h3 className="text-lg font-semibold text-white mb-2">Events Calendar Coming Soon</h3>
+            <p className="text-slate-400 text-sm max-w-md mx-auto">
+              CricVerse360 is planning youth cricket events. Check back soon or contact us to propose an event partnership.
+            </p>
+          </div>
+        ) : (
         <div className="grid md:grid-cols-2 gap-4">
           {upcomingTournaments.map((t) => (
             <div key={t.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 flex items-center justify-between">
@@ -149,6 +174,7 @@ export default function SponsorsPage() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       <div className="bg-gradient-to-r from-amber-900/50 to-orange-900/50 border border-amber-500/20 rounded-xl p-8 text-center">

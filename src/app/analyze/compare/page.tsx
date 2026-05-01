@@ -6,21 +6,18 @@ import { getHistory, type SavedAnalysis } from "@/lib/analysis-history";
 
 const PRO_BENCHMARKS: Record<string, { name: string; country: string; scores: Record<string, number>; tips: string }[]> = {
   batting: [
-    { name: "Virat Kohli", country: "India", scores: { "Stance & Setup": 96, "Backlift & Grip": 94, "Head Position": 98, "Balance & Weight Transfer": 97, "Footwork": 95 }, tips: "Known for still head, aggressive weight transfer into drives, and textbook front-foot play." },
-    { name: "Steve Smith", country: "Australia", scores: { "Stance & Setup": 78, "Backlift & Grip": 82, "Head Position": 95, "Balance & Weight Transfer": 93, "Footwork": 88 }, tips: "Unorthodox stance but exceptional balance. Uses deep crease movement and strong bottom hand." },
-    { name: "Joe Root", country: "England", scores: { "Stance & Setup": 95, "Backlift & Grip": 93, "Head Position": 96, "Balance & Weight Transfer": 94, "Footwork": 92 }, tips: "Classical technique with minimal movement. Excellent at playing late and using soft hands." },
-    { name: "Kane Williamson", country: "New Zealand", scores: { "Stance & Setup": 94, "Backlift & Grip": 92, "Head Position": 97, "Balance & Weight Transfer": 95, "Footwork": 93 }, tips: "Minimal backlift, plays very late, exceptional at leaving deliveries outside off stump." },
+    { name: "Elite Classical Batsman", country: "International", scores: { "Stance & Setup": 95, "Backlift & Grip": 93, "Head Position": 97, "Balance & Weight Transfer": 95, "Footwork": 93 }, tips: "Still head position, textbook front-foot play, and aggressive weight transfer into drives. Classical technique with minimal pre-delivery movement." },
+    { name: "Unorthodox Power Hitter", country: "International", scores: { "Stance & Setup": 78, "Backlift & Grip": 82, "Head Position": 94, "Balance & Weight Transfer": 93, "Footwork": 88 }, tips: "Unconventional stance compensated by exceptional balance. Deep crease movement and strong bottom hand generate power from unusual positions." },
+    { name: "Textbook Technician", country: "International", scores: { "Stance & Setup": 94, "Backlift & Grip": 92, "Head Position": 96, "Balance & Weight Transfer": 94, "Footwork": 92 }, tips: "Minimal backlift and late shot selection. Excellent at leaving deliveries outside off stump. Relies on timing over power." },
   ],
   bowling: [
-    { name: "Jasprit Bumrah", country: "India", scores: { "Bowling Arm Action": 92, "Front Arm Drive": 88, "Trunk Rotation": 95, "Front Knee Brace": 97, "Hip-Shoulder Separation": 94 }, tips: "Unique slingy action, hyperextended front knee, generates extreme pace from short run-up." },
-    { name: "Pat Cummins", country: "Australia", scores: { "Bowling Arm Action": 96, "Front Arm Drive": 94, "Trunk Rotation": 93, "Front Knee Brace": 95, "Hip-Shoulder Separation": 92 }, tips: "Textbook side-on action. Smooth run-up with excellent front arm pull-through." },
-    { name: "Rashid Khan", country: "Afghanistan", scores: { "Bowling Arm Action": 90, "Front Arm Drive": 86, "Trunk Rotation": 88, "Front Knee Brace": 85, "Hip-Shoulder Separation": 91 }, tips: "Wrist spinner with quick arm speed. Disguises variations with minimal change in action." },
-    { name: "Shaheen Afridi", country: "Pakistan", scores: { "Bowling Arm Action": 94, "Front Arm Drive": 91, "Trunk Rotation": 92, "Front Knee Brace": 93, "Hip-Shoulder Separation": 90 }, tips: "Left-arm pace with high release point. Uses angle across right-handers effectively." },
+    { name: "Express Pace Bowler", country: "International", scores: { "Bowling Arm Action": 95, "Front Arm Drive": 93, "Trunk Rotation": 94, "Front Knee Brace": 96, "Hip-Shoulder Separation": 93 }, tips: "Textbook side-on action with smooth run-up. Strong front arm pull-through generates pace consistently. Hyperextended front knee at delivery." },
+    { name: "Swing Specialist", country: "International", scores: { "Bowling Arm Action": 93, "Front Arm Drive": 90, "Trunk Rotation": 91, "Front Knee Brace": 92, "Hip-Shoulder Separation": 90 }, tips: "High release point with upright seam position. Uses angle across batsmen and generates late swing through wrist position." },
+    { name: "Elite Spin Bowler", country: "International", scores: { "Bowling Arm Action": 90, "Front Arm Drive": 86, "Trunk Rotation": 88, "Front Knee Brace": 85, "Hip-Shoulder Separation": 91 }, tips: "Quick arm speed with disguised variations. Minimal change in bowling action between deliveries makes reading difficult." },
   ],
   fielding: [
-    { name: "Ravindra Jadeja", country: "India", scores: { "Ready Position": 96, "Ground Fielding": 97, "Throwing Accuracy": 98, "Catching": 93, "Agility": 95 }, tips: "Elite arm strength and accuracy. Lightning quick release on direct hits." },
-    { name: "Glenn Maxwell", country: "Australia", scores: { "Ready Position": 92, "Ground Fielding": 94, "Throwing Accuracy": 93, "Catching": 95, "Agility": 94 }, tips: "Outstanding all-round fielder. Safe hands under pressure, strong flat throws." },
-    { name: "Ben Stokes", country: "England", scores: { "Ready Position": 91, "Ground Fielding": 93, "Throwing Accuracy": 90, "Catching": 96, "Agility": 92 }, tips: "Exceptional slip catcher. Good awareness of positioning and anticipation." },
+    { name: "Athletic Ground Fielder", country: "International", scores: { "Ready Position": 95, "Ground Fielding": 96, "Throwing Accuracy": 97, "Catching": 93, "Agility": 95 }, tips: "Elite arm strength and accuracy. Lightning quick release on direct hits. Low center of gravity for clean pick-ups." },
+    { name: "Safe-Hands Specialist", country: "International", scores: { "Ready Position": 92, "Ground Fielding": 93, "Throwing Accuracy": 92, "Catching": 96, "Agility": 93 }, tips: "Exceptional catching under pressure. Good anticipation and positioning in the slip cordon. Reliable in high-pressure moments." },
   ],
 };
 
@@ -66,7 +63,7 @@ export default function ComparePage() {
           <span className="text-xs bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded-full border border-cyan-500/30">Side-by-Side</span>
         </div>
         <p className="text-sm text-slate-400">Compare your technique scores against professional cricket players.</p>
-        <p className="text-xs text-slate-500 mt-1">Pro benchmark scores are estimated based on publicly available coaching analysis. These players are not affiliated with CricVerse360.</p>
+        <p className="text-xs text-slate-500 mt-1">Benchmark scores represent typical technique ranges for elite-level players based on coaching literature. These are reference standards, not individual player profiles.</p>
       </div>
 
       <div className="grid lg:grid-cols-4 gap-6">

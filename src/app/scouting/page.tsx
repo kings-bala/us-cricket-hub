@@ -56,6 +56,12 @@ function ScoutingContent() {
       </div>
 
       <div className="grid lg:grid-cols-4 gap-4 mb-6 animate-fade-up" style={{ animationDelay: '0.1s' }}>
+        {t20Teams.length === 0 && (
+          <div className="lg:col-span-4 bg-slate-800/50 border border-slate-700/50 rounded-xl p-8 text-center">
+            <p className="text-slate-400 text-sm">Team partnerships coming soon. Upload your video to get noticed by scouts.</p>
+            <Link href="/analyze" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium mt-2 inline-block">Upload Your Video &rarr;</Link>
+          </div>
+        )}
         {t20Teams.slice(0, 4).map((team) => (
           <div key={team.id} className="glass-card rounded-xl p-4 hover:border-purple-500/50 transition-all cursor-pointer" onClick={() => { setRegion("All"); setAgeGroup("All"); setRole("All"); }}>
             <div className="flex items-center gap-3 mb-2">
@@ -221,7 +227,9 @@ function ScoutingContent() {
         </div>
         {filtered.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-slate-500">No players match your scouting criteria</p>
+            <p className="text-slate-400 font-medium mb-2">No Player Profiles Yet</p>
+            <p className="text-slate-500 text-sm max-w-md mx-auto">Player profiles will appear here as users upload videos and build their profiles on CricVerse360.</p>
+            <Link href="/analyze" className="text-emerald-400 hover:text-emerald-300 text-sm font-medium mt-3 inline-block">Be the First &mdash; Upload Your Video &rarr;</Link>
           </div>
         )}
       </div>

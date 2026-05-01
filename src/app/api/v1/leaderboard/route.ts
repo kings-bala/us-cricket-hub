@@ -13,11 +13,8 @@ export async function GET(req: NextRequest) {
   const category = url.searchParams.get("category") || "overall";
   const limit = Math.min(parseInt(url.searchParams.get("limit") || "20"), 50);
 
-  const entries = [
-    { rank: 1, playerId: "p1", name: "Arjun Patel", score: 892, region: "Americas" },
-    { rank: 2, playerId: "p3", name: "Rashid Mohammed", score: 845, region: "Americas" },
-    { rank: 3, playerId: "p2", name: "Jake Thompson", score: 801, region: "Americas" },
-  ];
+  // Empty — leaderboard will be populated from real user data
+  const entries: { rank: number; playerId: string; name: string; score: number; region: string }[] = [];
 
   return NextResponse.json({
     data: { category, entries: entries.slice(0, limit) },
