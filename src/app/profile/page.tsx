@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiPut } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 interface PlayerProfile {
   id: string;
@@ -128,12 +129,26 @@ export default function ProfilePage() {
           </p>
         </div>
         {profile && (
-          <Link
-            href={`/player/${profile.username}`}
-            className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-          >
-            View Public Profile
-          </Link>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                const url = `${window.location.origin}/player/${profile.username}`;
+                navigator.clipboard.writeText(url);
+                trackEvent("profile_shared", { username: profile.username }, tokens?.accessToken);
+                alert("Profile link copied!");
+              }}
+              className="text-sm text-slate-400 hover:text-white border border-slate-600 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Share Profile
+            </button>
+            <Link
+              href={`/player/${profile.username}`}
+              className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+            >
+              View Public Profile
+            </Link>
+          </div>
         )}
       </div>
 

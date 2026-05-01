@@ -305,6 +305,7 @@ export default function ShareCard(props: ShareCardProps) {
     link.download = `cricverse360-${props.playerName.replace(/\s+/g, "-").toLowerCase()}.png`;
     link.href = canvasRef.current.toDataURL("image/png");
     link.click();
+    trackEvent("share_card_downloaded", { playerName: props.playerName, score: props.overallScore });
     trackEvent("share_card_shared", { method: "download", playerName: props.playerName, score: props.overallScore });
     markShared();
   };
@@ -329,6 +330,7 @@ export default function ShareCard(props: ShareCardProps) {
     navigator.clipboard.writeText(shareUrl).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      trackEvent("share_link_copied", { playerName: props.playerName, score: props.overallScore });
       trackEvent("share_card_shared", { method: "copy_link", playerName: props.playerName, score: props.overallScore });
       markShared();
     });

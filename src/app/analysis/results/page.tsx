@@ -46,6 +46,7 @@ function UpgradeCard({ tokens, router }: { tokens: { accessToken?: string } | nu
       return;
     }
     setLoading(planKey);
+    trackEvent("unlock_clicked", { plan: planKey, source: "paywall" }, tokens.accessToken);
     trackEvent("checkout_started", { plan: planKey, source: "paywall" }, tokens.accessToken);
     try {
       const data = await apiPost<{ url: string }>("/checkout", {
@@ -215,6 +216,7 @@ export default function AnalysisResultsPage() {
         const parsed = JSON.parse(stored);
         setResult(parsed);
         trackEvent("report_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score, isPaid: !!parsed.isPaid }, tokens?.accessToken);
+        trackEvent("share_prompt_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
         if (!parsed.isPaid) {
           trackEvent("paywall_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
         }
@@ -242,6 +244,7 @@ export default function AnalysisResultsPage() {
   const handleStickyCheckout = async (planKey: string) => {
     if (!tokens?.accessToken) { router.push("/auth"); return; }
     setStickyLoading(planKey);
+    trackEvent("unlock_clicked", { plan: planKey, source: "sticky_cta" }, tokens.accessToken);
     trackEvent("checkout_started", { plan: planKey, source: "sticky_cta" }, tokens.accessToken);
     try {
       const data = await apiPost<{ url: string }>("/checkout", {
