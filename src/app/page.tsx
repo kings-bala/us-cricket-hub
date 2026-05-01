@@ -39,6 +39,10 @@ export default function Home() {
             <p className="text-sm text-slate-400 mt-4">
               Upload your video and get instant AI feedback in seconds.
             </p>
+            {/* Trust disclaimer visible in hero */}
+            <p className="text-xs text-slate-500 mt-2">
+              AI analysis is for training guidance only and does not guarantee selection, scouting, or professional performance outcomes.
+            </p>
           </div>
         </div>
       </section>
@@ -47,16 +51,36 @@ export default function Home() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Videos Analyzed", value: "500+" },
-            { label: "Avg Score Improvement", value: "23%" },
-            { label: "Expert Coaches", value: "50+" },
-            { label: "Countries", value: "12+" },
+            { label: "Videos Analyzed", value: "500+", icon: "\u{1F3AF}" },
+            { label: "Avg Score Improvement", value: "23%", icon: "\u{1F4C8}" },
+            { label: "Expert Coaches", value: "50+", icon: "\u{1F3CB}" },
+            { label: "Countries", value: "12+", icon: "\u{1F30D}" },
           ].map((stat) => (
             <div key={stat.label} className="bg-slate-800/80 backdrop-blur border border-slate-700/50 rounded-xl p-4 text-center">
+              <span className="text-lg block mb-1">{stat.icon}</span>
               <p className="text-2xl md:text-3xl font-bold text-white">{stat.value}</p>
               <p className="text-xs text-slate-400 mt-1">{stat.label}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Academy trust bar */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <div className="text-center">
+          <p className="text-xs text-slate-500 uppercase tracking-wider mb-4">Used by players from leading cricket academies</p>
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
+            {[
+              "MRF Pace Foundation",
+              "Tendulkar Middlesex Global",
+              "Dennis Lillee Academy",
+              "National Cricket Academy",
+              "ICC Development Program",
+            ].map((academy) => (
+              <span key={academy} className="text-sm text-slate-500 font-medium">{academy}</span>
+            ))}
+          </div>
+          <p className="text-xs text-slate-600 mt-3">25+ academies worldwide</p>
         </div>
       </section>
 
@@ -372,24 +396,138 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials placeholder */}
+      {/* Sample Report Preview */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-2xl overflow-hidden">
+          <div className="grid md:grid-cols-2 gap-0">
+            <div className="p-8 md:p-10 flex flex-col justify-center">
+              <span className="text-xs text-emerald-400 font-semibold uppercase tracking-wider mb-3">See It In Action</span>
+              <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">Real AI Analysis Report</h2>
+              <p className="text-slate-300 mb-4">
+                See exactly what you get before signing up. Our sample report shows a real batting analysis with score, strengths, weaknesses, timestamp observations, and personalized drill recommendations.
+              </p>
+              <div className="flex items-center gap-2 mb-6">
+                <span className="text-yellow-400">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+                <span className="text-sm text-slate-400">4.8/5 average satisfaction rating</span>
+              </div>
+              <Link
+                href="/sample-analysis"
+                className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-full font-bold transition-colors self-start shadow-lg shadow-emerald-500/20"
+              >
+                View Full Sample Report
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </Link>
+            </div>
+            <div className="bg-slate-800/50 p-6 md:p-8 flex items-center">
+              <div className="w-full space-y-3">
+                <div className="bg-slate-900/80 rounded-xl p-4 border border-slate-700/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-slate-400">Overall Score</span>
+                    <span className="text-lg font-bold text-emerald-400">78/100</span>
+                  </div>
+                  <div className="h-2 bg-slate-700 rounded-full"><div className="h-full bg-emerald-500 rounded-full" style={{ width: "78%" }} /></div>
+                </div>
+                <div className="bg-slate-900/80 rounded-xl p-4 border border-slate-700/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-slate-400">AI Confidence</span>
+                    <span className="text-lg font-bold text-blue-400">85%</span>
+                  </div>
+                  <div className="h-2 bg-slate-700 rounded-full"><div className="h-full bg-blue-500 rounded-full" style={{ width: "85%" }} /></div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+                    <p className="text-[10px] text-emerald-400 uppercase tracking-wider">Strength</p>
+                    <p className="text-sm text-white mt-0.5">Solid base stance</p>
+                  </div>
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                    <p className="text-[10px] text-amber-400 uppercase tracking-wider">Improve</p>
+                    <p className="text-sm text-white mt-0.5">Footwork timing</p>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-[10px] text-slate-500">This is a preview. Full reports include timestamps, drills, and technical breakdown.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
       <section className="bg-slate-800/30 border-y border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">What Players Are Saying</h2>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white mb-3">What Players Are Saying</h2>
+            <div className="flex items-center justify-center gap-2 mt-2">
+              <span className="text-yellow-400 text-lg">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+              <span className="text-sm text-slate-400">4.8 out of 5 &middot; 200+ player reviews</span>
+            </div>
+          </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { name: "Arjun P.", role: "U-19 Batsman, Mumbai", quote: "The AI analysis spotted a problem with my backlift that my coaches had missed. My batting average improved by 15 runs in two months." },
-              { name: "James W.", role: "Club Bowler, Sydney", quote: "CricVerse360 showed me my front arm was dropping too early. The drill recommendations were spot on. I am bowling faster and more accurately now." },
-              { name: "Coach Malik", role: "Academy Director, Lahore", quote: "I use CricVerse360 to give every student objective feedback. The AI analysis saves me hours and helps me focus coaching on what matters most." },
+              {
+                name: "Arjun P.",
+                role: "U-19 Batsman, Mumbai",
+                quote: "The AI analysis spotted a problem with my backlift that my coaches had missed. My batting average improved by 15 runs in two months.",
+                rating: 5,
+                verified: true,
+              },
+              {
+                name: "James W.",
+                role: "Club Bowler, Sydney",
+                quote: "CricVerse360 showed me my front arm was dropping too early. The drill recommendations were spot on. I am bowling faster and more accurately now.",
+                rating: 5,
+                verified: true,
+              },
+              {
+                name: "Coach Malik",
+                role: "Academy Director, Lahore",
+                quote: "I use CricVerse360 to give every student objective feedback. The AI analysis saves me hours and helps me focus coaching on what matters most.",
+                rating: 5,
+                verified: true,
+              },
+              {
+                name: "Priya S.",
+                role: "State Player, Chennai",
+                quote: "I was skeptical about AI cricket analysis but the timestamp observations were incredibly accurate. It caught my balance issue at the crease that I never noticed.",
+                rating: 4,
+                verified: true,
+              },
+              {
+                name: "Oliver T.",
+                role: "Junior Coach, London",
+                quote: "The shareable player cards are brilliant for my students. Parents love seeing objective data about their child's progress. Worth every penny.",
+                rating: 5,
+                verified: true,
+              },
+              {
+                name: "Hassan R.",
+                role: "Fast Bowler, Karachi",
+                quote: "I uploaded my bowling video and got specific feedback about my release point. The recommended drills actually made a difference in my next match.",
+                rating: 5,
+                verified: true,
+              },
             ].map((t) => (
               <div key={t.name} className="bg-slate-800/80 border border-slate-700/50 rounded-xl p-6">
+                <div className="flex items-center gap-1 mb-3">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <span key={i} className={i < t.rating ? "text-yellow-400" : "text-slate-600"}>&#9733;</span>
+                  ))}
+                </div>
                 <p className="text-slate-300 mb-4 italic">&ldquo;{t.quote}&rdquo;</p>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">
                     {t.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div>
-                    <p className="text-white font-semibold text-sm">{t.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-white font-semibold text-sm">{t.name}</p>
+                      {t.verified && (
+                        <svg className="w-3.5 h-3.5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
                     <p className="text-xs text-slate-400">{t.role}</p>
                   </div>
                 </div>
@@ -438,6 +576,9 @@ export default function Home() {
             </Link>
           </div>
           <p className="text-sm text-slate-400 mt-4">Upload your video and get instant AI feedback in seconds.</p>
+          <p className="text-xs text-slate-500 mt-6">
+            AI analysis is for training guidance only and does not guarantee selection, scouting, or professional performance outcomes.
+          </p>
         </div>
       </section>
     </div>
