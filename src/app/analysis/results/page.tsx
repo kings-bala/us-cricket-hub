@@ -26,8 +26,11 @@ interface AnalysisResult {
   timestamp_observations?: TimestampObservation[];
   strengths: string[];
   weaknesses: string[];
+  fix_first?: { issue: string; why_it_matters: string; how_to_fix: string };
   technical_feedback: Record<string, string>;
   recommended_drills: { name: string; purpose: string; instructions: string }[];
+  seven_day_plan?: { day: number; focus: string; drill: string; duration: string }[];
+  share_card_summary?: { top_strength: string; top_improvement_area: string };
   next_steps: string[];
   disclaimer?: string;
   confidence: string;
@@ -349,6 +352,31 @@ export default function AnalysisResultsPage() {
         </div>
       </div>
 
+      {/* Fix First — shown to ALL users (issue visible, how_to_fix locked for free) */}
+      {a.fix_first && (
+        <div className="bg-gradient-to-r from-amber-900/20 to-red-900/20 border border-amber-500/30 rounded-xl p-6 mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">&#x1F3AF;</span>
+            <h2 className="text-lg font-bold text-amber-400">Fix This First</h2>
+          </div>
+          <p className="text-white font-semibold mb-2">{a.fix_first.issue}</p>
+          <p className="text-sm text-slate-300 mb-3">{a.fix_first.why_it_matters}</p>
+          {isFree ? (
+            <div className="bg-slate-800/50 border border-amber-500/20 rounded-lg p-3">
+              <p className="text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                Upgrade to see exactly how to fix this
+              </p>
+            </div>
+          ) : (
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3">
+              <p className="text-xs text-emerald-400 font-semibold mb-1">How to Fix:</p>
+              <p className="text-sm text-slate-300">{a.fix_first.how_to_fix}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* === PAYWALL: Upgrade card for free users === */}
       {isFree && <UpgradeCard tokens={tokens} router={router} />}
 
@@ -406,22 +434,41 @@ export default function AnalysisResultsPage() {
         </div>
       </LockedSection>
 
-      {/* Next Steps — LOCKED for free */}
+      {/* 7-Day Plan — LOCKED for free */}
       <LockedSection
         title="7-Day Improvement Plan"
         teaser="Get your personalized weekly training plan"
         isFree={isFree}
       >
-        <ol className="space-y-2">
-          {a.next_steps.map((step, i) => (
-            <li key={step} className="flex items-start gap-3 text-sm text-slate-300">
-              <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-0.5 shrink-0 text-blue-400 text-xs font-bold">
-                {i + 1}
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
+        {a.seven_day_plan ? (
+          <div className="space-y-3">
+            {a.seven_day_plan.map((day: { day: number; focus: string; drill: string; duration: string }) => (
+              <div key={day.day} className="flex gap-4 items-start bg-slate-800/30 border border-slate-700/30 rounded-lg p-4">
+                <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+                  <span className="text-blue-400 text-sm font-bold">D{day.day}</span>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h4 className="text-sm font-semibold text-white">{day.focus}</h4>
+                    <span className="text-xs text-slate-500 bg-slate-800/50 px-2 py-0.5 rounded">{day.duration}</span>
+                  </div>
+                  <p className="text-sm text-slate-300">{day.drill}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ol className="space-y-2">
+            {a.next_steps.map((step: string, i: number) => (
+              <li key={step} className="flex items-start gap-3 text-sm text-slate-300">
+                <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-0.5 shrink-0 text-blue-400 text-xs font-bold">
+                  {i + 1}
+                </span>
+                {step}
+              </li>
+            ))}
+          </ol>
+        )}
       </LockedSection>
 
       {/* Share Prompt — shown for ALL users */}
@@ -441,8 +488,8 @@ export default function AnalysisResultsPage() {
           role={playerRole}
           overallScore={a.overall_score}
           confidenceScore={confidenceScore}
-          topStrength={a.strengths[0] || ""}
-          topImprovement={a.weaknesses[0] || ""}
+          topStrength={a.share_card_summary?.top_strength || a.strengths[0] || ""}
+          topImprovement={a.share_card_summary?.top_improvement_area || a.weaknesses[0] || ""}
           analysisType={a.analysis_type}
         />
       </div>
