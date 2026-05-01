@@ -497,7 +497,8 @@ export default function AnalyzePage() {
                 const analysisJson = JSON.stringify(analysis);
                 sessionStorage.setItem("latestAnalysis", analysisJson);
                 localStorage.setItem("cricverse360_latestAnalysis", analysisJson);
-                router.push("/analysis/results");
+                const aid = (analysis as Record<string, unknown>).analysisId;
+                router.push(aid ? `/analysis/results?id=${aid}` : "/analysis/results");
               } catch (err) {
                 const msg = err instanceof Error ? err.message : "Analysis failed";
                 trackEvent("analysis_failed", { analysisType, error: msg }, tokens?.accessToken);
