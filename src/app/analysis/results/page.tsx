@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ShareCard from "@/components/ShareCard";
 import { useAuth } from "@/lib/auth";
-import { apiPost } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { trackEvent } from "@/lib/analytics";
 
 interface TimestampObservation {
@@ -37,13 +37,14 @@ interface AnalysisResult {
   isPaid?: boolean;
 }
 
-function UpgradeCard({ tokens, router }: { tokens: { accessToken?: string } | null; router: ReturnType<typeof useRouter> }) {
+function UpgradeCard({ tokens, router, analysisId }: { tokens: { accessToken?: string } | null; router: ReturnType<typeof useRouter>; analysisId?: string }) {
   const [loading, setLoading] = useState("");
 
   const handleCheckout = async (planKey: string) => {
     if (!tokens?.accessToken) {
-      sessionStorage.setItem('cricverse360_auth_redirect', '/analysis/results');
-      router.push("/auth?next=/analysis/results");
+      const redirectPath = analysisId ? `/analysis/results?id=${analysisId}` : '/analysis/results';
+      sessionStorage.setItem('cricverse360_auth_redirect', redirectPath);
+      router.push(`/auth?next=${encodeURIComponent(redirectPath)}`);
       return;
     }
     setLoading(planKey);
@@ -52,8 +53,8 @@ function UpgradeCard({ tokens, router }: { tokens: { accessToken?: string } | nu
     try {
       const data = await apiPost<{ url: string }>("/checkout", {
         plan: planKey,
-        successUrl: `${window.location.origin}/analysis/results?upgraded=true`,
-        cancelUrl: `${window.location.origin}/analysis/results`,
+        successUrl: `${window.location.origin}/analysis/results?upgraded=true${analysisId ? `&id=${analysisId}` : ""}`,
+        cancelUrl: `${window.location.origin}/analysis/results${analysisId ? `?id=${analysisId}` : ""}`,
       }, tokens.accessToken);
       if (data.url) {
         window.location.href = data.url;
@@ -211,23 +212,50 @@ export default function AnalysisResultsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("latestAnalysis") || localStorage.getItem("cricverse360_latestAnalysis");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        setResult(parsed);
-        trackEvent("report_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score, isPaid: !!parsed.isPaid }, tokens?.accessToken);
-        trackEvent("share_prompt_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
-        if (!parsed.isPaid) {
-          trackEvent("paywall_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
-        }
-      } catch { /* noop */ }
+    const params = new URLSearchParams(window.location.search);
+    const analysisId = params.get("id");
+
+    async function loadAnalysis() {
+      // Try fetching from backend by ID first
+      if (analysisId && tokens?.accessToken) {
+        try {
+          const data = await apiGet<AnalysisResult>(`/analysis/${analysisId}`, tokens.accessToken);
+          if (data && data.overall_score !== undefined) {
+            setResult(data);
+            // Cache locally too
+            const json = JSON.stringify(data);
+            sessionStorage.setItem("latestAnalysis", json);
+            localStorage.setItem("cricverse360_latestAnalysis", json);
+            trackEvent("report_viewed", { analysisType: data.analysis_type, score: data.overall_score, isPaid: !!data.isPaid }, tokens.accessToken);
+            if (!data.isPaid) {
+              trackEvent("paywall_viewed", { analysisType: data.analysis_type, score: data.overall_score }, tokens.accessToken);
+            }
+            return;
+          }
+        } catch { /* fall through to local storage */ }
+      }
+
+      // Fallback to local storage
+      const stored = sessionStorage.getItem("latestAnalysis") || localStorage.getItem("cricverse360_latestAnalysis");
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          setResult(parsed);
+          trackEvent("report_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score, isPaid: !!parsed.isPaid }, tokens?.accessToken);
+          trackEvent("share_prompt_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
+          if (!parsed.isPaid) {
+            trackEvent("paywall_viewed", { analysisType: parsed.analysis_type, score: parsed.overall_score }, tokens?.accessToken);
+          }
+        } catch { /* noop */ }
+      }
     }
 
-    const params = new URLSearchParams(window.location.search);
+    loadAnalysis();
+
     if (params.get("upgraded") === "true") {
       trackEvent("one_time_purchase_completed", {}, tokens?.accessToken);
-      window.history.replaceState({}, "", window.location.pathname);
+      const cleanUrl = analysisId ? `${window.location.pathname}?id=${analysisId}` : window.location.pathname;
+      window.history.replaceState({}, "", cleanUrl);
     }
   }, [tokens]);
 
@@ -256,8 +284,8 @@ export default function AnalysisResultsPage() {
     try {
       const data = await apiPost<{ url: string }>("/checkout", {
         plan: planKey,
-        successUrl: `${window.location.origin}/analysis/results?upgraded=true`,
-        cancelUrl: `${window.location.origin}/analysis/results`,
+        successUrl: `${window.location.origin}/analysis/results?upgraded=true${a.analysisId ? `&id=${a.analysisId}` : ""}`,
+        cancelUrl: `${window.location.origin}/analysis/results${a.analysisId ? `?id=${a.analysisId}` : ""}`,
       }, tokens.accessToken);
       if (data.url) window.location.href = data.url;
     } catch {
@@ -388,7 +416,7 @@ export default function AnalysisResultsPage() {
       )}
 
       {/* === PAYWALL: Upgrade card for free users === */}
-      {isFree && <UpgradeCard tokens={tokens} router={router} />}
+      {isFree && <UpgradeCard tokens={tokens} router={router} analysisId={a.analysisId} />}
 
       {/* Timestamp Observations — LOCKED for free */}
       {a.timestamp_observations && a.timestamp_observations.length > 0 && (
@@ -505,7 +533,7 @@ export default function AnalysisResultsPage() {
       </div>
 
       {/* Bottom Upgrade Card for free users */}
-      {isFree && <UpgradeCard tokens={tokens} router={router} />}
+      {isFree && <UpgradeCard tokens={tokens} router={router} analysisId={a.analysisId} />}
 
       {/* Trust + Disclaimer */}
       <div className="flex flex-wrap justify-center gap-3 mb-4">
