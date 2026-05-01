@@ -286,8 +286,7 @@ export default function Home() {
                   See exactly what you get before signing up. Our sample report shows a real batting analysis with score, strengths, weaknesses, timestamp observations, and personalized drill recommendations.
                 </p>
                 <div className="flex items-center gap-2 mb-6">
-                  <span className="text-yellow-400">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-                  <span className="text-sm text-slate-400">4.8/5 average satisfaction rating</span>
+                  <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full">Powered by Google Gemini AI</span>
                 </div>
                 <Link
                   href="/sample-analysis"
@@ -351,6 +350,45 @@ export default function Home() {
           >
             Upload Your Video Free
           </Link>
+        </div>
+      </section>
+
+      {/* Top Players This Week */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="text-center mb-10">
+          <span className="text-xs text-yellow-400 font-semibold uppercase tracking-widest">Leaderboard</span>
+          <h2 className="text-3xl font-bold text-white mt-2 mb-3">Top Players This Week</h2>
+          <p className="text-slate-400">Upload your video and compete for the top spot.</p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          {[1, 2, 3].map((rank) => {
+            const medals = ["\u{1F947}", "\u{1F948}", "\u{1F949}"];
+            const borders = ["border-yellow-500/40", "border-slate-400/40", "border-amber-600/40"];
+            const bgs = ["bg-yellow-500/10", "bg-slate-400/10", "bg-amber-600/10"];
+            return (
+              <div key={rank} className={`${bgs[rank - 1]} border ${borders[rank - 1]} rounded-2xl p-6 text-center`}>
+                <span className="text-4xl block mb-3">{medals[rank - 1]}</span>
+                <div className="w-16 h-16 rounded-full border-2 border-slate-600 bg-slate-800/80 flex items-center justify-center mx-auto mb-3">
+                  <span className="text-slate-500 text-lg">#{rank}</span>
+                </div>
+                <p className="text-white font-semibold mb-1">Could be you</p>
+                <p className="text-xs text-slate-400">Upload to claim this spot</p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="text-center mt-8 space-y-3">
+          <Link
+            href="/analyze"
+            className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/25"
+          >
+            Upload Your Video to Get Ranked
+          </Link>
+          <p className="text-sm">
+            <Link href="/leaderboard" className="text-slate-400 hover:text-white transition-colors">
+              View Full Leaderboard &rarr;
+            </Link>
+          </p>
         </div>
       </section>
 

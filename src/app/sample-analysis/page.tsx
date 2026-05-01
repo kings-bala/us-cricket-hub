@@ -159,7 +159,7 @@ function CTASection({ variant = "primary" }: { variant?: "primary" | "mid" | "bo
           href="/analyze"
           className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
         >
-          Get Your Cricket Score Free
+          Upload Your Video Free
         </Link>
         <Link
           href="/pricing"

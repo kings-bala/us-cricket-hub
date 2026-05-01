@@ -99,20 +99,45 @@ export default function AnalyzePage() {
 
   const [analysisStep, setAnalysisStep] = useState("");
 
+  const [uploadError, setUploadError] = useState("");
+
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      setUploadError("");
+
+      const maxSize = 200 * 1024 * 1024;
+      if (file.size > maxSize) {
+        setUploadError(`File too large (${(file.size / (1024 * 1024)).toFixed(0)} MB). Maximum is 200 MB.`);
+        return;
+      }
+      const allowed = ["video/mp4", "video/quicktime", "video/webm", "video/x-msvideo", "video/x-matroska"];
+      if (!allowed.includes(file.type) && !file.type.startsWith("video/")) {
+        setUploadError("Unsupported file type. Please upload MP4, MOV, or WebM.");
+        return;
+      }
 
       if (videoUrl) URL.revokeObjectURL(videoUrl);
 
       setVideoFile(file);
-      setVideoUrl(URL.createObjectURL(file));
+      const url = URL.createObjectURL(file);
+      setVideoUrl(url);
       setSummary(null);
       setFrameResults([]);
       setSelectedKeyFrame(null);
       setAnalysisStep("");
       if (fileInputRef.current) fileInputRef.current.value = "";
+
+      const tempVideo = document.createElement("video");
+      tempVideo.preload = "metadata";
+      tempVideo.onloadedmetadata = () => {
+        URL.revokeObjectURL(tempVideo.src);
+        if (tempVideo.duration > 120) {
+          setUploadError(`Video is ${Math.round(tempVideo.duration)}s long. For best results, keep it under 60 seconds.`);
+        }
+      };
+      tempVideo.src = url;
     },
     [videoUrl]
   );
@@ -246,38 +271,13 @@ export default function AnalyzePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-3 flex items-center justify-end">
-        <Link href="/analyze/live" className="flex items-center gap-2 text-sm bg-red-500/10 text-red-400 px-4 py-2 rounded-full border border-red-500/30 hover:bg-red-500/20 transition-colors">
-          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-          Live Camera Analysis
-        </Link>
-      </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        {[
-          { href: "/analyze/coach", label: "AI Coach", color: "purple" },
-          { href: "/analyze/compare", label: "Pro Comparison", color: "cyan" },
-          { href: "/analyze/session", label: "Net Session Tracker", color: "cyan" },
-        ].map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors bg-${item.color}-500/10 text-${item.color}-400 border-${item.color}-500/30 hover:bg-${item.color}-500/20`}
-          >
-            {item.label}
-          </Link>
-        ))}
-      </div>
       <div className="mb-8 animate-fade-up">
-        <p className="text-xs uppercase tracking-widest text-emerald-400 mb-2">Analysis Suite</p>
-        <h1 className="text-3xl font-bold text-white mb-2">AI Video Analysis</h1>
-        <p className="text-slate-400 mb-2">
-          Upload your cricket videos and get instant AI-powered technique
-          analysis with personalized feedback. On-device analysis runs locally in your browser.
-          Cloud AI analysis uploads your video securely to our servers for processing by Google Gemini.
+        <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">Upload Your Video Free</h1>
+        <p className="text-slate-300 text-lg mb-1">
+          Get your cricket technique score and personalized coaching feedback.
         </p>
-        <p className="text-sm text-emerald-400 font-medium">
-          Upload now to get your score and improvement plan.
+        <p className="text-sm text-slate-500">
+          On-device analysis runs in your browser. Cloud AI uses Google Gemini for detailed expert feedback.
         </p>
       </div>
 
@@ -329,9 +329,9 @@ export default function AnalyzePage() {
                 </div>
               ) : (
                 <div>
-                  <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center mx-auto mb-3">
+                  <div className="w-14 h-14 rounded-full bg-emerald-500/10 border-2 border-dashed border-emerald-500/40 flex items-center justify-center mx-auto mb-3">
                     <svg
-                      className="w-6 h-6 text-slate-400"
+                      className="w-7 h-7 text-emerald-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -344,16 +344,39 @@ export default function AnalyzePage() {
                       />
                     </svg>
                   </div>
-                  <p className="text-sm text-slate-300">Click to upload video</p>
-                  <p className="text-xs text-slate-500 mt-1">MP4, MOV, WebM supported</p>
+                  <p className="text-sm text-white font-semibold">Tap to upload your video</p>
+                  <p className="text-xs text-slate-400 mt-1">MP4, MOV, WebM · Max 200 MB</p>
                 </div>
               )}
             </div>
+            {uploadError && (
+              <div className="mt-3 bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                <p className="text-xs text-red-400 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                  {uploadError}
+                </p>
+              </div>
+            )}
+            {/* Upload Tips */}
+            <div className="mt-4 bg-slate-800/40 border border-slate-700/30 rounded-xl p-3">
+              <p className="text-xs text-white font-semibold mb-2">Tips for best results:</p>
+              <ul className="space-y-1.5">
+                {[
+                  { icon: "☀️", text: "Use good lighting — outdoors or well-lit indoor nets" },
+                  { icon: "📷", text: "Record full body — side or front angle works best" },
+                  { icon: "⏱️", text: "Keep it under 60 seconds for fastest analysis" },
+                  { icon: "📱", text: "Steady camera — prop it up or ask someone to hold still" },
+                ].map((tip) => (
+                  <li key={tip.text} className="flex items-start gap-2 text-xs text-slate-400">
+                    <span className="shrink-0">{tip.icon}</span>
+                    <span>{tip.text}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
             <div className="mt-3 flex items-start gap-2 bg-slate-900/50 border border-slate-700/30 rounded-lg px-3 py-2">
-              <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                <span className="text-slate-400 font-medium">Your privacy is protected.</span> On-device analysis runs entirely in your browser. The optional Cloud AI analysis uploads your video to our secure servers and Google Gemini for processing. Videos are deleted after analysis. See our Privacy Policy for details.
-              </p>
+              <svg className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              <p className="text-xs text-slate-500">Your privacy is protected. Videos are deleted after analysis.</p>
             </div>
           </div>
 
