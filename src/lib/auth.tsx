@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { apiPost, apiGet } from "./api";
+import { setAccessToken, setApiUser, clearApiUser } from "./api-client";
 
 interface User {
   id: string;
@@ -59,6 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const saveTokens = (t: AuthTokens) => {
     setTokens(t);
+    setAccessToken(t.accessToken);
     if (typeof window !== "undefined") {
       localStorage.setItem(TOKENS_KEY, JSON.stringify(t));
     }
@@ -67,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const clearAuth = () => {
     setUser(null);
     setTokens(null);
+    clearApiUser();
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKENS_KEY);
       localStorage.removeItem(USER_KEY);
@@ -77,6 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userData = await apiGet<User>("/auth/me", t.accessToken);
       setUser(userData);
+      setApiUser(userData.email, userData.full_name);
+      setAccessToken(t.accessToken);
       if (typeof window !== "undefined") {
         localStorage.setItem(USER_KEY, JSON.stringify(userData));
       }
@@ -92,6 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: idUser.role || "player",
           };
           setUser(fallbackUser);
+          setApiUser(fallbackUser.email, fallbackUser.full_name);
+          setAccessToken(t.accessToken);
           if (typeof window !== "undefined") {
             localStorage.setItem(USER_KEY, JSON.stringify(fallbackUser));
           }
