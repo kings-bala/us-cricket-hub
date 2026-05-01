@@ -15,16 +15,20 @@ const plans = [
     description: "Try it out",
     planKey: "free",
     features: [
-      "1 free video analysis",
-      "Basic player profile",
-      "Overall score",
-      "Top strengths & weaknesses",
+      "1 video analysis",
+      "Overall technique score",
+      "Summary feedback",
+      "1 strength highlight",
+      "1 weakness highlight",
+      "Fix This First tip",
     ],
     notIncluded: [
-      "Full technical report",
-      "Shareable player card",
-      "Progress history",
-      "Priority processing",
+      { label: "Full technique breakdown", tag: "Pro" },
+      { label: "Timestamp observations", tag: "Pro" },
+      { label: "Drill recommendations", tag: "Pro" },
+      { label: "7-day improvement plan", tag: "Pro" },
+      { label: "Shareable player card", tag: "Pro" },
+      { label: "Progress history", tag: "Pro" },
     ],
     cta: "Sign Up Free",
     highlight: false,
@@ -37,15 +41,16 @@ const plans = [
     planKey: "pro",
     features: [
       "5 video analyses/month",
-      "Full technical report",
+      "Full technique breakdown",
+      "Timestamp observations",
+      "Detailed drill recommendations",
+      "7-day improvement plan",
       "Shareable branded player card",
       "Progress history & tracking",
-      "Detailed drill recommendations",
-      "Download analysis PDF",
     ],
     notIncluded: [
-      "Priority processing",
-      "Scout visibility boost",
+      { label: "Priority processing", tag: "Pro Plus" },
+      { label: "Scout visibility boost", tag: "Pro Plus" },
     ],
     cta: "Get Pro",
     highlight: true,
@@ -65,7 +70,7 @@ const plans = [
       "Coach matching priority",
       "Academy team management",
     ],
-    notIncluded: [],
+    notIncluded: [] as { label: string; tag: string }[],
     cta: "Get Pro Plus",
     highlight: false,
   },
@@ -166,14 +171,25 @@ export default function PricingPage() {
                     <span className="text-sm text-slate-300">{feature}</span>
                   </div>
                 ))}
-                {plan.notIncluded.map((feature) => (
-                  <div key={feature} className="flex items-start gap-3 opacity-40">
-                    <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center mt-0.5 shrink-0">
-                      <span className="w-1.5 h-0.5 bg-slate-500 rounded" />
-                    </span>
-                    <span className="text-sm text-slate-500">{feature}</span>
-                  </div>
-                ))}
+                {plan.notIncluded.map((item) => {
+                  const label = typeof item === "string" ? item : item.label;
+                  const tag = typeof item === "string" ? null : item.tag;
+                  return (
+                    <div key={label} className="flex items-start gap-3 opacity-50">
+                      <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center mt-0.5 shrink-0">
+                        <span className="w-1.5 h-0.5 bg-slate-500 rounded" />
+                      </span>
+                      <span className="text-sm text-slate-500 flex items-center gap-2">
+                        {label}
+                        {tag && (
+                          <span className="text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                            {tag}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}
@@ -214,9 +230,12 @@ export default function PricingPage() {
                 {[
                   { feature: "Video analyses/month", free: "1 (total)", pro: "5", plus: "15" },
                   { feature: "Overall score", free: "Yes", pro: "Yes", plus: "Yes" },
-                  { feature: "Strengths & weaknesses", free: "Basic", pro: "Detailed", plus: "Detailed" },
-                  { feature: "Technical feedback", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Strengths & weaknesses", free: "1 each", pro: "Full list", plus: "Full list" },
+                  { feature: "Fix This First tip", free: "Preview", pro: "Full", plus: "Full" },
+                  { feature: "Full technique breakdown", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Timestamp observations", free: "-", pro: "Yes", plus: "Yes" },
                   { feature: "Drill recommendations", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "7-day improvement plan", free: "-", pro: "Yes", plus: "Yes" },
                   { feature: "Shareable player card", free: "-", pro: "Yes", plus: "Yes" },
                   { feature: "Progress tracking", free: "-", pro: "Yes", plus: "Yes" },
                   { feature: "Priority processing", free: "-", pro: "-", plus: "Yes" },
