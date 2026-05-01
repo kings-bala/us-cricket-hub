@@ -160,7 +160,29 @@ export default function ProgressDashboard() {
     fetchData();
   }, [user, tokens, loading, router]);
 
-  if (loading || fetchLoading) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-400">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-400">Redirecting to sign in...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -170,8 +192,6 @@ export default function ProgressDashboard() {
       </div>
     );
   }
-
-  if (!user) return null;
 
   const isPro = subscription?.plan === "pro" || subscription?.plan === "pro_plus";
   const scores = analyses.map((a) => parseScore(a.scores));
