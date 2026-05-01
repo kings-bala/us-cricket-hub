@@ -110,7 +110,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cachedUser = localStorage.getItem(USER_KEY);
         if (cachedUser) {
           try {
-            setUser(JSON.parse(cachedUser) as User);
+            const parsed = JSON.parse(cachedUser) as User;
+            setUser(parsed);
+            setApiUser(parsed.email, parsed.full_name);
+            setAccessToken(t.accessToken);
             return;
           } catch {
             // ignore parse error
@@ -165,6 +168,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem("cricverse360_user_email");
       localStorage.removeItem("cricverse360_user_name");
+      localStorage.removeItem("cricverse360_google_access_token");
     }
     router.push("/");
   };

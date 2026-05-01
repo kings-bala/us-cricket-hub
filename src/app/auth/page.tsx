@@ -35,12 +35,18 @@ function AuthPageInner() {
   }
 
   const handleGoogleSignIn = () => {
-    const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
-    const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+    const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     const redirectUri = `${window.location.origin}/auth/callback`;
-    if (cognitoDomain && clientId) {
+    if (googleClientId) {
       sessionStorage.setItem('cricverse360_auth_redirect', nextUrl);
-      window.location.href = `${cognitoDomain}/oauth2/authorize?client_id=${clientId}&response_type=code&scope=openid+email+profile&redirect_uri=${encodeURIComponent(redirectUri)}&identity_provider=Google`;
+      sessionStorage.setItem('cricverse360_auth_flow', 'google_direct');
+      const scopes = [
+        "openid",
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/generative-language",
+      ].join(" ");
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent`;
     } else {
       setError("Google Sign-In is not configured yet. Please use email and password.");
     }

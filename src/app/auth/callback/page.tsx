@@ -4,6 +4,8 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/analytics";
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://zig9f1eaqf.execute-api.us-east-1.amazonaws.com/v1";
+
 function CallbackInner() {
   const [error, setError] = useState("");
   const [status, setStatus] = useState("Signing you in...");
@@ -27,7 +29,71 @@ function CallbackInner() {
       return;
     }
 
-    const exchangeCode = async () => {
+    const authFlow = sessionStorage.getItem("cricverse360_auth_flow");
+
+    if (authFlow === "google_direct") {
+      handleDirectGoogleAuth(code);
+    } else {
+      handleCognitoAuth(code);
+    }
+
+    async function handleDirectGoogleAuth(authCode: string) {
+      try {
+        setStatus("Exchanging Google authorization code...");
+        const redirectUri = `${window.location.origin}/auth/callback`;
+
+        const res = await fetch(`${API_BASE}/auth/google`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: authCode, redirect_uri: redirectUri }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || `Token exchange failed (${res.status})`);
+        }
+
+        // Store Google access token separately for Gemini API usage
+        if (data.google_access_token) {
+          localStorage.setItem("cricverse360_google_access_token", data.google_access_token);
+        }
+
+        // Store user info and create a synthetic auth token set
+        const userInfo = data.user;
+        if (userInfo) {
+          localStorage.setItem("cricverse360_user", JSON.stringify({
+            id: userInfo.id,
+            email: userInfo.email,
+            full_name: userInfo.full_name,
+            role: "player",
+            auth_provider: "google",
+          }));
+          localStorage.setItem("cricverse360_user_email", userInfo.email);
+          localStorage.setItem("cricverse360_user_name", userInfo.full_name);
+
+          // Store tokens (use google_access_token as the access token for API calls)
+          localStorage.setItem("cricverse360_tokens", JSON.stringify({
+            accessToken: data.google_access_token || "",
+            refreshToken: "",
+            idToken: "",
+          }));
+        }
+
+        trackEvent("signup_completed", { method: "google_direct" });
+        setStatus("Sign-in successful! Redirecting...");
+        sessionStorage.removeItem("cricverse360_auth_flow");
+        const redirectTo = sessionStorage.getItem("cricverse360_auth_redirect") || "/analyze";
+        sessionStorage.removeItem("cricverse360_auth_redirect");
+        window.location.href = redirectTo;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        setError(`Sign-in failed: ${message}`);
+        sessionStorage.removeItem("cricverse360_auth_flow");
+        setTimeout(() => router.push("/auth"), 5000);
+      }
+    }
+
+    async function handleCognitoAuth(authCode: string) {
       try {
         const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
         const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
@@ -48,7 +114,7 @@ function CallbackInner() {
             grant_type: "authorization_code",
             client_id: clientId,
             redirect_uri: redirectUri,
-            code,
+            code: authCode,
           }),
         });
 
@@ -97,9 +163,7 @@ function CallbackInner() {
         localStorage.setItem("cricverse360_oauth_error", message);
         setTimeout(() => router.push("/auth"), 5000);
       }
-    };
-
-    exchangeCode();
+    }
   }, [searchParams, router]);
 
   return (
