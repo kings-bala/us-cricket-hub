@@ -34,7 +34,7 @@ interface AnalysisResult {
   isPaid?: boolean;
 }
 
-function UpgradeSection({ tokens, router }: { tokens: { accessToken?: string } | null; router: ReturnType<typeof useRouter> }) {
+function UpgradeCard({ tokens, router }: { tokens: { accessToken?: string } | null; router: ReturnType<typeof useRouter> }) {
   const [loading, setLoading] = useState("");
 
   const handleCheckout = async (planKey: string) => {
@@ -73,15 +73,15 @@ function UpgradeSection({ tokens, router }: { tokens: { accessToken?: string } |
           Unlock Your Full Cricket Analysis
         </h2>
         <p className="text-slate-300 max-w-lg mx-auto">
-          You&apos;re seeing a preview. Unlock the complete report to get actionable coaching insights.
+          Your free score shows where you stand. The full report shows how to improve.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
         <ul className="space-y-3">
           {[
             "Full technique breakdown",
-            "Timestamp coaching insights",
+            "Timestamp-by-timestamp coaching notes",
             "Personalized drills",
           ].map((item) => (
             <li key={item} className="flex items-center gap-3 text-sm text-slate-200">
@@ -94,8 +94,9 @@ function UpgradeSection({ tokens, router }: { tokens: { accessToken?: string } |
         </ul>
         <ul className="space-y-3">
           {[
-            "Progress tracking",
+            "7-day improvement plan",
             "Shareable player card",
+            "Progress tracking",
           ].map((item) => (
             <li key={item} className="flex items-center gap-3 text-sm text-slate-200">
               <svg className="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,20 +125,46 @@ function UpgradeSection({ tokens, router }: { tokens: { accessToken?: string } |
         </button>
       </div>
       <p className="text-xs text-slate-500 text-center mt-4">
-        Pro includes 5 analyses/month + full reports + shareable cards
+        Pro includes 5 analyses/month + full reports + shareable cards + progress tracking
       </p>
     </div>
   );
 }
 
-function LockedOverlay() {
+function LockedSection({
+  title,
+  teaser,
+  children,
+  isFree,
+}: {
+  title: string;
+  teaser: string;
+  children: React.ReactNode;
+  isFree: boolean;
+}) {
+  if (!isFree) {
+    return (
+      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-12">
+        <h2 className="text-xl font-bold text-white mb-6">{title}</h2>
+        {children}
+      </div>
+    );
+  }
+
   return (
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/60 to-slate-900/90 flex items-end justify-center pb-6 rounded-xl">
-      <div className="flex items-center gap-2 text-sm text-slate-300 bg-slate-800/90 border border-slate-700 px-4 py-2 rounded-full">
-        <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-        </svg>
-        Upgrade to unlock
+    <div className="relative bg-slate-800/50 border border-amber-500/30 rounded-xl p-6 mb-12 overflow-hidden">
+      <h2 className="text-xl font-bold text-white mb-6">{title}</h2>
+      <div className="filter blur-[6px] pointer-events-none select-none">
+        {children}
+      </div>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent from-10% via-slate-900/70 to-slate-900/95 flex flex-col items-center justify-end pb-8 rounded-xl">
+        <div className="w-12 h-12 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center mb-3">
+          <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+        </div>
+        <p className="text-amber-400 font-semibold text-sm mb-1">{teaser}</p>
+        <p className="text-slate-400 text-xs">Upgrade to unlock this section</p>
       </div>
     </div>
   );
@@ -145,22 +172,25 @@ function LockedOverlay() {
 
 function StickyMobileCTA({ onCheckout, loading }: { onCheckout: (plan: string) => void; loading: string }) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-700/50 p-3 md:hidden z-50">
-      <div className="flex gap-2 max-w-lg mx-auto">
-        <button
-          onClick={() => onCheckout("one_time")}
-          disabled={loading === "one_time"}
-          className="flex-1 bg-white text-slate-900 py-2.5 rounded-full font-bold text-sm disabled:opacity-50"
-        >
-          {loading === "one_time" ? "..." : "Unlock \u2013 $4.99"}
-        </button>
-        <button
-          onClick={() => onCheckout("pro")}
-          disabled={loading === "pro"}
-          className="flex-1 bg-emerald-500 text-white py-2.5 rounded-full font-bold text-sm disabled:opacity-50"
-        >
-          {loading === "pro" ? "..." : "Go Pro \u2013 $9.99/mo"}
-        </button>
+    <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-lg border-t border-emerald-500/30 p-3 md:hidden z-50">
+      <div className="max-w-lg mx-auto">
+        <p className="text-center text-xs text-slate-400 mb-2">Your full analysis is waiting</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onCheckout("one_time")}
+            disabled={loading === "one_time"}
+            className="flex-1 bg-white text-slate-900 py-3 rounded-full font-bold text-sm disabled:opacity-50"
+          >
+            {loading === "one_time" ? "..." : "Unlock Full Report \u2013 $4.99"}
+          </button>
+          <button
+            onClick={() => onCheckout("pro")}
+            disabled={loading === "pro"}
+            className="flex-1 bg-emerald-500 text-white py-3 rounded-full font-bold text-sm disabled:opacity-50 shadow-lg shadow-emerald-500/20"
+          >
+            {loading === "pro" ? "..." : "Go Pro \u2013 $9.99/mo"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -222,7 +252,7 @@ export default function AnalysisResultsPage() {
   };
 
   return (
-    <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ${isFree ? "pb-28 md:pb-12" : ""}`}>
+    <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 ${isFree ? "pb-32 md:pb-12" : ""}`}>
       {/* Badges */}
       <div className="mb-6 flex items-center gap-3 flex-wrap">
         <span className={`text-xs px-3 py-1 rounded-full ${a.confidence === "high" ? "bg-emerald-500/20 text-emerald-400" : "bg-yellow-500/20 text-yellow-400"}`}>
@@ -232,7 +262,7 @@ export default function AnalysisResultsPage() {
           Confidence: {confidenceScore}%
         </span>
         {isFree && (
-          <span className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-400">
+          <span className="text-xs px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-semibold">
             Free Preview
           </span>
         )}
@@ -241,14 +271,18 @@ export default function AnalysisResultsPage() {
         </Link>
       </div>
 
-      {/* Header — FREE: score + summary */}
+      {/* Header — FREE: score + confidence + summary */}
       <div className="flex flex-col md:flex-row gap-8 items-start mb-12">
         <div className="w-32 h-32 rounded-full bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border-4 border-emerald-500 flex items-center justify-center shrink-0">
-          <span className="text-4xl font-bold text-emerald-400">{a.overall_score}</span>
+          <div className="text-center">
+            <span className="text-4xl font-bold text-emerald-400">{a.overall_score}</span>
+            <span className="block text-xs text-slate-400">/100</span>
+          </div>
         </div>
         <div>
           <h1 className="text-3xl font-bold text-white mb-2 capitalize">{a.analysis_type} Analysis</h1>
-          <p className="text-slate-400 mb-4 capitalize">Player type: {playerRole.replace(/_/g, " ")}</p>
+          <p className="text-slate-400 mb-1 capitalize">Player type: {playerRole.replace(/_/g, " ")}</p>
+          <p className="text-sm text-blue-400 mb-4">AI Confidence: {confidenceScore}%</p>
           <p className="text-slate-300">{a.summary}</p>
         </div>
       </div>
@@ -275,12 +309,15 @@ export default function AnalysisResultsPage() {
             ))}
           </ul>
           {isFree && a.strengths.length > 1 && (
-            <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
-              <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              +{a.strengths.length - 1} more strengths — upgrade to see all
-            </p>
+            <div className="mt-4 pt-3 border-t border-slate-700/50">
+              <p className="text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                +{a.strengths.length - 1} more strengths locked
+              </p>
+              <p className="text-xs text-slate-500 mt-1">See all your strengths to know what to build on</p>
+            </div>
           )}
         </div>
         <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
@@ -296,24 +333,30 @@ export default function AnalysisResultsPage() {
             ))}
           </ul>
           {isFree && a.weaknesses.length > 1 && (
-            <p className="text-xs text-slate-500 mt-3 flex items-center gap-1">
-              <svg className="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              +{a.weaknesses.length - 1} more — upgrade to see all
-            </p>
+            <div className="mt-4 pt-3 border-t border-slate-700/50">
+              <p className="text-xs text-amber-400 font-semibold flex items-center gap-1.5">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Your biggest technical issue is hidden
+              </p>
+              <p className="text-xs text-slate-500 mt-1">+{a.weaknesses.length - 1} more issues found — upgrade to see what to fix first</p>
+            </div>
           )}
         </div>
       </div>
 
-      {/* === PAYWALL: Upgrade section for free users === */}
-      {isFree && <UpgradeSection tokens={tokens} router={router} />}
+      {/* === PAYWALL: Upgrade card for free users === */}
+      {isFree && <UpgradeCard tokens={tokens} router={router} />}
 
       {/* Timestamp Observations — LOCKED for free */}
       {a.timestamp_observations && a.timestamp_observations.length > 0 && (
-        <div className="relative bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-12">
-          <h2 className="text-xl font-bold text-white mb-6">Timestamp Observations</h2>
-          <div className={`space-y-4 ${isFree ? "filter blur-[6px] pointer-events-none select-none" : ""}`}>
+        <LockedSection
+          title={`Timestamp Observations (${a.timestamp_observations.length})`}
+          teaser="See exactly what to improve before your next match"
+          isFree={isFree}
+        >
+          <div className="space-y-4">
             {(isFree ? a.timestamp_observations.slice(0, 3) : a.timestamp_observations).map((obs, i) => (
               <div key={i} className="flex gap-4">
                 <span className="text-emerald-400 font-mono text-sm whitespace-nowrap mt-0.5">{obs.timestamp}</span>
@@ -324,14 +367,16 @@ export default function AnalysisResultsPage() {
               </div>
             ))}
           </div>
-          {isFree && <LockedOverlay />}
-        </div>
+        </LockedSection>
       )}
 
       {/* Technical Feedback — LOCKED for free */}
-      <div className="relative bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-12">
-        <h2 className="text-xl font-bold text-white mb-6">Technical Feedback</h2>
-        <div className={`space-y-4 ${isFree ? "filter blur-[6px] pointer-events-none select-none" : ""}`}>
+      <LockedSection
+        title="Full Technical Breakdown"
+        teaser="Your biggest technical issue is hidden"
+        isFree={isFree}
+      >
+        <div className="space-y-4">
           {(isFree ? Object.entries(a.technical_feedback).slice(0, 3) : Object.entries(a.technical_feedback)).map(([key, value]) => (
             <div key={key}>
               <h3 className="text-sm font-semibold text-emerald-400 uppercase tracking-wide mb-1">{key.replace(/_/g, " ")}</h3>
@@ -339,13 +384,15 @@ export default function AnalysisResultsPage() {
             </div>
           ))}
         </div>
-        {isFree && <LockedOverlay />}
-      </div>
+      </LockedSection>
 
       {/* Drills — LOCKED for free */}
-      <div className="relative mb-12">
-        <h2 className="text-xl font-bold text-white mb-6">Recommended Drills</h2>
-        <div className={`grid gap-4 ${isFree ? "filter blur-[6px] pointer-events-none select-none" : ""}`}>
+      <LockedSection
+        title="Recommended Drills"
+        teaser="Unlock the drill plan to fix this"
+        isFree={isFree}
+      >
+        <div className="grid gap-4">
           {(isFree ? a.recommended_drills.slice(0, 2) : a.recommended_drills).map((drill) => (
             <div key={drill.name} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-1">{drill.name}</h3>
@@ -354,13 +401,15 @@ export default function AnalysisResultsPage() {
             </div>
           ))}
         </div>
-        {isFree && <LockedOverlay />}
-      </div>
+      </LockedSection>
 
       {/* Next Steps — LOCKED for free */}
-      <div className="relative bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-12">
-        <h2 className="text-xl font-bold text-white mb-4">Next Steps</h2>
-        <ol className={`space-y-2 ${isFree ? "filter blur-[6px] pointer-events-none select-none" : ""}`}>
+      <LockedSection
+        title="7-Day Improvement Plan"
+        teaser="Get your personalized weekly training plan"
+        isFree={isFree}
+      >
+        <ol className="space-y-2">
           {a.next_steps.map((step, i) => (
             <li key={step} className="flex items-start gap-3 text-sm text-slate-300">
               <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-0.5 shrink-0 text-blue-400 text-xs font-bold">
@@ -370,26 +419,37 @@ export default function AnalysisResultsPage() {
             </li>
           ))}
         </ol>
-        {isFree && <LockedOverlay />}
-      </div>
+      </LockedSection>
 
-      {/* Shareable Card — all users */}
-      <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-xl p-6 mb-8">
-        <h2 className="text-xl font-bold text-white mb-2 text-center">Your Player Card</h2>
-        <p className="text-sm text-slate-400 text-center mb-6">Download and share to get discovered</p>
-        <ShareCard
-          playerName={user?.full_name || "Player"}
-          role={playerRole}
-          overallScore={a.overall_score}
-          confidenceScore={confidenceScore}
-          topStrength={a.strengths[0] || ""}
-          topImprovement={a.weaknesses[0] || ""}
-          analysisType={a.analysis_type}
-        />
-      </div>
+      {/* Shareable Card — LOCKED for free, shown for paid */}
+      {isFree ? (
+        <LockedSection
+          title="Your Shareable Player Card"
+          teaser="Share your score and get discovered"
+          isFree={true}
+        >
+          <div className="h-48 bg-slate-700/30 rounded-xl flex items-center justify-center">
+            <p className="text-slate-500 text-sm">Player card preview</p>
+          </div>
+        </LockedSection>
+      ) : (
+        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-xl p-6 mb-8">
+          <h2 className="text-xl font-bold text-white mb-2 text-center">Your Player Card</h2>
+          <p className="text-sm text-slate-400 text-center mb-6">Download and share to get discovered</p>
+          <ShareCard
+            playerName={user?.full_name || "Player"}
+            role={playerRole}
+            overallScore={a.overall_score}
+            confidenceScore={confidenceScore}
+            topStrength={a.strengths[0] || ""}
+            topImprovement={a.weaknesses[0] || ""}
+            analysisType={a.analysis_type}
+          />
+        </div>
+      )}
 
-      {/* Bottom CTA for free users */}
-      {isFree && <UpgradeSection tokens={tokens} router={router} />}
+      {/* Bottom Upgrade Card for free users */}
+      {isFree && <UpgradeCard tokens={tokens} router={router} />}
 
       {/* Disclaimer */}
       <p className="text-xs text-slate-500 text-center mb-8">
