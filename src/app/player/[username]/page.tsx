@@ -38,14 +38,30 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        setError("Profile not found");
+        setLoading(false);
+      }
+    }, 8000);
+
     apiGet<PublicProfile>(`/player/${username}`)
       .then(setData)
       .catch(() => setError("Profile not found"))
       .finally(() => setLoading(false));
-  }, [username]);
+
+    return () => clearTimeout(timeoutId);
+  }, [username]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (loading) {
-    return <div className="min-h-[60vh] flex items-center justify-center"><div className="text-slate-400">Loading...</div></div>;
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-400 text-sm">Loading player profile...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error || !data) {
@@ -54,7 +70,13 @@ export default function PublicProfilePage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-white mb-2">Profile Not Found</h1>
           <p className="text-slate-400 mb-6">The player &quot;{username}&quot; doesn&apos;t exist or has a private profile.</p>
-          <Link href="/" className="text-emerald-400 hover:text-emerald-300">Back to Home</Link>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link href="/leaderboard" className="text-emerald-400 hover:text-emerald-300 font-semibold">View Leaderboard</Link>
+            <span className="text-slate-600 hidden sm:inline">&middot;</span>
+            <Link href="/analyze" className="text-emerald-400 hover:text-emerald-300 font-semibold">Get Your Score</Link>
+            <span className="text-slate-600 hidden sm:inline">&middot;</span>
+            <Link href="/" className="text-slate-400 hover:text-white">Back to Home</Link>
+          </div>
         </div>
       </div>
     );
