@@ -11,7 +11,8 @@ import { trackEvent } from "@/lib/analytics";
 interface TimestampObservation {
   timestamp: string;
   observation: string;
-  coaching_note: string;
+  coaching_note?: string;
+  coaching_tip?: string;
 }
 
 interface AnalysisResult {
@@ -30,8 +31,8 @@ interface AnalysisResult {
   technical_feedback: Record<string, string>;
   recommended_drills: { name: string; purpose: string; instructions: string }[];
   seven_day_plan?: { day: number; focus: string; drill: string; duration: string }[];
-  share_card_summary?: { top_strength: string; top_improvement_area: string };
-  next_steps: string[];
+  share_card_summary?: { top_strength: string; top_improvement_area?: string; top_improvement?: string };
+  next_steps?: string[];
   disclaimer?: string;
   confidence: string;
   isPaid?: boolean;
@@ -431,7 +432,7 @@ export default function AnalysisResultsPage() {
                 <span className="text-emerald-400 font-mono text-sm whitespace-nowrap mt-0.5">{obs.timestamp}</span>
                 <div>
                   <p className="text-sm text-slate-300">{obs.observation}</p>
-                  {obs.coaching_note && <p className="text-xs text-blue-400 mt-1">{obs.coaching_note}</p>}
+                  {(obs.coaching_tip || obs.coaching_note) && <p className="text-xs text-blue-400 mt-1">{obs.coaching_tip || obs.coaching_note}</p>}
                 </div>
               </div>
             ))}
@@ -497,7 +498,7 @@ export default function AnalysisResultsPage() {
           </div>
         ) : (
           <ol className="space-y-2">
-            {a.next_steps.map((step: string, i: number) => (
+            {(a.next_steps || []).map((step: string, i: number) => (
               <li key={step} className="flex items-start gap-3 text-sm text-slate-300">
                 <span className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center mt-0.5 shrink-0 text-blue-400 text-xs font-bold">
                   {i + 1}
@@ -527,7 +528,7 @@ export default function AnalysisResultsPage() {
           overallScore={a.overall_score}
           confidenceScore={confidenceScore}
           topStrength={a.share_card_summary?.top_strength || a.strengths[0] || ""}
-          topImprovement={a.share_card_summary?.top_improvement_area || a.weaknesses[0] || ""}
+          topImprovement={a.share_card_summary?.top_improvement || a.share_card_summary?.top_improvement_area || a.weaknesses[0] || ""}
           analysisType={a.analysis_type}
         />
       </div>
