@@ -421,32 +421,28 @@ export default function AnalysisResultsPage() {
         </ol>
       </LockedSection>
 
-      {/* Shareable Card — LOCKED for free, shown for paid */}
-      {isFree ? (
-        <LockedSection
-          title="Your Shareable Player Card"
-          teaser="Share your score and get discovered"
-          isFree={true}
-        >
-          <div className="h-48 bg-slate-700/30 rounded-xl flex items-center justify-center">
-            <p className="text-slate-500 text-sm">Player card preview</p>
+      {/* Share Prompt — shown for ALL users */}
+      <div className="bg-gradient-to-br from-emerald-900/30 via-slate-800/80 to-blue-900/30 border border-emerald-500/20 rounded-2xl p-8 mb-8">
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-4 py-1.5 mb-4">
+            <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+            <span className="text-sm text-emerald-400 font-semibold">Share Your Score</span>
           </div>
-        </LockedSection>
-      ) : (
-        <div className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-slate-700/50 rounded-xl p-6 mb-8">
-          <h2 className="text-xl font-bold text-white mb-2 text-center">Your Player Card</h2>
-          <p className="text-sm text-slate-400 text-center mb-6">Download and share to get discovered</p>
-          <ShareCard
-            playerName={user?.full_name || "Player"}
-            role={playerRole}
-            overallScore={a.overall_score}
-            confidenceScore={confidenceScore}
-            topStrength={a.strengths[0] || ""}
-            topImprovement={a.weaknesses[0] || ""}
-            analysisType={a.analysis_type}
-          />
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">Show Your Cricket Score</h2>
+          <p className="text-slate-300 max-w-lg mx-auto">
+            Share your player card and challenge others to beat your score.
+          </p>
         </div>
-      )}
+        <ShareCard
+          playerName={user?.full_name || "Player"}
+          role={playerRole}
+          overallScore={a.overall_score}
+          confidenceScore={confidenceScore}
+          topStrength={a.strengths[0] || ""}
+          topImprovement={a.weaknesses[0] || ""}
+          analysisType={a.analysis_type}
+        />
+      </div>
 
       {/* Bottom Upgrade Card for free users */}
       {isFree && <UpgradeCard tokens={tokens} router={router} />}
