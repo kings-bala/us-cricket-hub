@@ -56,6 +56,15 @@ export default function SponsorsPage() {
       <div className="mb-12">
         <h2 className="text-2xl font-bold text-white mb-2">Current Sponsors</h2>
         <p className="text-slate-400 mb-6">Brands investing in global cricket talent development</p>
+        {sponsors.length === 0 ? (
+          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-12 text-center">
+            <span className="text-4xl mb-3 block">{"\u{1F91D}"}</span>
+            <h3 className="text-lg font-semibold text-white mb-2">Sponsorship Slots Open</h3>
+            <p className="text-slate-400 text-sm max-w-md mx-auto">
+              CricVerse360 is looking for brands who want to invest in youth cricket talent development worldwide. Be our first sponsor and get premium visibility.
+            </p>
+          </div>
+        ) : (
         <div className="grid md:grid-cols-3 gap-4">
           {sponsors.map((sponsor) => (
             <div key={sponsor.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
@@ -79,6 +88,7 @@ export default function SponsorsPage() {
             </div>
           ))}
         </div>
+        )}
       </div>
 
       <div className="mb-12">

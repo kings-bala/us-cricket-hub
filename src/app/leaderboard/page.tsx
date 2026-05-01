@@ -17,36 +17,9 @@ interface LeaderboardPlayer {
   bestBowlingScore?: number;
 }
 
-const LEADERBOARD_DATA: LeaderboardPlayer[] = [
-  { rank: 1, name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 92, analysisType: "batting", location: "Mumbai, India", featured: true, badges: ["Top 10 This Week", "Featured Player"] },
-  { rank: 2, name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 89, analysisType: "bowling", location: "Sydney, Australia", featured: true, badges: ["Top 10 This Week", "Featured Player", "Best Bowling Score"], bestBowlingScore: 89 },
-  { rank: 3, name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 87, analysisType: "batting", location: "Delhi, India", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 4, name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 85, analysisType: "batting", location: "London, UK", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 5, name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 84, analysisType: "bowling", location: "Lahore, Pakistan", featured: true, badges: ["Top 10 This Week", "Featured Player"] },
-  { rank: 6, name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 82, analysisType: "batting", location: "Bangalore, India", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 7, name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 81, analysisType: "batting", location: "Cape Town, SA", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 8, name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 80, analysisType: "bowling", location: "Chennai, India", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 9, name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 79, analysisType: "batting", location: "Auckland, NZ", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 10, name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 78, analysisType: "batting", location: "Karachi, Pakistan", featured: false, badges: ["Top 10 This Week"] },
-  { rank: 11, name: "Tom Bradley", username: "tom-bradley", role: "All-Rounder", score: 77, analysisType: "bowling", location: "Melbourne, Australia", featured: false, badges: [] },
-  { rank: 12, name: "Kiran Nair", username: "kiran-nair", role: "Batsman", score: 76, analysisType: "batting", location: "Hyderabad, India", featured: false, badges: [] },
-  { rank: 13, name: "David Marsh", username: "david-marsh", role: "Bowler", score: 75, analysisType: "bowling", location: "Birmingham, UK", featured: false, badges: [] },
-  { rank: 14, name: "Aarav Singh", username: "aarav-singh", role: "Batsman", score: 74, analysisType: "batting", location: "Kolkata, India", featured: false, badges: [] },
-  { rank: 15, name: "Chris Patel", username: "chris-patel", role: "All-Rounder", score: 73, analysisType: "batting", location: "Toronto, Canada", featured: false, badges: [] },
-];
+const LEADERBOARD_DATA: LeaderboardPlayer[] = [];
 
-const ALL_TIME_DATA: LeaderboardPlayer[] = [
-  { rank: 1, name: "Arjun Patel", username: "arjun-patel", role: "Batsman", score: 95, analysisType: "batting", location: "Mumbai, India", featured: true, badges: ["Featured Player"] },
-  { rank: 2, name: "Ravi Sharma", username: "ravi-sharma", role: "All-Rounder", score: 93, analysisType: "batting", location: "Delhi, India", featured: false, badges: [] },
-  { rank: 3, name: "Jake Thompson", username: "jake-thompson", role: "Bowler", score: 91, analysisType: "bowling", location: "Sydney, Australia", featured: true, badges: ["Featured Player", "Best Bowling Score"], bestBowlingScore: 91 },
-  { rank: 4, name: "Hassan Ali", username: "hassan-ali", role: "Bowler", score: 90, analysisType: "bowling", location: "Lahore, Pakistan", featured: true, badges: ["Featured Player"] },
-  { rank: 5, name: "Oliver Hughes", username: "oliver-hughes", role: "Batsman", score: 88, analysisType: "batting", location: "London, UK", featured: false, badges: [] },
-  { rank: 6, name: "Priya Desai", username: "priya-desai", role: "All-Rounder", score: 87, analysisType: "batting", location: "Bangalore, India", featured: false, badges: [] },
-  { rank: 7, name: "Sam Williams", username: "sam-williams", role: "Batsman", score: 86, analysisType: "batting", location: "Cape Town, SA", featured: false, badges: [] },
-  { rank: 8, name: "Emily Chen", username: "emily-chen", role: "Batsman", score: 85, analysisType: "batting", location: "Auckland, NZ", featured: false, badges: [] },
-  { rank: 9, name: "Anil Kumar", username: "anil-kumar", role: "Bowler", score: 84, analysisType: "bowling", location: "Chennai, India", featured: false, badges: [] },
-  { rank: 10, name: "Mohammed Rizwan", username: "mohammed-rizwan", role: "Wicketkeeper", score: 83, analysisType: "batting", location: "Karachi, Pakistan", featured: false, badges: [] },
-];
+const ALL_TIME_DATA: LeaderboardPlayer[] = [];
 
 function getRankBadge(rank: number) {
   if (rank === 1) return { emoji: "\u{1F947}", bg: "bg-yellow-500/20", border: "border-yellow-500/40", text: "text-yellow-400" };
@@ -175,6 +148,22 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {filtered.length === 0 && (
+          <div className="text-center py-20">
+            <span className="text-5xl mb-4 block">{"\u{1F3C6}"}</span>
+            <h3 className="text-2xl font-bold text-white mb-3">No Rankings Yet</h3>
+            <p className="text-slate-400 max-w-md mx-auto mb-6">
+              Be the first to upload your cricket video and claim the #1 spot on the CricVerse360 leaderboard. Your score will appear here for coaches and scouts to discover.
+            </p>
+            <Link
+              href="/analyze"
+              className="inline-block bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
+            >
+              Upload Your Video to Get Ranked
+            </Link>
+          </div>
+        )}
+
         {/* Top 3 Cards */}
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           {filtered.slice(0, 3).map((player) => {
