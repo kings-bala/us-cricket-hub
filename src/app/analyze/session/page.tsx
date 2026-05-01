@@ -351,7 +351,7 @@ export default function NetSessionTracker() {
                     className="w-16 bg-slate-900/50 border border-slate-700 rounded-lg px-2 py-1 text-center text-white text-sm"
                   />
                 </div>
-                <p className="text-xs text-slate-500 mt-1">{Math.round(speed * 0.621371)} mph</p>
+                <p className="text-xs text-slate-500 mt-1">= {Math.round(speed * 0.621371)} mph</p>
               </div>
 
               <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">

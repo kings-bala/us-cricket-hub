@@ -111,7 +111,7 @@ const feedTypeConfig: Record<string, { icon: string; color: string; bg: string }
 
 export default function PlayersPage() {
   return (
-    <Suspense fallback={<div className="py-8 text-slate-400">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-[60vh] flex items-center justify-center"><div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full" /></div>}>
       <PlayersContent />
     </Suspense>
   );
@@ -357,6 +357,21 @@ function PlayersContent() {
     if (insights.length === 0) insights.push("Keep logging sessions to unlock AI insights");
     return insights;
   }, [profileMatches, profileForm, profileCpi, profileCombine]);
+
+  if (!user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-4">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">Player Dashboard</h1>
+          <p className="text-slate-400 mb-6">Sign in to access your player profile, training logs, stats, and AI coaching tools.</p>
+          <Link href="/auth" className="inline-block px-6 py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 transition-colors">Sign In to Continue</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -138,10 +138,10 @@ export default function LeaderboardPage() {
                   <span className="text-xs bg-slate-800/80 text-slate-300 px-2 py-0.5 rounded capitalize">{player.analysisType}</span>
                 </div>
                 <Link
-                  href={`/player/${player.username}`}
+                  href="/analyze"
                   className="inline-block mt-4 text-sm text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
                 >
-                  View Profile &rarr;
+                  Get Your Score &rarr;
                 </Link>
               </div>
             );
@@ -192,10 +192,10 @@ export default function LeaderboardPage() {
               </div>
               <div className="col-span-1 text-right">
                 <Link
-                  href={`/player/${player.username}`}
+                  href="/analyze"
                   className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
                 >
-                  Profile
+                  Get Ranked
                 </Link>
               </div>
             </div>
