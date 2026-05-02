@@ -63,6 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(t.accessToken);
     if (typeof window !== "undefined") {
       localStorage.setItem(TOKENS_KEY, JSON.stringify(t));
+      // Sync a lightweight cookie so Next.js middleware can gate protected routes
+      // server-side. The cookie carries no sensitive data — just a presence flag.
+      document.cookie = "__auth=1; path=/; max-age=604800; SameSite=Lax";
     }
   };
 
@@ -73,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       localStorage.removeItem(TOKENS_KEY);
       localStorage.removeItem(USER_KEY);
+      document.cookie = "__auth=; path=/; max-age=0";
     }
   };
 
@@ -130,12 +134,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const parsed = JSON.parse(stored) as AuthTokens;
         setTokens(parsed);
+        // Ensure the auth cookie stays in sync for middleware gating
+        if (typeof document !== "undefined") {
+          document.cookie = "__auth=1; path=/; max-age=604800; SameSite=Lax";
+        }
         fetchUser(parsed).finally(() => setLoading(false));
       } catch {
         clearAuth();
         setLoading(false);
       }
     } else {
+      // No stored tokens — clear cookie too
+      if (typeof document !== "undefined") {
+        document.cookie = "__auth=; path=/; max-age=0";
+      }
       setLoading(false);
     }
   }, [fetchUser]);
