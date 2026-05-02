@@ -44,9 +44,9 @@ export default function Footer() {
           </div>
           <div>
             <h4 className="text-white font-semibold mb-3 text-sm">Contact</h4>
-            <div className="space-y-2">
-              <span className="block text-sm">info@cricverse360.com</span>
-              <span className="block text-sm mt-2">Available Worldwide</span>
+            <div className="space-y-3">
+              <a href="mailto:info@cricverse360.com" className="block text-sm hover:text-white transition-colors">info@cricverse360.com</a>
+              <span className="block text-sm">Available Worldwide</span>
             </div>
           </div>
         </div>

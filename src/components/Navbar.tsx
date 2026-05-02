@@ -57,7 +57,7 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={logout}
-                  className="text-sm text-slate-400 hover:text-white transition-colors"
+                  className="hidden md:block text-sm text-slate-400 hover:text-white transition-colors"
                 >
                   Sign Out
                 </button>
@@ -107,6 +107,14 @@ export default function Navbar() {
               >
                 Admin
               </Link>
+            )}
+            {user && (
+              <button
+                onClick={() => { setMobileOpen(false); logout(); }}
+                className="block w-full text-left py-2 mt-2 pt-4 border-t border-slate-700 text-sm text-red-400 hover:text-red-300"
+              >
+                Sign Out
+              </button>
             )}
           </div>
         </div>
