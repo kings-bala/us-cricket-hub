@@ -1,17 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 export default function TermsPage() {
+  const searchParams = useSearchParams();
+  const showDraftBanner = searchParams.get("preview") === "admin";
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-3"><Link href="/" className="text-sm text-slate-400 hover:text-white">&larr; Home</Link></div>
       <h1 className="text-3xl font-bold text-white mb-2">Terms of Service</h1>
       <p className="text-slate-400 text-xs mb-6">Last updated: April 30, 2026</p>
 
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-8">
-        <p className="text-amber-300 text-sm"><strong>Legal Review Required:</strong> These terms are a comprehensive draft. Rising Star Cricket League should have them reviewed by qualified legal counsel before relying on them.</p>
-      </div>
+      {showDraftBanner && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-8">
+          <p className="text-amber-300 text-sm"><strong>Legal Review Required:</strong> These terms are a comprehensive draft. Rising Star Cricket League should have them reviewed by qualified legal counsel before relying on them.</p>
+        </div>
+      )}
 
       <div className="prose prose-invert prose-slate max-w-none space-y-6 text-slate-300 text-sm leading-relaxed">
 
