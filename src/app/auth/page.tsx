@@ -241,7 +241,7 @@ function AuthPageInner() {
               onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
               className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
             >
-              {isSignUp ? "Already have an account? Sign in" : "Don&apos;t have an account? Sign up"}
+              {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
             </button>
           </div>
         </div>

@@ -50,7 +50,6 @@ const plans = [
     ],
     notIncluded: [
       { label: "Priority processing", tag: "Pro Plus" },
-      { label: "Scout visibility boost", tag: "Pro Plus" },
     ],
     cta: "Get Pro",
     highlight: true,
@@ -65,8 +64,6 @@ const plans = [
       "15 video analyses/month",
       "Everything in Pro",
       "Priority processing",
-      "Scout visibility boost",
-      "Advanced improvement plan",
       "Detailed trend analysis",
     ],
     notIncluded: [] as { label: string; tag: string }[],
@@ -276,9 +273,6 @@ export default function PricingPage() {
                   { feature: "Shareable player card", free: "-", pro: "Yes", plus: "Yes" },
                   { feature: "Progress tracking", free: "-", pro: "Yes", plus: "Yes" },
                   { feature: "Priority processing", free: "-", pro: "-", plus: "Yes" },
-                  { feature: "Scout visibility boost", free: "-", pro: "-", plus: "Yes" },
-                  { feature: "Advanced improvement plan", free: "-", pro: "-", plus: "Yes" },
-                  { feature: "Coach matching priority", free: "-", pro: "-", plus: "Yes" },
                 ].map((row) => (
                   <tr key={row.feature} className="border-b border-slate-800">
                     <td className="py-3 pr-4">{row.feature}</td>

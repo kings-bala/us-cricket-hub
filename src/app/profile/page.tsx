@@ -163,7 +163,7 @@ export default function ProfilePage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. virat_kohli"
+              placeholder="e.g. cricket_player_2024"
               className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               required
             />
