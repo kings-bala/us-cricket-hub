@@ -723,7 +723,7 @@ function PlayersContent() {
           { id: "b10", title: "Cut Shot Tutorial", description: "Master the square cut and late cut against short and wide deliveries with proper footwork and timing.", category: "batting" as const, skill: "Cut Shot", level: "intermediate" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=hFv3HmVgbbE", channel: "CoachCricXI" },
           { id: "w1", title: "Fast Bowling Masterclass", description: "Complete fast bowling tutorial covering run-up, action, and release point from professional coaches.", category: "bowling" as const, skill: "Run-Up", level: "beginner" as const, duration: "12 min", videoUrl: "https://www.youtube.com/watch?v=EC2PWZxDBec", channel: "Cricket Mentoring" },
           { id: "w2", title: "Bowling Arm Action Drills", description: "Drills to maintain a legal bowling action, maximize arm speed and prevent elbow flex issues.", category: "bowling" as const, skill: "Arm Action", level: "intermediate" as const, duration: "8 min", videoUrl: "https://www.youtube.com/watch?v=UyBDQevQphc", channel: "CoachCricXI" },
-          { id: "w3", title: "Leg Spin Bowling Basics", description: "Learn leg spin fundamentals including grip, wrist position, release and flight control from Shane Warne's method.", category: "bowling" as const, skill: "Spin", level: "beginner" as const, duration: "10 min", videoUrl: "https://www.youtube.com/watch?v=GvX6H7qHM68", channel: "Cricket Mentoring" },
+          { id: "w3", title: "Leg Spin Bowling Basics", description: "Learn leg spin fundamentals including grip, wrist position, release and flight control using the classic leg-spin technique.", category: "bowling" as const, skill: "Spin", level: "beginner" as const, duration: "10 min", videoUrl: "https://www.youtube.com/watch?v=GvX6H7qHM68", channel: "Cricket Mentoring" },
           { id: "w4", title: "Yorker Bowling Drill", description: "Target-based yorker practice methods to improve death bowling accuracy under pressure.", category: "bowling" as const, skill: "Yorker", level: "advanced" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=iO2ChgTJghE", channel: "CoachCricXI" },
           { id: "w5", title: "Front Knee Brace & Follow Through", description: "Strengthen your front knee brace and follow-through for more pace and control at the crease.", category: "bowling" as const, skill: "Brace", level: "intermediate" as const, duration: "7 min", videoUrl: "https://www.youtube.com/watch?v=R003xzRMEXw", channel: "CoachCricXI" },
           { id: "w6", title: "Off Spin Bowling Tutorial", description: "Master off spin with correct finger placement, rotation, drift and turn techniques.", category: "bowling" as const, skill: "Off Spin", level: "intermediate" as const, duration: "9 min", videoUrl: "https://www.youtube.com/watch?v=Zm9VKD0gH1U", channel: "CoachCricXI" },
@@ -734,7 +734,7 @@ function PlayersContent() {
           { id: "x1", title: "Professional Cricket Warm-Up", description: "Professional warm-up drills and exercises used by first-class cricketers before matches and training.", category: "fitness" as const, skill: "Warm-Up", level: "beginner" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=K_s-VXWbQqE", channel: "CoachCricXI" },
           { id: "x2", title: "Cricket Strength & Power Exercises", description: "Home exercises to increase strength and power for cricket — broad jumps, push-ups, lunges and more.", category: "fitness" as const, skill: "Strength", level: "intermediate" as const, duration: "6 min", videoUrl: "https://www.youtube.com/watch?v=x2yois9bzEE", channel: "England Cricket" },
           { id: "x3", title: "Cricket Agility & Speed Drills", description: "Lateral movement, change of direction, and reaction speed drills specifically designed for cricket fielding.", category: "fitness" as const, skill: "Agility", level: "intermediate" as const, duration: "5 min", videoUrl: "https://www.youtube.com/watch?v=RraLn96THGc", channel: "Fitforcrick" },
-          { id: "x4", title: "Fast Bowler Warm-Up Routine", description: "How to warm up if you're a fast bowler — leg lifts, leg swings, active movement and upper body prep.", category: "fitness" as const, skill: "Bowler Warm-Up", level: "beginner" as const, duration: "3 min", videoUrl: "https://www.youtube.com/watch?v=16Ib_EdKzvM", channel: "Brett Lee TV" },
+          { id: "x4", title: "Fast Bowler Warm-Up Routine", description: "How to warm up if you're a fast bowler — leg lifts, leg swings, active movement and upper body prep.", category: "fitness" as const, skill: "Bowler Warm-Up", level: "beginner" as const, duration: "3 min", videoUrl: "https://www.youtube.com/watch?v=16Ib_EdKzvM", channel: "Cricket Fast Bowling" },
         ];
 
         const filteredDrills = DRILL_LIBRARY.filter((d) => {
@@ -844,7 +844,7 @@ function PlayersContent() {
                       </div>
                       <div className="text-center">
                         <p className="text-lg font-semibold text-white">Idol Capture</p>
-                        <p className="text-sm text-slate-400 mt-1">Select cricket legends as your idols to build your training routine</p>
+                        <p className="text-sm text-slate-400 mt-1">Select training archetypes as your idols to build your training routine</p>
                       </div>
                     </Link>
                   </div>
@@ -894,7 +894,13 @@ function PlayersContent() {
                           <div key={skill} className={`rounded-xl p-4 border ${colors.border} ${colors.bg}`}>
                             <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${colors.text}`}>{skill}</p>
                             <div className="flex items-center gap-2">
-                              <img src={legend.photo} alt={legend.name} className="w-8 h-8 rounded-full object-cover shrink-0 bg-slate-700" />
+                              {legend.photo ? (
+                                <img src={legend.photo} alt={legend.name} className="w-8 h-8 rounded-full object-cover shrink-0 bg-slate-700" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/30 to-emerald-500/30 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                  <span className="text-amber-400 font-bold text-xs">{legend.name.split(" ").slice(-1)[0]?.[0] || "?"}</span>
+                                </div>
+                              )}
                               <div>
                                 <p className="text-white font-semibold text-sm">{legend.name}</p>
                                 <p className="text-xs text-slate-400">{legend.country}</p>
