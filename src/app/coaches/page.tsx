@@ -94,13 +94,24 @@ export default function CoachesPage() {
           <p className="text-slate-300 max-w-2xl mx-auto mb-6">
             Connect with world-class coaches. Get personalized training to take your game to the next level.
           </p>
-          <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-1.5">
-            <span className="text-sm text-blue-400 font-medium">Early Access &mdash; Coaches can list their services</span>
+          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-4 py-1.5">
+            <span className="text-sm text-amber-400 font-medium">Demo Content &mdash; Coach onboarding in progress</span>
           </div>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Demo content banner */}
+        <div className="mb-6 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex items-start gap-3">
+          <svg className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.072 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div>
+            <p className="text-amber-400 font-semibold">Demo Content</p>
+            <p className="text-sm text-slate-300">Coach onboarding in progress. Listings shown are illustrative; real coaches will be onboarded for launch.</p>
+          </div>
+        </div>
+
         {/* Success banner */}
         {success && (
           <div className="mb-6 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center gap-3">
@@ -182,9 +193,7 @@ export default function CoachesPage() {
                   </h3>
                   <p className="text-sm text-slate-400">{coach.country}</p>
                 </div>
-                {coach.verified && (
-                  <span className="ml-auto text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30 shrink-0">Verified</span>
-                )}
+
               </div>
 
               {/* Key Info */}
@@ -219,20 +228,11 @@ export default function CoachesPage() {
                   {coach.availability === "available" ? "Available" : coach.availability === "limited" ? "Limited" : "Waitlist"}
                 </span>
                 <button
-                  onClick={() => {
-                    if (requestsSent[coach.id]) return;
-                    setSelectedCoach(coach.id);
-                    if (user) {
-                      setForm((f) => ({ ...f, name: user.full_name || "", email: user.email || "" }));
-                    }
-                  }}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                    requestsSent[coach.id]
-                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-default"
-                      : "bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
-                  }`}
+                  disabled
+                  title="Available at launch"
+                  className="px-5 py-2 rounded-full text-sm font-semibold bg-slate-700/50 text-slate-500 border border-slate-600/30 cursor-not-allowed"
                 >
-                  {requestsSent[coach.id] ? "Request Sent" : "Request Session"}
+                  Available at Launch
                 </button>
               </div>
             </div>
