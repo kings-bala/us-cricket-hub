@@ -132,15 +132,23 @@ function MiniStat({ label, value }: { label: string; value: string | number }) {
 }
 
 export default function StatsPage() {
-  const [selectedId, setSelectedId] = useState(players[0].id);
+  const [selectedId, setSelectedId] = useState(players[0]?.id ?? "");
   const [showCpiFormula, setShowCpiFormula] = useState(false);
   const [expandedMatch, setExpandedMatch] = useState<string | null>(null);
 
-  const player = useMemo(() => players.find(p => p.id === selectedId) || players[0], [selectedId]);
+  const player = useMemo(() => players.find(p => p.id === selectedId) || players[0] || null, [selectedId]);
   const matches = useMemo(() => playerMatchHistory[selectedId] || [], [selectedId]);
   const combine = useMemo(() => playerCombineData[selectedId], [selectedId]);
-  const cpi = useMemo(() => calculateCPI(player, matches), [player, matches]);
-  const form = useMemo(() => getFormStatus(matches, player.role), [matches, player.role]);
+  const cpi = useMemo(() => player ? calculateCPI(player, matches) : { overall: 0, matchPerformance: 0, athleticMetrics: 0, formIndex: 0, consistency: 0, nationalRank: 0, stateRank: 0, rankChange: 0 }, [player, matches]);
+  const form = useMemo(() => player ? getFormStatus(matches, player.role) : "Cold", [matches, player]);
+
+  if (!player) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-slate-400">No player data available</p>
+      </div>
+    );
+  }
 
   const battingChartData = useMemo(() =>
     [...matches].reverse().map(m => ({

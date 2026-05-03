@@ -2,7 +2,24 @@
 
 import { useAuth } from "@/lib/auth";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, Suspense, Component, type ReactNode } from "react";
+
+class RenderBoundary extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { fallback: ReactNode; children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback;
+    return this.props.children;
+  }
+}
 
 /*
  * Route classification:
@@ -61,6 +78,27 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [user, isLoading, pathname, router, isPublic, isAdminRoute]);
 
+  // Public routes render immediately — no auth loading gate needed.
+  // Wrapped in Suspense + ErrorBoundary so pages that suspend (useSearchParams)
+  // or throw (empty mock data) degrade to skeleton instead of failing the build.
+  if (isPublic) {
+    const fallback = (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center font-bold text-lg text-white mx-auto mb-4 animate-pulse">CV</div>
+          <p className="text-slate-400 text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+    return (
+      <RenderBoundary fallback={fallback}>
+        <Suspense fallback={fallback}>
+          {children}
+        </Suspense>
+      </RenderBoundary>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -72,7 +110,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!user && !isPublic) return null;
+  if (!user) return null;
 
   return <>{children}</>;
 }

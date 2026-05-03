@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function TermsPage() {
+function TermsContent() {
   const searchParams = useSearchParams();
   const showDraftBanner = searchParams.get("preview") === "admin";
 
@@ -223,5 +224,13 @@ export default function TermsPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+export default function TermsPage() {
+  return (
+    <Suspense fallback={<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"><p className="text-slate-400">Loading...</p></div>}>
+      <TermsContent />
+    </Suspense>
   );
 }
