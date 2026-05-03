@@ -894,7 +894,13 @@ function PlayersContent() {
                           <div key={skill} className={`rounded-xl p-4 border ${colors.border} ${colors.bg}`}>
                             <p className={`text-xs font-semibold uppercase tracking-wide mb-2 ${colors.text}`}>{skill}</p>
                             <div className="flex items-center gap-2">
-                              <img src={legend.photo} alt={legend.name} className="w-8 h-8 rounded-full object-cover shrink-0 bg-slate-700" />
+                              {legend.photo ? (
+                                <img src={legend.photo} alt={legend.name} className="w-8 h-8 rounded-full object-cover shrink-0 bg-slate-700" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500/30 to-emerald-500/30 border border-amber-500/20 flex items-center justify-center shrink-0">
+                                  <span className="text-amber-400 font-bold text-xs">{legend.name.split(" ").slice(-1)[0]?.[0] || "?"}</span>
+                                </div>
+                              )}
                               <div>
                                 <p className="text-white font-semibold text-sm">{legend.name}</p>
                                 <p className="text-xs text-slate-400">{legend.country}</p>

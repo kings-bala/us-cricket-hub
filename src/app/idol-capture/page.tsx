@@ -196,7 +196,13 @@ export default function IdolCapturePage() {
         {filtered.map((legend) => (
           <div key={legend.id} className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:border-amber-500/40 transition-all">
             <div className="flex items-center gap-3 mb-3">
-              <img src={legend.photo} alt={legend.name} className="w-12 h-12 rounded-full object-cover shrink-0 bg-slate-700" />
+              {legend.photo ? (
+                <img src={legend.photo} alt={legend.name} className="w-12 h-12 rounded-full object-cover shrink-0 bg-slate-700" />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-500/30 to-emerald-500/30 border border-amber-500/20 flex items-center justify-center shrink-0">
+                  <span className="text-amber-400 font-bold text-sm">{legend.name.split(" ").slice(-1)[0]?.[0] || "?"}</span>
+                </div>
+              )}
               <div>
                 <h3 className="font-semibold text-white">{legend.name}</h3>
                 <p className="text-xs text-slate-400">{legend.country} &middot; {legend.era}</p>
