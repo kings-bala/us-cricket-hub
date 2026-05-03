@@ -35,8 +35,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const TOKENS_KEY = "cricverse360_tokens";
-const USER_KEY = "cricverse360_user";
+// Legacy keys to clean up during migration
+const LEGACY_TOKENS_KEY = "cricverse360_tokens";
+const LEGACY_USER_KEY = "cricverse360_user";
 
 function parseIdToken(idToken: string): Partial<User> | null {
   try {
@@ -55,44 +56,46 @@ function parseIdToken(idToken: string): Partial<User> | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  // tokens in memory only — refresh token is "" (stored in HttpOnly cookie, never exposed to JS)
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const saveTokens = (t: AuthTokens) => {
-    setTokens(t);
-    setAccessToken(t.accessToken);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(TOKENS_KEY, JSON.stringify(t));
-      // Sync a lightweight cookie so Next.js middleware can gate protected routes
-      // server-side. The cookie carries no sensitive data — just a presence flag.
-      document.cookie = "__auth=1; path=/; max-age=604800; SameSite=Lax";
-    }
-  };
-
-  const clearAuth = () => {
+  const clearAuth = useCallback(() => {
     setUser(null);
     setTokens(null);
     clearApiUser();
+    // Clean up any legacy localStorage entries
     if (typeof window !== "undefined") {
-      localStorage.removeItem(TOKENS_KEY);
-      localStorage.removeItem(USER_KEY);
-      document.cookie = "__auth=; path=/; max-age=0";
+      localStorage.removeItem(LEGACY_TOKENS_KEY);
+      localStorage.removeItem(LEGACY_USER_KEY);
+      localStorage.removeItem("cricverse360_user_email");
+      localStorage.removeItem("cricverse360_user_name");
+      localStorage.removeItem("cricverse360_google_access_token");
     }
-  };
+  }, []);
 
-  const fetchUser = useCallback(async (t: AuthTokens) => {
+  const setInMemoryTokens = useCallback((accessToken: string, idToken: string) => {
+    // Store tokens in React state (memory) only — never localStorage
+    // refreshToken is always "" because it lives in an HttpOnly cookie
+    const t: AuthTokens = { accessToken, refreshToken: "", idToken };
+    setTokens(t);
+    setAccessToken(accessToken);
+    // Set non-HttpOnly __auth presence cookie for Next.js middleware gating
+    if (typeof document !== "undefined") {
+      document.cookie = "__auth=1; path=/; max-age=604800; SameSite=Lax";
+    }
+  }, []);
+
+  const fetchUser = useCallback(async (accessToken: string, idToken?: string) => {
+    setInMemoryTokens(accessToken, idToken || "");
     try {
-      const userData = await apiGet<User>("/auth/me", t.accessToken);
+      const userData = await apiGet<User>("/auth/me", accessToken);
       setUser(userData);
       setApiUser(userData.email, userData.full_name);
-      setAccessToken(t.accessToken);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(USER_KEY, JSON.stringify(userData));
-      }
     } catch {
       // API call failed — try to use ID token data (e.g., Google OAuth users)
-      if (t.idToken) {
-        const idUser = parseIdToken(t.idToken);
+      if (idToken) {
+        const idUser = parseIdToken(idToken);
         if (idUser && idUser.email) {
           const fallbackUser: User = {
             id: idUser.id || "google-user",
@@ -102,60 +105,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
           setUser(fallbackUser);
           setApiUser(fallbackUser.email, fallbackUser.full_name);
-          setAccessToken(t.accessToken);
-          if (typeof window !== "undefined") {
-            localStorage.setItem(USER_KEY, JSON.stringify(fallbackUser));
-          }
           return;
-        }
-      }
-      // Also check localStorage for previously cached user
-      if (typeof window !== "undefined") {
-        const cachedUser = localStorage.getItem(USER_KEY);
-        if (cachedUser) {
-          try {
-            const parsed = JSON.parse(cachedUser) as User;
-            setUser(parsed);
-            setApiUser(parsed.email, parsed.full_name);
-            setAccessToken(t.accessToken);
-            return;
-          } catch {
-            // ignore parse error
-          }
         }
       }
       clearAuth();
     }
-  }, []);
+  }, [clearAuth, setInMemoryTokens]);
 
+  // Initialize auth state from HttpOnly cookie session
   useEffect(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem(TOKENS_KEY) : null;
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored) as AuthTokens;
-        setTokens(parsed);
-        // Ensure the auth cookie stays in sync for middleware gating
-        if (typeof document !== "undefined") {
-          document.cookie = "__auth=1; path=/; max-age=604800; SameSite=Lax";
+    async function initAuth() {
+      // Step 1: Migrate legacy localStorage tokens to HttpOnly cookies
+      if (typeof window !== "undefined") {
+        const legacyTokens = localStorage.getItem(LEGACY_TOKENS_KEY);
+        if (legacyTokens) {
+          try {
+            const parsed = JSON.parse(legacyTokens);
+            if (parsed.refreshToken) {
+              await fetch("/api/auth/migrate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ refreshToken: parsed.refreshToken }),
+              });
+            }
+            // Clear legacy storage regardless of migration success
+            localStorage.removeItem(LEGACY_TOKENS_KEY);
+            localStorage.removeItem(LEGACY_USER_KEY);
+          } catch {
+            localStorage.removeItem(LEGACY_TOKENS_KEY);
+            localStorage.removeItem(LEGACY_USER_KEY);
+          }
         }
-        fetchUser(parsed).finally(() => setLoading(false));
-      } catch {
-        clearAuth();
-        setLoading(false);
       }
-    } else {
-      // No stored tokens — clear cookie too
+
+      // Step 2: Try to restore session from HttpOnly cookie
+      try {
+        const res = await fetch("/api/auth/session", { credentials: "same-origin" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.accessToken) {
+            await fetchUser(data.accessToken, data.idToken);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // Session endpoint failed — user is not authenticated
+      }
+
+      // Not authenticated — clear cookie
       if (typeof document !== "undefined") {
         document.cookie = "__auth=; path=/; max-age=0";
       }
       setLoading(false);
     }
+    initAuth();
   }, [fetchUser]);
 
   const login = async (email: string, password: string) => {
-    const result = await apiPost<AuthTokens & { accessToken: string }>("/auth/login", { email, password });
-    saveTokens(result);
-    await fetchUser(result);
+    // Call our secure proxy endpoint which sets HttpOnly cookie
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "same-origin",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || `Login failed (${res.status})`);
+    }
+    // Access token is in response body (stored in memory only, not localStorage)
+    await fetchUser(data.accessToken, data.idToken);
   };
 
   const register = async (email: string, password: string, fullName: string, role = "player") => {
@@ -175,12 +195,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await apiPost("/auth/reset-password", { email, code, newPassword });
   };
 
-  const logout = () => {
+  const logout = async () => {
     clearAuth();
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("cricverse360_user_email");
-      localStorage.removeItem("cricverse360_user_name");
-      localStorage.removeItem("cricverse360_google_access_token");
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+    } catch {
+      // Best effort — cookie will expire anyway
     }
     router.push("/");
   };
