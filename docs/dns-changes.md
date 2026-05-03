@@ -90,12 +90,30 @@ const userPool = new cognito.UserPool(this, "CricVerse360UserPool", {
 
 **Important:** The SES domain must be verified (Step 1 complete + DNS records propagated) BEFORE deploying this CDK change. Otherwise Cognito will fail to send emails.
 
-**Deploy order:**
-1. Step 1 (SES identity creation)
-2. Step 3 (DNS records — triggers SES verification)
-3. Wait for SES to confirm domain is verified (~5 min to 72h depending on DNS propagation)
-4. Step 4 (production access)
-5. Deploy CDK stack with Step 2 changes
+**Deploy order (critical — do NOT reorder):**
+
+```
+Day 1 (TODAY — start the async clocks):
+  ┌─ Step 1: Create SES identity (instant)
+  └─ Step 4: Request SES production access (ASYNC — 24-48h for AWS approval)
+       ⚠️  Do this NOW. AWS takes 24-48h minimum to review.
+       The clock starts when you submit, not when you're ready for everything else.
+
+Day 1-2 (after Step 1 provides DKIM tokens):
+  └─ Step 3: Add SPF + DKIM records in GoDaddy DNS
+       Wait for SES to confirm domain is verified (typically 15 min to a few hours)
+
+After BOTH conditions are met:
+  ✓ SES domain shows "Verified" status
+  ✓ SES production access APPROVED (not just requested)
+  └─ Step 2: Deploy CDK stack (flips Cognito to use SES)
+
+⚠️  DO NOT deploy Step 2 before production access is approved.
+    If you flip Cognito before AWS approves production access,
+    verification emails to new signups will FAIL during the window.
+```
+
+**Timing: do the final flip on a workday morning (not Friday afternoon).** If DNS propagation or SES has issues, you want AWS support reachable.
 
 ---
 
@@ -141,6 +159,12 @@ After DNS propagates, SES will automatically verify the domain (check status in 
 
 ## Step 4: Request SES Production Access
 
+> **⚠️ DO THIS TODAY.** This is the single biggest timing dependency in the whole
+> DNS sequence. AWS takes **24-48 hours** to approve, sometimes longer if they
+> ask follow-up questions. The clock starts when you submit the request, not when
+> you're ready for everything else. If you're hoping to soft-launch in two weeks,
+> submit this request now.
+
 By default, SES accounts are in **sandbox mode** — you can only send to verified email addresses. To send to real users (signup verification, password reset), you must request production access.
 
 **AWS Console path:** SES → Account dashboard → "Request production access"
@@ -156,7 +180,7 @@ aws sesv2 put-account-details \
   --region us-east-1
 ```
 
-**Typical approval time:** 24 hours (sometimes instant for low-volume transactional use cases).
+**Typical approval time:** 24-48 hours (sometimes instant for low-volume transactional use cases; sometimes longer if AWS asks follow-up questions).
 
 **What to include in the request:**
 - Type: Transactional
