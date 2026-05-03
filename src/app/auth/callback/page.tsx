@@ -53,12 +53,11 @@ function CallbackInner() {
           throw new Error(data.error || `Token exchange failed (${res.status})`);
         }
 
-        // Store Google access token separately for Gemini API usage
-        if (data.google_access_token) {
-          localStorage.setItem("cricverse360_google_access_token", data.google_access_token);
-        }
+        // Google access token is stored server-side in the users table by the
+        // /auth/google backend handler. No need to keep in localStorage.
+        // The backend reads it from DB during analysis (lines 2400-2433 of index.mjs).
 
-        // Store tokens via HttpOnly cookie (user info loaded via AuthContext on next page)
+        // Store session via HttpOnly cookie
         if (data.google_access_token) {
           await fetch("/api/auth/migrate", {
             method: "POST",
