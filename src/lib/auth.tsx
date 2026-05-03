@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { apiPost, apiGet } from "./api";
+import { apiPost, apiGet, setTokenUpdateCallback } from "./api";
 import { setAccessToken, setApiUser, clearApiUser } from "./api-client";
 
 interface User {
@@ -85,6 +85,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       document.cookie = "__auth=1; path=/; max-age=604800; SameSite=Lax";
     }
   }, []);
+
+  // Register the token refresh callback so api.ts can update memory tokens on 401 retry
+  useEffect(() => {
+    setTokenUpdateCallback((newAccessToken: string) => {
+      setInMemoryTokens(newAccessToken, tokens?.idToken || "");
+    });
+  }, [setInMemoryTokens, tokens?.idToken]);
 
   const fetchUser = useCallback(async (accessToken: string, idToken?: string) => {
     setInMemoryTokens(accessToken, idToken || "");
