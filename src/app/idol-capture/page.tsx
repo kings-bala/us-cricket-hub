@@ -113,12 +113,12 @@ export default function IdolCapturePage() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <h1 className="text-3xl font-bold text-white">Idol Capture</h1>
-          <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-full border border-amber-500/30">Pick Your Legends</span>
+          <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded-full border border-amber-500/30">Pick Your Style</span>
         </div>
-        <p className="text-slate-400">Search former cricket legends and select one as your idol for each skill. Mirror their technique and routines.</p>
+        <p className="text-slate-400">Browse cricket training archetypes and select one for each skill. Mirror their technique and routines.</p>
         <p className="text-xs text-slate-500 mt-2 bg-slate-800/50 border border-slate-700/50 rounded-lg px-3 py-2">
           Educational reference only. Training routines are compiled from publicly available coaching resources and YouTube videos.
-          The cricketers listed are not affiliated with, endorsed by, or partnered with CricVerse360.
+          The training archetypes shown are not affiliated with, endorsed by, or partnered with any individual or organization.
         </p>
       </div>
 
@@ -172,7 +172,7 @@ export default function IdolCapturePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <input
             type="text"
-            placeholder="Search legends by name or country..."
+            placeholder="Search training styles..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
@@ -188,7 +188,7 @@ export default function IdolCapturePage() {
             <option value="Fielding">Fielding</option>
             <option value="Wicket-Keeping">Wicket-Keeping</option>
           </select>
-          <p className="text-sm text-slate-500 self-center">Showing {filtered.length} legends</p>
+          <p className="text-sm text-slate-500 self-center">Showing {filtered.length} archetypes</p>
         </div>
       </div>
 
@@ -228,7 +228,7 @@ export default function IdolCapturePage() {
 
       {filtered.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-slate-500 text-lg">No legends match your search</p>
+          <p className="text-slate-500 text-lg">No archetypes match your search</p>
           <button onClick={() => { setSearch(""); setSkillFilter("All"); }} className="mt-4 text-amber-400 hover:text-amber-300 text-sm">Clear filters</button>
         </div>
       )}
