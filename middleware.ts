@@ -69,8 +69,16 @@ export function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   });
 
-  // CSP in Report-Only mode — flip to "Content-Security-Policy" after validation
-  response.headers.set("Content-Security-Policy-Report-Only", csp);
+  // CSP enforcement: flip via env var after 7 days of clean Report-Only logs.
+  // Set NEXT_PUBLIC_CSP_ENFORCE=true to activate. Rollback: unset the env var.
+  const enforceCSP = process.env.NEXT_PUBLIC_CSP_ENFORCE === "true";
+  const cspHeader = enforceCSP ? "Content-Security-Policy" : "Content-Security-Policy-Report-Only";
+  response.headers.set(cspHeader, csp);
+
+  // Always keep report-only in parallel during enforcement rollout
+  if (enforceCSP) {
+    response.headers.set("Content-Security-Policy-Report-Only", csp);
+  }
 
   // Report-To header for CSP reporting API
   response.headers.set(
