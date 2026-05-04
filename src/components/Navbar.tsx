@@ -44,6 +44,9 @@ export default function Navbar() {
                 Admin
               </Link>
             )}
+            <Link href="/tournaments/jyct" className="text-sm text-amber-400 hover:text-amber-300 transition-colors font-medium">
+              JYCT 2026
+            </Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -99,6 +102,13 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <Link
+              href="/tournaments/jyct"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-sm text-amber-400 hover:text-amber-300 font-medium"
+            >
+              JYCT 2026
+            </Link>
             {user?.role === "admin" && (
               <Link
                 href="/admin"
