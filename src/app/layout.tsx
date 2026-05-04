@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "CricketHub Global - International Cricket Talent Discovery Platform",
-  description: "Connecting street cricket talent worldwide with T20 leagues. AI-powered video analysis, global coach directory, and professional scouting.",
+  title: "CricVerse360 - AI Cricket Analysis That Helps Players Improve and Get Discovered",
+  description: "Upload your batting or bowling video and receive instant AI-powered feedback, improvement tips, and a shareable player profile. Free first analysis.",
 };
 
 export default function RootLayout({
@@ -16,9 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col antialiased">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <Providers>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

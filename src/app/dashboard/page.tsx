@@ -1,269 +1,637 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { players, agents, t20Teams, tournaments, sponsors } from "@/data/mock";
-import StatCard from "@/components/StatCard";
-import { UserRole } from "@/types";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { apiGet } from "@/lib/api";
 
-const roleLabels: Record<UserRole, string> = {
-  player: "Player Dashboard",
-  agent: "Agent Dashboard",
-  owner: "T20 Owner Dashboard",
-  sponsor: "Sponsor Dashboard",
-};
+interface AnalysisRecord {
+  id: string;
+  analysis_type: string;
+  scores: string | Record<string, unknown>;
+  feedback: string;
+  video_ref: string;
+  created_at: string;
+}
 
-function PlayerDashboard() {
-  const player = players[0];
+interface SubStatus {
+  plan: string;
+  status: string;
+  analysis_credits: number;
+}
+
+function parseScore(scores: string | Record<string, unknown>): number {
+  try {
+    const obj = typeof scores === "string" ? JSON.parse(scores) : scores;
+    return Number(obj?.overall) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function getScoreColor(score: number): string {
+  if (score >= 85) return "text-emerald-400";
+  if (score >= 70) return "text-blue-400";
+  if (score >= 55) return "text-amber-400";
+  return "text-red-400";
+}
+
+function getScoreBg(score: number): string {
+  if (score >= 85) return "from-emerald-500/20 to-emerald-500/5 border-emerald-500/30";
+  if (score >= 70) return "from-blue-500/20 to-blue-500/5 border-blue-500/30";
+  if (score >= 55) return "from-amber-500/20 to-amber-500/5 border-amber-500/30";
+  return "from-red-500/20 to-red-500/5 border-red-500/30";
+}
+
+function formatDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  } catch {
+    return dateStr;
+  }
+}
+
+function formatTimeAgo(dateStr: string): string {
+  try {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / 86400000);
+    if (days === 0) return "Today";
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    return `${Math.floor(days / 30)} months ago`;
+  } catch {
+    return "";
+  }
+}
+
+// SVG-based score trend chart
+function ScoreTrendChart({ analyses }: { analyses: AnalysisRecord[] }) {
+  const sorted = [...analyses].reverse(); // oldest first
+  if (sorted.length < 2) return null;
+
+  const scores = sorted.map((a) => parseScore(a.scores));
+  const maxScore = 100;
+  const width = 600;
+  const height = 200;
+  const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartW = width - padding.left - padding.right;
+  const chartH = height - padding.top - padding.bottom;
+
+  const points = scores.map((s, i) => ({
+    x: padding.left + (i / (scores.length - 1)) * chartW,
+    y: padding.top + chartH - (s / maxScore) * chartH,
+    score: s,
+    date: formatDate(sorted[i].created_at),
+  }));
+
+  const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
+  const areaPath = `${linePath} L ${points[points.length - 1].x} ${padding.top + chartH} L ${points[0].x} ${padding.top + chartH} Z`;
+
   return (
-    <div className="space-y-6">
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-        <div className="flex items-center gap-4 mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
-            {player.name.split(" ").map((n) => n[0]).join("")}
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">{player.name}</h2>
-            <p className="text-sm text-slate-400">{player.role} &middot; {player.ageGroup} &middot; {player.country}</p>
-            <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full mt-1 inline-block">{player.profileTier} Profile</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Matches" value={player.stats.matches} color="emerald" />
-        <StatCard label="Runs" value={player.stats.runs} color="blue" />
-        <StatCard label="Average" value={player.stats.battingAverage} color="purple" />
-        <StatCard label="Wickets" value={player.stats.wickets} color="amber" />
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Profile Visibility</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between text-sm"><span className="text-slate-400">Profile Views (30d)</span><span className="text-white font-medium">247</span></div>
-            <div className="flex justify-between text-sm"><span className="text-slate-400">Shortlisted by Scouts</span><span className="text-white font-medium">8</span></div>
-            <div className="flex justify-between text-sm"><span className="text-slate-400">Agent Interest</span><span className="text-emerald-400 font-medium">3 new</span></div>
-          </div>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Upcoming Events</h3>
-          <div className="space-y-2">
-            {tournaments.filter((t) => t.status === "upcoming").slice(0, 3).map((t) => (
-              <div key={t.id} className="flex items-center justify-between text-sm">
-                <span className="text-slate-300">{t.name}</span>
-                <span className="text-xs text-slate-500">{t.startDate}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-emerald-400 mb-2">Upgrade to Premium</h3>
-        <p className="text-sm text-slate-400 mb-3">Get professional video analysis, verified speed-gun data, and priority visibility to scouts.</p>
-        <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm transition-colors">Upgrade Now - $9.99/mo</button>
-      </div>
+    <div className="w-full overflow-x-auto">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full min-w-[400px]" preserveAspectRatio="xMidYMid meet">
+        {/* Grid lines */}
+        {[0, 25, 50, 75, 100].map((v) => {
+          const y = padding.top + chartH - (v / maxScore) * chartH;
+          return (
+            <g key={v}>
+              <line x1={padding.left} y1={y} x2={width - padding.right} y2={y} stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
+              <text x={padding.left - 8} y={y + 4} textAnchor="end" fill="#64748b" fontSize="11">{v}</text>
+            </g>
+          );
+        })}
+        {/* Area fill */}
+        <path d={areaPath} fill="url(#scoreGradient)" opacity="0.3" />
+        {/* Line */}
+        <path d={linePath} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Dots */}
+        {points.map((p, i) => (
+          <g key={i}>
+            <circle cx={p.x} cy={p.y} r="4" fill="#10b981" stroke="#0f172a" strokeWidth="2" />
+            <title>{p.date}: {p.score}/100</title>
+          </g>
+        ))}
+        {/* Date labels */}
+        {points.length <= 8 && points.map((p, i) => (
+          <text key={i} x={p.x} y={height - 5} textAnchor="middle" fill="#64748b" fontSize="10">
+            {sorted[i].created_at ? new Date(sorted[i].created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""}
+          </text>
+        ))}
+        <defs>
+          <linearGradient id="scoreGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+      </svg>
     </div>
   );
 }
 
-function AgentDashboard() {
-  const agent = agents[0];
-  const agentPlayers = players.filter((p) => agent.playerIds.includes(p.id));
+export default function ProgressDashboard() {
+  const router = useRouter();
+  const { user, tokens, loading } = useAuth();
+  const [analyses, setAnalyses] = useState<AnalysisRecord[]>([]);
+  const [subscription, setSubscription] = useState<SubStatus | null>(null);
+  const [fetchLoading, setFetchLoading] = useState(true);
 
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Active Players" value={agentPlayers.length} color="emerald" />
-        <StatCard label="Placements" value={agent.placements} color="blue" />
-        <StatCard label="Success Rate" value={`${agent.successRate}%`} color="purple" />
-        <StatCard label="Rating" value={agent.rating} color="amber" />
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      router.push("/auth?redirect=/dashboard");
+      return;
+    }
+    const fetchData = async () => {
+      try {
+        const [historyRes, subRes] = await Promise.all([
+          apiGet<AnalysisRecord[]>("/analysis/history", tokens?.accessToken),
+          apiGet<SubStatus>("/subscriptions/status", tokens?.accessToken),
+        ]);
+        setAnalyses(historyRes || []);
+        setSubscription(subRes || null);
+      } catch (e) {
+        console.error("Failed to fetch dashboard data:", e);
+      } finally {
+        setFetchLoading(false);
+      }
+    };
+    fetchData();
+  }, [user, tokens, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-400">Checking authentication...</p>
+        </div>
       </div>
+    );
+  }
 
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Your Stable</h3>
-        <div className="space-y-3">
-          {agentPlayers.map((p) => (
-            <Link key={p.id} href={`/players/${p.id}`} className="flex items-center justify-between hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                  {p.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">{p.name}</p>
-                  <p className="text-xs text-slate-400">{p.role} &middot; {p.ageGroup}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-white">{p.stats.runs} runs</p>
-                <p className="text-xs text-slate-400">{p.stats.matches} matches</p>
-              </div>
-            </Link>
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-400">Redirecting to sign in...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (fetchLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <div className="h-8 w-64 bg-slate-800 rounded animate-pulse mb-2" />
+          <div className="h-4 w-40 bg-slate-800 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+              <div className="h-3 w-20 bg-slate-700 rounded animate-pulse mb-3" />
+              <div className="h-8 w-16 bg-slate-700 rounded animate-pulse" />
+            </div>
           ))}
         </div>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Recent Activity</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex gap-2"><span className="text-emerald-400">+</span><span className="text-slate-300">New inquiry from Mumbai Indians for talent review</span></div>
-            <div className="flex gap-2"><span className="text-blue-400">i</span><span className="text-slate-300">Player profiles viewed 340 times this week globally</span></div>
-            <div className="flex gap-2"><span className="text-amber-400">!</span><span className="text-slate-300">IPL Pre-Draft Camp registration closing soon</span></div>
-          </div>
+        <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50 mb-8">
+          <div className="h-5 w-32 bg-slate-700 rounded animate-pulse mb-4" />
+          <div className="h-48 bg-slate-700/30 rounded animate-pulse" />
         </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Pending Opportunities</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-slate-300">Mumbai Indians - Trial invite</span><span className="text-amber-400">Pending</span></div>
-            <div className="flex justify-between"><span className="text-slate-300">Sydney Sixers - Contract talk</span><span className="text-emerald-400">Active</span></div>
-            <div className="flex justify-between"><span className="text-slate-300">CricGear Pro - Endorsement</span><span className="text-blue-400">Review</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OwnerDashboard() {
-  const team = t20Teams[0];
-  const draftEligible = players.filter((p) => (p.ageGroup === "U19" || p.ageGroup === "U21") && p.verified);
-
-  return (
-    <div className="space-y-6">
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-lg">
-            {team.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">{team.name}</h2>
-            <p className="text-sm text-slate-400">{team.city} &middot; {team.league}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Roster Size" value={team.rosterSize} color="emerald" />
-        <StatCard label="Local Quota" value={`${team.localFilled}/${team.localQuota}`} color="blue" />
-        <StatCard label="Draft Eligible" value={draftEligible.length} color="purple" />
-        <StatCard label="Shortlisted" value={5} color="amber" />
-      </div>
-
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Draft-Ready Prospects</h3>
-          <Link href="/scouting" className="text-xs text-emerald-400 hover:text-emerald-300">Open Pro Dashboard &rarr;</Link>
-        </div>
-        <div className="space-y-2">
-          {draftEligible.slice(0, 5).map((p) => (
-            <Link key={p.id} href={`/players/${p.id}`} className="flex items-center justify-between hover:bg-slate-700/30 rounded-lg p-2 -mx-2 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold">
-                  {p.name.split(" ").map((n) => n[0]).join("")}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-white">{p.name}</p>
-                  <p className="text-xs text-slate-400">{p.role} &middot; {p.country}</p>
-                </div>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50 flex items-center gap-4">
+              <div className="w-12 h-12 bg-slate-700 rounded-full animate-pulse shrink-0" />
+              <div className="flex-1">
+                <div className="h-4 w-32 bg-slate-700 rounded animate-pulse mb-2" />
+                <div className="h-3 w-48 bg-slate-700 rounded animate-pulse" />
               </div>
-              <div className="text-right text-xs">
-                <p className="text-white">{p.stats.runs}r / {p.stats.wickets}w</p>
-                <p className="text-slate-500">{p.stats.matches} matches</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-purple-400 mb-2">Homegrown Quota Alert</h3>
-        <p className="text-sm text-slate-400">You need {team.localQuota - team.localFilled} more local players to meet the quota. Use the Pro Scouting Dashboard to find global talent.</p>
-      </div>
-    </div>
-  );
-}
-
-function SponsorDashboard() {
-  const sponsor = sponsors[0];
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatCard label="Active Sponsorships" value={sponsor.sponsoredAssets.length} color="amber" />
-        <StatCard label="Total Investment" value="$75K" color="emerald" />
-        <StatCard label="Brand Impressions" value="125K" color="blue" />
-        <StatCard label="Engagement Rate" value="4.2%" color="purple" />
-      </div>
-
-      <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-        <h3 className="text-sm font-semibold text-white mb-4 uppercase tracking-wide">Your Sponsorships</h3>
-        <div className="space-y-3">
-          {sponsor.sponsoredAssets.map((asset) => (
-            <div key={asset.id} className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3">
-              <div>
-                <p className="text-sm font-medium text-white">{asset.name}</p>
-                <p className="text-xs text-slate-400">{asset.description}</p>
-              </div>
-              <span className="text-sm font-bold text-emerald-400">${asset.price.toLocaleString()}</span>
+              <div className="h-8 w-16 bg-slate-700 rounded animate-pulse" />
             </div>
           ))}
         </div>
       </div>
+    );
+  }
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">Performance Metrics</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-slate-400">Leaderboard Views</span><span className="text-white">45,230</span></div>
-            <div className="flex justify-between"><span className="text-slate-400">Brand Click-throughs</span><span className="text-white">2,180</span></div>
-            <div className="flex justify-between"><span className="text-slate-400">Social Mentions</span><span className="text-white">340</span></div>
-          </div>
-        </div>
-        <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
-          <h3 className="text-sm font-semibold text-white mb-3 uppercase tracking-wide">ROI Summary</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between"><span className="text-slate-400">Cost per Impression</span><span className="text-white">$0.60</span></div>
-            <div className="flex justify-between"><span className="text-slate-400">Cost per Click</span><span className="text-white">$34.40</span></div>
-            <div className="flex justify-between"><span className="text-slate-400">Est. Brand Value</span><span className="text-emerald-400">$112K</span></div>
-          </div>
-        </div>
-      </div>
+  const isPro = subscription?.plan === "pro";
+  const scores = analyses.map((a) => parseScore(a.scores));
+  const lastScore = scores.length > 0 ? scores[0] : null;
+  const bestScore = scores.length > 0 ? Math.max(...scores) : null;
+  const totalAnalyses = analyses.length;
+  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
 
-      <Link href="/sponsors">
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 hover:border-amber-500/40 transition-colors">
-          <h3 className="text-sm font-semibold text-amber-400 mb-2">Expand Your Portfolio</h3>
-          <p className="text-sm text-slate-400">Browse available sponsorship opportunities to increase your brand presence in the global cricket ecosystem.</p>
-        </div>
-      </Link>
-    </div>
-  );
-}
+  // Compute improvement (latest vs first)
+  const improvement = scores.length >= 2 ? scores[0] - scores[scores.length - 1] : null;
 
-export default function DashboardPage() {
-  const [role, setRole] = useState<UserRole>("player");
+  // Type distribution
+  const battingCount = analyses.filter((a) => a.analysis_type === "batting").length;
+  const bowlingCount = analyses.filter((a) => a.analysis_type === "bowling").length;
+
+  // Free users see max 3 reports; Pro see all
+  const visibleReports = isPro ? analyses : analyses.slice(0, 3);
+  const hiddenCount = isPro ? 0 : Math.max(0, analyses.length - 3);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-white">{roleLabels[role]}</h1>
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value as UserRole)}
-          className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500"
-        >
-          <option value="player">Player View</option>
-          <option value="agent">Agent View</option>
-          <option value="owner">T20 Owner View</option>
-          <option value="sponsor">Sponsor View</option>
-        </select>
-      </div>
+    <div className="min-h-screen">
+      {/* Header */}
+      <section className="bg-gradient-to-br from-blue-900/30 via-slate-900 to-emerald-900/30 border-b border-slate-700/50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <p className="text-sm text-emerald-400 font-medium mb-1">Welcome back,</p>
+              <h1 className="text-3xl font-bold text-white">{user.full_name || "Player"}</h1>
+              <div className="flex items-center gap-3 mt-2">
+                <span className={`text-xs px-2.5 py-1 rounded-full border ${isPro ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-slate-700/50 text-slate-400 border-slate-600"}`}>
+                  {subscription?.plan === "pro" ? "Pro" : "Free"} Plan
+                </span>
+                {subscription && (
+                  <span className="text-xs text-slate-500">{subscription.analysis_credits} credits remaining</span>
+                )}
+              </div>
+            </div>
+            <Link
+              href="/analyze"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-full font-bold transition-colors shadow-lg shadow-emerald-500/20 text-center"
+            >
+              Upload Another Video to Improve Your Score
+            </Link>
+          </div>
+        </div>
+      </section>
 
-      {role === "player" && <PlayerDashboard />}
-      {role === "agent" && <AgentDashboard />}
-      {role === "owner" && <OwnerDashboard />}
-      {role === "sponsor" && <SponsorDashboard />}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Complete Your Profile — optional, non-blocking */}
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
+              <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white">Complete your player profile</p>
+              <p className="text-xs text-slate-400">Add your role, style, and age group to get personalized coaching feedback</p>
+            </div>
+          </div>
+          <Link
+            href="/profile/edit"
+            className="text-sm bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-1.5 rounded-full font-medium transition-colors whitespace-nowrap border border-blue-500/30"
+          >
+            Complete Profile
+          </Link>
+        </div>
+
+        {/* Empty state */}
+        {totalAnalyses === 0 ? (
+          <div className="text-center py-20">
+            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6">
+              <svg className="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">No analyses yet</h2>
+            <p className="text-slate-400 max-w-md mx-auto mb-8">
+              Upload your first cricket video to get your AI analysis score. Track your progress and improve over time.
+            </p>
+            <Link
+              href="/analyze"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
+            >
+              Upload Your First Video
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className={`bg-gradient-to-br ${lastScore !== null ? getScoreBg(lastScore) : "from-slate-800 to-slate-800/50 border-slate-700"} border rounded-xl p-5`}>
+                <p className="text-xs text-slate-400 mb-1">Last Score</p>
+                <p className={`text-3xl font-bold ${lastScore !== null ? getScoreColor(lastScore) : "text-slate-500"}`}>
+                  {lastScore !== null ? lastScore : "-"}<span className="text-base text-slate-500">/100</span>
+                </p>
+                {analyses[0] && <p className="text-xs text-slate-500 mt-1">{formatTimeAgo(analyses[0].created_at)}</p>}
+              </div>
+              <div className={`bg-gradient-to-br ${bestScore !== null ? getScoreBg(bestScore) : "from-slate-800 to-slate-800/50 border-slate-700"} border rounded-xl p-5`}>
+                <p className="text-xs text-slate-400 mb-1">Best Score</p>
+                <p className={`text-3xl font-bold ${bestScore !== null ? getScoreColor(bestScore) : "text-slate-500"}`}>
+                  {bestScore !== null ? bestScore : "-"}<span className="text-base text-slate-500">/100</span>
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Personal best</p>
+              </div>
+              <div className="bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 rounded-xl p-5">
+                <p className="text-xs text-slate-400 mb-1">Total Analyses</p>
+                <p className="text-3xl font-bold text-blue-400">{totalAnalyses}</p>
+                <p className="text-xs text-slate-500 mt-1">
+                  {battingCount} batting &middot; {bowlingCount} bowling
+                </p>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500/20 to-purple-500/5 border border-purple-500/30 rounded-xl p-5">
+                <p className="text-xs text-slate-400 mb-1">Average Score</p>
+                <p className="text-3xl font-bold text-purple-400">{avgScore !== null ? avgScore : "-"}<span className="text-base text-slate-500">/100</span></p>
+                {improvement !== null && (
+                  <p className={`text-xs mt-1 ${improvement >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                    {improvement >= 0 ? "+" : ""}{improvement} since first analysis
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Goal Message + Latest Report */}
+            <div className="grid md:grid-cols-2 gap-4 mb-8">
+              {/* Goal Message */}
+              <div className="bg-gradient-to-r from-amber-900/20 to-emerald-900/20 border border-amber-500/20 rounded-xl p-5 flex items-center gap-4">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center shrink-0">
+                  <span className="text-2xl">&#x1F3AF;</span>
+                </div>
+                <div>
+                  <p className="text-white font-semibold">Your next goal: beat your previous score.</p>
+                  <p className="text-sm text-slate-400 mt-0.5">
+                    {bestScore !== null
+                      ? `Your best is ${bestScore}/100. Upload a new video to beat it.`
+                      : "Upload again to start tracking improvement."}
+                  </p>
+                </div>
+              </div>
+
+              {/* Latest Report Quick Access */}
+              {analyses[0] && (
+                <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5">
+                  <p className="text-xs text-slate-400 mb-2">Latest Report</p>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${getScoreBg(parseScore(analyses[0].scores))} flex items-center justify-center`}>
+                      <span className={`text-xl font-bold ${getScoreColor(parseScore(analyses[0].scores))}`}>{parseScore(analyses[0].scores)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium capitalize">{analyses[0].analysis_type} Analysis</p>
+                      <p className="text-xs text-slate-500">{formatDate(analyses[0].created_at)}</p>
+                      {analyses[0].feedback && (
+                        <p className="text-xs text-slate-400 mt-1 truncate">{analyses[0].feedback}</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Score Trend */}
+            {analyses.length >= 2 && (
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-6 mb-8">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Score Trend</h2>
+                    <p className="text-sm text-slate-400">Your performance over time</p>
+                  </div>
+                  {improvement !== null && (
+                    <div className={`px-3 py-1.5 rounded-full text-sm font-semibold ${improvement >= 0 ? "bg-emerald-500/20 text-emerald-400" : "bg-red-500/20 text-red-400"}`}>
+                      {improvement >= 0 ? "+" : ""}{improvement} pts
+                    </div>
+                  )}
+                </div>
+                <ScoreTrendChart analyses={isPro ? analyses : analyses.slice(0, 5)} />
+                {!isPro && analyses.length > 5 && (
+                  <p className="text-xs text-slate-500 text-center mt-3">
+                    Showing last 5 analyses. <Link href="/pricing" className="text-emerald-400 hover:underline">Upgrade to Pro</Link> to see full history.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Pro Improvement Insights */}
+            {isPro && analyses.length >= 2 && (
+              <div className="bg-gradient-to-br from-emerald-900/20 to-blue-900/20 border border-emerald-500/20 rounded-xl p-6 mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">Pro</span>
+                  <h2 className="text-lg font-semibold text-white">Improvement Insights</h2>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-slate-800/50 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 mb-1">Consistency</p>
+                    <p className="text-white font-semibold">
+                      {(() => {
+                        const stdDev = Math.sqrt(scores.reduce((sum, s) => sum + Math.pow(s - (avgScore || 0), 2), 0) / scores.length);
+                        if (stdDev < 5) return "Very Consistent";
+                        if (stdDev < 10) return "Consistent";
+                        if (stdDev < 15) return "Moderate";
+                        return "Variable";
+                      })()}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Score variance across sessions</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 mb-1">Trend Direction</p>
+                    <p className={`font-semibold ${improvement !== null && improvement >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                      {improvement !== null && improvement > 5 ? "Improving" : improvement !== null && improvement < -5 ? "Declining" : "Stable"}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">Based on first vs latest</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-lg p-4">
+                    <p className="text-xs text-slate-400 mb-1">Focus Area</p>
+                    <p className="text-white font-semibold">
+                      {battingCount > bowlingCount ? "Batting" : bowlingCount > battingCount ? "Bowling" : "All-Round"}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">{battingCount} batting / {bowlingCount} bowling sessions</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Pro: Repeated Weaknesses Across Reports */}
+            {isPro && analyses.length >= 2 && (
+              <div className="bg-gradient-to-br from-red-900/10 to-amber-900/10 border border-amber-500/15 rounded-xl p-6 mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">Pro</span>
+                  <h2 className="text-lg font-semibold text-white">Repeated Weaknesses</h2>
+                </div>
+                <p className="text-sm text-slate-400 mb-4">Issues that appear across multiple reports — focus here for the biggest improvement.</p>
+                {(() => {
+                  const feedbackKeys: Record<string, number> = {};
+                  analyses.forEach((a) => {
+                    try {
+                      const sc = typeof a.scores === "string" ? JSON.parse(a.scores) : a.scores;
+                      Object.entries(sc).forEach(([key, val]) => {
+                        if (key !== "overall" && typeof val === "string" && val.length > 10) {
+                          const k = key.replace(/_/g, " ");
+                          feedbackKeys[k] = (feedbackKeys[k] || 0) + 1;
+                        }
+                      });
+                    } catch { /* skip */ }
+                  });
+                  const repeated = Object.entries(feedbackKeys)
+                    .filter(([, count]) => count >= 2)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                  if (repeated.length === 0) {
+                    return (
+                      <p className="text-sm text-slate-500">Not enough data yet. Upload more videos to identify recurring patterns.</p>
+                    );
+                  }
+                  return (
+                    <div className="space-y-2">
+                      {repeated.map(([area, count]) => (
+                        <div key={area} className="flex items-center justify-between bg-slate-800/50 rounded-lg px-4 py-3">
+                          <span className="text-sm text-white capitalize font-medium">{area}</span>
+                          <span className="text-xs text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                            Flagged in {count} report{count > 1 ? "s" : ""}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* Upgrade tease for free users: repeated weaknesses */}
+            {!isPro && analyses.length >= 2 && (
+              <div className="relative mb-8">
+                <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-6 blur-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <h2 className="text-lg font-semibold text-white">Repeated Weaknesses</h2>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-8 w-full bg-slate-700/30 rounded-lg" />
+                    <div className="h-8 w-3/4 bg-slate-700/30 rounded-lg" />
+                    <div className="h-8 w-5/6 bg-slate-700/30 rounded-lg" />
+                  </div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="text-slate-300 font-medium mb-1">See which weaknesses repeat across reports</p>
+                    <Link href="/pricing" className="text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-full font-medium transition-colors">
+                      Upgrade to Pro
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Previous Reports */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-white">Previous Reports</h2>
+                {totalAnalyses > 0 && (
+                  <span className="text-xs text-slate-500">{totalAnalyses} total</span>
+                )}
+              </div>
+              <div className="space-y-3">
+                {visibleReports.map((analysis, idx) => {
+                  const score = parseScore(analysis.scores);
+                  return (
+                    <div
+                      key={analysis.id}
+                      className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4 hover:border-emerald-500/30 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${getScoreBg(score)} flex items-center justify-center`}>
+                            <span className={`text-lg font-bold ${getScoreColor(score)}`}>{score}</span>
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-white font-medium capitalize">{analysis.analysis_type} Analysis</p>
+                              {idx === 0 && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">Latest</span>}
+                              {score === bestScore && <span className="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">Best</span>}
+                            </div>
+                            <p className="text-sm text-slate-400 mt-0.5">{formatDate(analysis.created_at)}</p>
+                            {analysis.feedback && (
+                              <p className="text-xs text-slate-500 mt-1 line-clamp-1 max-w-md">{analysis.feedback}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm font-semibold ${getScoreColor(score)}`}>{score}/100</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Locked reports for free users */}
+                {hiddenCount > 0 && (
+                  <div className="relative">
+                    <div className="bg-slate-800/30 border border-slate-700/30 rounded-xl p-4 blur-sm">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-slate-700/50" />
+                        <div>
+                          <div className="h-4 w-32 bg-slate-700/50 rounded" />
+                          <div className="h-3 w-24 bg-slate-700/50 rounded mt-2" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <p className="text-slate-300 font-medium mb-2">+{hiddenCount} more report{hiddenCount > 1 ? "s" : ""} locked</p>
+                        <Link
+                          href="/pricing"
+                          className="text-sm bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-full font-medium transition-colors"
+                        >
+                          Upgrade to See All History
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Upgrade prompt for free users */}
+            {!isPro && (
+              <div className="bg-gradient-to-r from-blue-900/40 to-emerald-900/40 border border-blue-500/20 rounded-2xl p-8 mb-8">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-white mb-2">Unlock Full Progress Tracking</h2>
+                    <ul className="space-y-1.5 text-sm text-slate-300">
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">&#x2022;</span> Full analysis history
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">&#x2022;</span> Complete score trend graph
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">&#x2022;</span> Improvement insights & consistency tracking
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="text-emerald-400">&#x2022;</span> Up to 15 analyses per month
+                      </li>
+                    </ul>
+                  </div>
+                  <div className="flex flex-col gap-2 shrink-0">
+                    <Link
+                      href="/pricing"
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 rounded-full font-bold transition-colors text-center shadow-lg shadow-emerald-500/20"
+                    >
+                      Go Pro &ndash; $9.99/mo
+                    </Link>
+                    <Link
+                      href="/pricing"
+                      className="text-emerald-400 hover:text-emerald-300 text-sm text-center"
+                    >
+                      View all plans &rarr;
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bottom CTA */}
+            <div className="text-center py-6">
+              <p className="text-white font-semibold text-lg mb-2">Ready to beat your score?</p>
+              <p className="text-slate-400 mb-4">Every upload helps you track improvement and climb the leaderboard.</p>
+              <Link
+                href="/analyze"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-full font-bold transition-colors text-lg shadow-lg shadow-emerald-500/25"
+              >
+                Upload Again to Improve Your Score
+              </Link>
+              <p className="text-sm text-slate-500 mt-3">Upload your video and get instant AI feedback in seconds.</p>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

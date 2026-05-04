@@ -1,0 +1,273 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth";
+import { apiPost } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
+
+const plans = [
+  {
+    name: "Free",
+    price: "$0",
+    period: "",
+    description: "Try it out",
+    planKey: "free",
+    features: [
+      "1 video analysis",
+      "Overall technique score",
+      "Summary feedback",
+      "1 strength highlight",
+      "1 weakness highlight",
+      "Fix This First tip",
+    ],
+    notIncluded: [
+      { label: "Full technique breakdown", tag: "Pro" },
+      { label: "Timestamp observations", tag: "Pro" },
+      { label: "Drill recommendations", tag: "Pro" },
+      { label: "7-day improvement plan", tag: "Pro" },
+      { label: "Shareable player card", tag: "Pro" },
+      { label: "Progress history", tag: "Pro" },
+    ],
+    cta: "Sign Up Free",
+    highlight: false,
+  },
+  {
+    name: "Pro",
+    price: "$9.99",
+    period: "/mo",
+    description: "For serious players",
+    planKey: "pro",
+    features: [
+      "5 video analyses/month",
+      "Full technique breakdown",
+      "Timestamp observations",
+      "Detailed drill recommendations",
+      "7-day improvement plan",
+      "Shareable branded player card",
+      "Progress history & tracking",
+      "Detailed trend analysis",
+    ],
+    notIncluded: [] as { label: string; tag: string }[],
+    cta: "Get Pro",
+    highlight: true,
+  },
+
+];
+
+export default function PricingPage() {
+  const { user, tokens } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState("");
+  const [error, setError] = useState<{ message: string; planKey: string } | null>(null);
+
+  useEffect(() => {
+    trackEvent("pricing_viewed", {}, tokens?.accessToken);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("success") === "true") {
+      trackEvent("subscription_completed", {}, tokens?.accessToken);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [tokens?.accessToken]);
+
+  const handleCheckout = async (planKey: string) => {
+    if (!user) { router.push("/auth"); return; }
+    if (planKey === "free") { router.push("/analyze"); return; }
+    setLoading(planKey);
+    setError(null);
+    trackEvent("checkout_started", { plan: planKey }, tokens?.accessToken);
+    try {
+      const data = await apiPost<{ url: string }>("/checkout", {
+        plan: planKey,
+        successUrl: `${window.location.origin}/pricing?success=true`,
+        cancelUrl: `${window.location.origin}/pricing?cancelled=true`,
+      }, tokens?.accessToken);
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      setError({
+        message: err instanceof Error ? err.message : "Payment failed. Please try again.",
+        planKey,
+      });
+    } finally {
+      setLoading("");
+    }
+  };
+
+  return (
+    <div className="min-h-[80vh] py-16">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            Simple, Transparent Pricing
+          </h1>
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-2">
+            Start free. Upgrade only if the analysis helps.
+          </p>
+          <p className="text-sm text-emerald-400 font-medium">
+            No commitment. Cancel anytime.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-16">
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`rounded-2xl p-8 ${
+                plan.highlight
+                  ? "bg-slate-800/80 border-2 border-emerald-500 relative"
+                  : "bg-slate-800/50 border border-slate-700/50"
+              }`}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                  Most Popular
+                </div>
+              )}
+              <h2 className="text-xl font-bold text-white">{plan.name}</h2>
+              <div className="mt-3 mb-1">
+                <span className="text-4xl font-bold text-white">{plan.price}</span>
+                {plan.period && (
+                  <span className="text-slate-400">{plan.period}</span>
+                )}
+              </div>
+              <p className="text-sm text-slate-400 mb-6">{plan.description}</p>
+
+              <button
+                onClick={() => handleCheckout(plan.planKey)}
+                disabled={!!loading}
+                className={`w-full text-center px-6 py-3 rounded-full font-semibold transition-colors ${
+                  plan.highlight
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    : "bg-slate-700 hover:bg-slate-600 text-white"
+                } disabled:opacity-50`}
+              >
+                {loading === plan.planKey ? "Redirecting..." : plan.cta}
+              </button>
+              {plan.planKey !== "free" && (
+                <p className="text-xs text-slate-500 text-center mt-2 mb-6 flex items-center justify-center gap-1">
+                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  Secure checkout via Stripe
+                </p>
+              )}
+              {plan.planKey === "free" && <div className="mb-6" />}
+              {error?.planKey === plan.planKey && (
+                <div className="mb-6 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center">
+                  <p className="text-sm text-red-400">{error.message}</p>
+                  <button
+                    onClick={() => { setError(null); handleCheckout(plan.planKey); }}
+                    className="text-xs text-red-300 hover:text-white underline mt-1"
+                  >
+                    Try again
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {plan.features.map((feature) => (
+                  <div key={feature} className="flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center mt-0.5 shrink-0">
+                      <span className="w-2 h-2 bg-emerald-400 rounded-full" />
+                    </span>
+                    <span className="text-sm text-slate-300">{feature}</span>
+                  </div>
+                ))}
+                {plan.notIncluded.map((item) => {
+                  const label = typeof item === "string" ? item : item.label;
+                  const tag = typeof item === "string" ? null : item.tag;
+                  return (
+                    <div key={label} className="flex items-start gap-3 opacity-50">
+                      <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center mt-0.5 shrink-0">
+                        <span className="w-1.5 h-0.5 bg-slate-500 rounded" />
+                      </span>
+                      <span className="text-sm text-slate-500 flex items-center gap-2">
+                        {label}
+                        {tag && (
+                          <span className="text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                            {tag}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* One-time purchase */}
+        <div className="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8 text-center max-w-2xl mx-auto mb-16">
+          <h3 className="text-xl font-bold text-white mb-2">Just Need One Report?</h3>
+          <p className="text-slate-400 mb-4">
+            Purchase a single video analysis without a subscription.
+          </p>
+          <p className="text-3xl font-bold text-white mb-4">
+            $4.99 <span className="text-sm font-normal text-slate-400">per analysis</span>
+          </p>
+          <button
+            onClick={() => handleCheckout("one_time")}
+            disabled={!!loading}
+            className="inline-block bg-slate-700 hover:bg-slate-600 text-white px-8 py-3 rounded-full font-semibold transition-colors disabled:opacity-50"
+          >
+            {loading === "one_time" ? "Redirecting..." : "Buy Single Analysis"}
+          </button>
+          <p className="text-xs text-slate-500 mt-3 flex items-center justify-center gap-1">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            Secure checkout via Stripe
+          </p>
+          {error?.planKey === "one_time" && (
+            <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center max-w-sm mx-auto">
+              <p className="text-sm text-red-400">{error.message}</p>
+              <button
+                onClick={() => { setError(null); handleCheckout("one_time"); }}
+                className="text-xs text-red-300 hover:text-white underline mt-1"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Feature comparison */}
+        <div className="max-w-4xl mx-auto">
+          <h3 className="text-2xl font-bold text-white text-center mb-8">Feature Comparison</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left text-slate-400 py-3 pr-4">Feature</th>
+                  <th className="text-center text-white py-3 px-4">Free</th>
+                  <th className="text-center text-emerald-400 py-3 px-4">Pro</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-300">
+                {[
+                  { feature: "Video analyses/month", free: "1 (total)", pro: "5" },
+                  { feature: "Overall score", free: "Yes", pro: "Yes" },
+                  { feature: "Strengths & weaknesses", free: "1 each", pro: "Full list" },
+                  { feature: "Fix This First tip", free: "Preview", pro: "Full" },
+                  { feature: "Full technique breakdown", free: "-", pro: "Yes" },
+                  { feature: "Timestamp observations", free: "-", pro: "Yes" },
+                  { feature: "Drill recommendations", free: "-", pro: "Yes" },
+                  { feature: "7-day improvement plan", free: "-", pro: "Yes" },
+                  { feature: "Shareable player card", free: "-", pro: "Yes" },
+                  { feature: "Progress tracking", free: "-", pro: "Yes" },
+                  { feature: "Detailed trend analysis", free: "-", pro: "Yes" },
+                ].map((row) => (
+                  <tr key={row.feature} className="border-b border-slate-800">
+                    <td className="py-3 pr-4">{row.feature}</td>
+                    <td className="text-center py-3 px-4">{row.free}</td>
+                    <td className="text-center py-3 px-4">{row.pro}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

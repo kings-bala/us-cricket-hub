@@ -2,25 +2,25 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { UserRole } from "@/types";
-
-const roleLabels: Record<UserRole, string> = {
-  player: "Player",
-  agent: "Agent",
-  owner: "T20 Owner",
-  sponsor: "Sponsor",
-};
-
-const roleColors: Record<UserRole, string> = {
-  player: "bg-emerald-500",
-  agent: "bg-blue-500",
-  owner: "bg-purple-500",
-  sponsor: "bg-amber-500",
-};
+import { useAuth } from "@/lib/auth";
 
 export default function Navbar() {
-  const [role, setRole] = useState<UserRole>("player");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const loggedOutLinks = [
+    { href: "/analyze", label: "Analyze" },
+    { href: "/pricing", label: "Pricing" },
+    { href: "/sample-analysis", label: "Sample Analysis" },
+  ];
+
+  const loggedInLinks = [
+    { href: "/analyze", label: "Analyze" },
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/profile", label: "Profile" },
+  ];
+
+  const navLinks = user ? loggedInLinks : loggedOutLinks;
 
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
@@ -28,59 +28,51 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2 shrink-0">
             <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center font-bold text-sm">
-              CH
+              CV
             </div>
-            <span className="font-bold text-lg hidden sm:block">CricketHub Global</span>
+            <span className="font-bold text-lg hidden sm:block">CricVerse360</span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/players" className="text-sm text-slate-300 hover:text-white transition-colors">
-              Players
-            </Link>
-            <Link href="/agents" className="text-sm text-slate-300 hover:text-white transition-colors">
-              Agents
-            </Link>
-            <Link href="/scouting" className="text-sm text-slate-300 hover:text-white transition-colors">
-              Pro Scouting
-            </Link>
-            <Link href="/sponsors" className="text-sm text-slate-300 hover:text-white transition-colors">
-              Sponsors
-            </Link>
-            <Link href="/analyze" className="text-sm text-slate-300 hover:text-white transition-colors">
-              AI Analysis
-            </Link>
-            <Link href="/coaches" className="text-sm text-slate-300 hover:text-white transition-colors">
-              Coaches
-            </Link>
-            <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
-              Dashboard
-            </Link>
+            {navLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="text-sm text-slate-300 hover:text-white transition-colors">
+                {link.label}
+              </Link>
+            ))}
+            {user?.role === "admin" && (
+              <Link href="/admin" className="text-sm text-slate-300 hover:text-white transition-colors">
+                Admin
+              </Link>
+            )}
             <Link href="/tournaments/jyct" className="text-sm text-amber-400 hover:text-amber-300 transition-colors font-medium">
               JYCT 2026
             </Link>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-xs text-slate-400">View as:</span>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className={`text-xs px-2 py-1 rounded-full text-white border-0 cursor-pointer ${roleColors[role]}`}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Link href="/profile" className="hidden sm:flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-blue-500 flex items-center justify-center text-xs font-bold">
+                    {user.full_name?.split(" ").map((n) => n[0]).join("").slice(0, 2) || "U"}
+                  </div>
+                  <span className="text-sm text-slate-300">{user.full_name?.split(" ")[0]}</span>
+                </Link>
+                <button
+                  onClick={logout}
+                  className="hidden md:block text-sm text-slate-400 hover:text-white transition-colors"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/auth"
+                className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors"
               >
-                {(Object.keys(roleLabels) as UserRole[]).map((r) => (
-                  <option key={r} value={r} className="bg-slate-800">
-                    {roleLabels[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Link
-              href="/auth"
-              className="text-sm bg-emerald-500 hover:bg-emerald-600 px-4 py-1.5 rounded-full transition-colors"
-            >
-              Sign In
-            </Link>
+                Sign In
+              </Link>
+            )}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden p-2 text-slate-300 hover:text-white"
@@ -100,16 +92,7 @@ export default function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-slate-700 pb-4">
           <div className="px-4 pt-3 space-y-2">
-            {[
-              { href: "/players", label: "Players" },
-              { href: "/agents", label: "Agents" },
-              { href: "/scouting", label: "Pro Scouting" },
-              { href: "/sponsors", label: "Sponsors" },
-              { href: "/analyze", label: "AI Analysis" },
-              { href: "/coaches", label: "Coaches" },
-              { href: "/dashboard", label: "Dashboard" },
-              { href: "/tournaments/jyct", label: "JYCT 2026" },
-            ].map((link) => (
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -119,20 +102,30 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-2 border-t border-slate-700">
-              <span className="text-xs text-slate-400">View as:</span>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className={`ml-2 text-xs px-2 py-1 rounded-full text-white border-0 ${roleColors[role]}`}
+            <Link
+              href="/tournaments/jyct"
+              onClick={() => setMobileOpen(false)}
+              className="block py-2 text-sm text-amber-400 hover:text-amber-300 font-medium"
+            >
+              JYCT 2026
+            </Link>
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-sm text-slate-300 hover:text-white"
               >
-                {(Object.keys(roleLabels) as UserRole[]).map((r) => (
-                  <option key={r} value={r} className="bg-slate-800">
-                    {roleLabels[r]}
-                  </option>
-                ))}
-              </select>
-            </div>
+                Admin
+              </Link>
+            )}
+            {user && (
+              <button
+                onClick={() => { setMobileOpen(false); logout(); }}
+                className="block w-full text-left py-2 mt-2 pt-4 border-t border-slate-700 text-sm text-red-400 hover:text-red-300"
+              >
+                Sign Out
+              </button>
+            )}
           </div>
         </div>
       )}

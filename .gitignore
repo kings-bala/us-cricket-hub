@@ -36,6 +36,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# capacitor native platforms (generated via `npx cap add`)
+/android/
+/ios/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
