@@ -55,6 +55,9 @@ export default function Navbar() {
             <Link href="/dashboard" className="text-sm text-slate-300 hover:text-white transition-colors">
               Dashboard
             </Link>
+            <Link href="/tournaments/jyct" className="text-sm text-amber-400 hover:text-amber-300 transition-colors font-medium">
+              JYCT 2026
+            </Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -105,6 +108,7 @@ export default function Navbar() {
               { href: "/analyze", label: "AI Analysis" },
               { href: "/coaches", label: "Coaches" },
               { href: "/dashboard", label: "Dashboard" },
+              { href: "/tournaments/jyct", label: "JYCT 2026" },
             ].map((link) => (
               <Link
                 key={link.href}
