@@ -29,8 +29,7 @@ function CallbackInner() {
       return;
     }
 
-    // Determine auth flow from OAuth state parameter (survives mobile Safari redirects)
-    // Fall back to sessionStorage for backward compatibility
+    // Determine auth flow: state param > sessionStorage > env-var default
     const stateParam = searchParams.get("state");
     let authFlow = sessionStorage.getItem("cricverse360_auth_flow");
     let stateRedirect: string | null = null;
@@ -41,8 +40,14 @@ function CallbackInner() {
         if (parsed.flow) authFlow = parsed.flow;
         if (parsed.redirect) stateRedirect = parsed.redirect;
       } catch {
-        // Invalid state param — fall through to sessionStorage value
+        // Invalid state param — fall through to other sources
       }
+    }
+
+    // Default to google_direct when Google Client ID is configured,
+    // since the app uses direct Google OAuth (not Cognito-brokered)
+    if (!authFlow && process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID) {
+      authFlow = "google_direct";
     }
 
     if (authFlow === "google_direct") {
