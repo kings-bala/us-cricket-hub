@@ -46,7 +46,9 @@ function AuthPageInner() {
         "profile",
         "https://www.googleapis.com/auth/generative-language.retriever",
       ].join(" ");
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent`;
+      const statePayload = JSON.stringify({ flow: "google_direct", redirect: nextUrl });
+      const stateParam = btoa(statePayload);
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scopes)}&access_type=offline&prompt=consent&state=${encodeURIComponent(stateParam)}`;
     } else {
       setError("Google Sign-In is not configured yet. Please use email and password.");
     }
