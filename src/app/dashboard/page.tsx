@@ -217,7 +217,7 @@ export default function ProgressDashboard() {
     );
   }
 
-  const isPro = subscription?.plan === "pro" || subscription?.plan === "pro_plus";
+  const isPro = subscription?.plan === "pro";
   const scores = analyses.map((a) => parseScore(a.scores));
   const lastScore = scores.length > 0 ? scores[0] : null;
   const bestScore = scores.length > 0 ? Math.max(...scores) : null;
@@ -246,7 +246,7 @@ export default function ProgressDashboard() {
               <h1 className="text-3xl font-bold text-white">{user.full_name || "Player"}</h1>
               <div className="flex items-center gap-3 mt-2">
                 <span className={`text-xs px-2.5 py-1 rounded-full border ${isPro ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-slate-700/50 text-slate-400 border-slate-600"}`}>
-                  {subscription?.plan === "pro_plus" ? "Pro Plus" : subscription?.plan === "pro" ? "Pro" : "Free"} Plan
+                  {subscription?.plan === "pro" ? "Pro" : "Free"} Plan
                 </span>
                 {subscription && (
                   <span className="text-xs text-slate-500">{subscription.analysis_credits} credits remaining</span>

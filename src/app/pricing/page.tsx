@@ -53,20 +53,7 @@ const plans = [
     cta: "Get Pro",
     highlight: true,
   },
-  {
-    name: "Pro Plus",
-    price: "$19.99",
-    period: "/mo",
-    description: "For dedicated players",
-    planKey: "pro_plus",
-    features: [
-      "15 video analyses/month",
-      "Everything in Pro",
-    ],
-    notIncluded: [] as { label: string; tag: string }[],
-    cta: "Get Pro Plus",
-    highlight: false,
-  },
+
 ];
 
 export default function PricingPage() {
@@ -124,7 +111,7 @@ export default function PricingPage() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-16">
           {plans.map((plan) => (
             <div
               key={plan.name}
@@ -254,28 +241,26 @@ export default function PricingPage() {
                   <th className="text-left text-slate-400 py-3 pr-4">Feature</th>
                   <th className="text-center text-white py-3 px-4">Free</th>
                   <th className="text-center text-emerald-400 py-3 px-4">Pro</th>
-                  <th className="text-center text-white py-3 px-4">Pro Plus</th>
                 </tr>
               </thead>
               <tbody className="text-slate-300">
                 {[
-                  { feature: "Video analyses/month", free: "1 (total)", pro: "5", plus: "15" },
-                  { feature: "Overall score", free: "Yes", pro: "Yes", plus: "Yes" },
-                  { feature: "Strengths & weaknesses", free: "1 each", pro: "Full list", plus: "Full list" },
-                  { feature: "Fix This First tip", free: "Preview", pro: "Full", plus: "Full" },
-                  { feature: "Full technique breakdown", free: "-", pro: "Yes", plus: "Yes" },
-                  { feature: "Timestamp observations", free: "-", pro: "Yes", plus: "Yes" },
-                  { feature: "Drill recommendations", free: "-", pro: "Yes", plus: "Yes" },
-                  { feature: "7-day improvement plan", free: "-", pro: "Yes", plus: "Yes" },
-                  { feature: "Shareable player card", free: "-", pro: "Yes", plus: "Yes" },
-                  { feature: "Progress tracking", free: "-", pro: "Yes", plus: "Yes" },
-                  { feature: "Detailed trend analysis", free: "-", pro: "Yes", plus: "Yes" },
+                  { feature: "Video analyses/month", free: "1 (total)", pro: "5" },
+                  { feature: "Overall score", free: "Yes", pro: "Yes" },
+                  { feature: "Strengths & weaknesses", free: "1 each", pro: "Full list" },
+                  { feature: "Fix This First tip", free: "Preview", pro: "Full" },
+                  { feature: "Full technique breakdown", free: "-", pro: "Yes" },
+                  { feature: "Timestamp observations", free: "-", pro: "Yes" },
+                  { feature: "Drill recommendations", free: "-", pro: "Yes" },
+                  { feature: "7-day improvement plan", free: "-", pro: "Yes" },
+                  { feature: "Shareable player card", free: "-", pro: "Yes" },
+                  { feature: "Progress tracking", free: "-", pro: "Yes" },
+                  { feature: "Detailed trend analysis", free: "-", pro: "Yes" },
                 ].map((row) => (
                   <tr key={row.feature} className="border-b border-slate-800">
                     <td className="py-3 pr-4">{row.feature}</td>
                     <td className="text-center py-3 px-4">{row.free}</td>
                     <td className="text-center py-3 px-4">{row.pro}</td>
-                    <td className="text-center py-3 px-4">{row.plus}</td>
                   </tr>
                 ))}
               </tbody>
