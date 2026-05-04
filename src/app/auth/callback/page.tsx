@@ -29,15 +29,29 @@ function CallbackInner() {
       return;
     }
 
-    const authFlow = sessionStorage.getItem("cricverse360_auth_flow");
+    // Determine auth flow from OAuth state parameter (survives mobile Safari redirects)
+    // Fall back to sessionStorage for backward compatibility
+    const stateParam = searchParams.get("state");
+    let authFlow = sessionStorage.getItem("cricverse360_auth_flow");
+    let stateRedirect: string | null = null;
 
-    if (authFlow === "google_direct") {
-      handleDirectGoogleAuth(code);
-    } else {
-      handleCognitoAuth(code);
+    if (stateParam) {
+      try {
+        const parsed = JSON.parse(atob(stateParam));
+        if (parsed.flow) authFlow = parsed.flow;
+        if (parsed.redirect) stateRedirect = parsed.redirect;
+      } catch {
+        // Invalid state param — fall through to sessionStorage value
+      }
     }
 
-    async function handleDirectGoogleAuth(authCode: string) {
+    if (authFlow === "google_direct") {
+      handleDirectGoogleAuth(code, stateRedirect);
+    } else {
+      handleCognitoAuth(code, stateRedirect);
+    }
+
+    async function handleDirectGoogleAuth(authCode: string, overrideRedirect: string | null) {
       try {
         setStatus("Exchanging Google authorization code...");
         const redirectUri = `${window.location.origin}/auth/callback`;
@@ -69,7 +83,7 @@ function CallbackInner() {
         trackEvent("signup_completed", { method: "google_direct" });
         setStatus("Sign-in successful! Redirecting...");
         sessionStorage.removeItem("cricverse360_auth_flow");
-        const redirectTo = sessionStorage.getItem("cricverse360_auth_redirect") || "/analyze";
+        const redirectTo = overrideRedirect || sessionStorage.getItem("cricverse360_auth_redirect") || "/analyze";
         sessionStorage.removeItem("cricverse360_auth_redirect");
         window.location.href = redirectTo;
       } catch (err) {
@@ -80,7 +94,7 @@ function CallbackInner() {
       }
     }
 
-    async function handleCognitoAuth(authCode: string) {
+    async function handleCognitoAuth(authCode: string, overrideRedirect: string | null) {
       try {
         const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
         const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
@@ -122,7 +136,7 @@ function CallbackInner() {
 
           trackEvent("signup_completed", { method: "google" });
           setStatus("Sign-in successful! Redirecting...");
-          const redirectTo = sessionStorage.getItem("cricverse360_auth_redirect") || "/analyze";
+          const redirectTo = overrideRedirect || sessionStorage.getItem("cricverse360_auth_redirect") || "/analyze";
           sessionStorage.removeItem("cricverse360_auth_redirect");
           window.location.href = redirectTo;
         } else {
