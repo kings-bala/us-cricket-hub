@@ -45,7 +45,7 @@ function PrivacyContent() {
             <li><strong>Usage data:</strong> Pages viewed, features used, buttons clicked, analysis history, scores, and interaction patterns.</li>
             <li><strong>Device information:</strong> Browser type, operating system, screen resolution.</li>
             <li><strong>Log data:</strong> IP address, access times, referring URLs, and error logs.</li>
-            <li><strong>Local storage:</strong> We use browser localStorage (not cookies) to store authentication tokens and app preferences. See Section 8.</li>
+            <li><strong>Cookies &amp; local storage:</strong> We use secure HttpOnly cookies for authentication and browser localStorage for app preferences. See Section 8.</li>
           </ul>
           <h3 className="text-sm font-semibold text-slate-200 mt-4 mb-1">2.3 Information from Third Parties</h3>
           <p>We do not currently purchase or receive personal information from third-party data brokers.</p>
@@ -158,14 +158,14 @@ function PrivacyContent() {
         {/* 8. Cookies and Local Storage */}
         <section>
           <h2 className="text-lg font-semibold text-white mt-6 mb-2">8. Cookies and Local Storage</h2>
-          <p>CricVerse360 uses <strong>browser localStorage</strong> (not traditional HTTP cookies) to store:</p>
+          <p>CricVerse360 uses <strong>secure HttpOnly cookies</strong> for authentication and <strong>browser localStorage</strong> for non-sensitive data:</p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Authentication tokens (to keep you logged in)</li>
-            <li>App preferences and settings</li>
-            <li>Cached analysis data for offline access</li>
+            <li>HttpOnly cookies: Session authentication (not accessible to JavaScript)</li>
+            <li>App preferences and settings (localStorage)</li>
+            <li>Cached analysis data for offline access (localStorage)</li>
           </ul>
           <p className="mt-2">We use <strong>first-party analytics only</strong> — we track events through our own API, not through third-party services like Google Analytics. We do not use advertising pixels, cross-site tracking, or third-party cookies.</p>
-          <p className="mt-2">You can clear localStorage data at any time through your browser settings.</p>
+          <p className="mt-2">You can clear cookies and localStorage data at any time through your browser settings.</p>
         </section>
 
         {/* 9. Children and Young Players */}

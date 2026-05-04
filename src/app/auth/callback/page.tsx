@@ -53,30 +53,17 @@ function CallbackInner() {
           throw new Error(data.error || `Token exchange failed (${res.status})`);
         }
 
-        // Store Google access token separately for Gemini API usage
+        // Google access token is stored server-side in the users table by the
+        // /auth/google backend handler. No need to keep in localStorage.
+        // The backend reads it from DB during analysis (lines 2400-2433 of index.mjs).
+
+        // Store session via HttpOnly cookie
         if (data.google_access_token) {
-          localStorage.setItem("cricverse360_google_access_token", data.google_access_token);
-        }
-
-        // Store user info and create a synthetic auth token set
-        const userInfo = data.user;
-        if (userInfo) {
-          localStorage.setItem("cricverse360_user", JSON.stringify({
-            id: userInfo.id,
-            email: userInfo.email,
-            full_name: userInfo.full_name,
-            role: "player",
-            auth_provider: "google",
-          }));
-          localStorage.setItem("cricverse360_user_email", userInfo.email);
-          localStorage.setItem("cricverse360_user_name", userInfo.full_name);
-
-          // Store tokens (use google_access_token as the access token for API calls)
-          localStorage.setItem("cricverse360_tokens", JSON.stringify({
-            accessToken: data.google_access_token || "",
-            refreshToken: "",
-            idToken: "",
-          }));
+          await fetch("/api/auth/migrate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken: data.google_access_token }),
+          });
         }
 
         trackEvent("signup_completed", { method: "google_direct" });
@@ -126,28 +113,12 @@ function CallbackInner() {
         const tokens = await tokenRes.json();
 
         if (tokens.access_token) {
-          localStorage.setItem(
-            "cricverse360_tokens",
-            JSON.stringify({
-              accessToken: tokens.access_token,
-              refreshToken: tokens.refresh_token || "",
-              idToken: tokens.id_token || "",
-            })
-          );
-
-          if (tokens.id_token) {
-            try {
-              const payload = JSON.parse(atob(tokens.id_token.split(".")[1]));
-              if (payload.email) {
-                localStorage.setItem("cricverse360_user_email", payload.email);
-              }
-              if (payload.name) {
-                localStorage.setItem("cricverse360_user_name", payload.name);
-              }
-            } catch {
-              // ID token parsing is optional
-            }
-          }
+          // Store refresh token via HttpOnly cookie
+          await fetch("/api/auth/migrate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken: tokens.refresh_token || tokens.access_token }),
+          });
 
           trackEvent("signup_completed", { method: "google" });
           setStatus("Sign-in successful! Redirecting...");
@@ -160,7 +131,7 @@ function CallbackInner() {
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
         setError(`Sign-in failed: ${message}`);
-        localStorage.setItem("cricverse360_oauth_error", message);
+        // Log OAuth error (no sensitive data in localStorage)
         setTimeout(() => router.push("/auth"), 5000);
       }
     }

@@ -465,12 +465,11 @@ export default function AnalyzePage() {
                 }
                 trackEvent("video_uploaded", { analysisType }, tokens?.accessToken);
                 trackEvent("analysis_started", { analysisType }, tokens?.accessToken);
-                const googleToken = typeof window !== "undefined" ? localStorage.getItem("cricverse360_google_access_token") || "" : "";
+                // Google access token is read from DB server-side — no localStorage needed
                 const analysis = await apiPost<Record<string, unknown>>("/ai-analysis", {
                   videoId: uploadRes.videoId || uploadRes.key,
                   analysisType: analysisType === "fielding" ? "batting" : analysisType,
                   videoKey: uploadRes.key,
-                  ...(googleToken ? { google_access_token: googleToken } : {}),
                 }, tokens?.accessToken);
                 trackEvent("analysis_completed", { analysisType, score: analysis.overall_score }, tokens?.accessToken);
                 const analysisJson = JSON.stringify(analysis);
